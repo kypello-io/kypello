@@ -26,14 +26,14 @@ import (
 	"strings"
 
 	"github.com/cespare/xxhash/v2"
+	"github.com/kypello-io/kypello/internal/config"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/config"
 	"github.com/minio/pkg/v3/ellipses"
 	"github.com/minio/pkg/v3/env"
 )
 
 // This file implements and supports ellipses pattern for
-// `minio server` command line arguments.
+// `kypello server` command line arguments.
 
 // Endpoint set represents parsed ellipses values, also provides
 // methods to get the sets of endpoints.

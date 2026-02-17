@@ -23,8 +23,8 @@ import (
 	"strconv"
 	"time"
 
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/kms"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/kms"
 )
 
 const unavailable = "offline"
@@ -32,19 +32,19 @@ const unavailable = "offline"
 func checkHealth(w http.ResponseWriter) ObjectLayer {
 	objLayer := newObjectLayerFn()
 	if objLayer == nil {
-		w.Header().Set(xhttp.MinIOServerStatus, unavailable)
+		w.Header().Set(xhttp.KypelloServerStatus, unavailable)
 		writeResponse(w, http.StatusServiceUnavailable, nil, mimeNone)
 		return nil
 	}
 
 	if !globalBucketMetadataSys.Initialized() {
-		w.Header().Set(xhttp.MinIOServerStatus, "bucket-metadata-offline")
+		w.Header().Set(xhttp.KypelloServerStatus, "bucket-metadata-offline")
 		writeResponse(w, http.StatusServiceUnavailable, nil, mimeNone)
 		return nil
 	}
 
 	if !globalIAMSys.Initialized() {
-		w.Header().Set(xhttp.MinIOServerStatus, "iam-offline")
+		w.Header().Set(xhttp.KypelloServerStatus, "iam-offline")
 		writeResponse(w, http.StatusServiceUnavailable, nil, mimeNone)
 		return nil
 	}
@@ -69,11 +69,11 @@ func ClusterCheckHandler(w http.ResponseWriter, r *http.Request) {
 		DeploymentType: r.Form.Get("deployment-type"),
 	}
 	result := objLayer.Health(ctx, opts)
-	w.Header().Set(xhttp.MinIOWriteQuorum, strconv.Itoa(result.WriteQuorum))
-	w.Header().Set(xhttp.MinIOStorageClassDefaults, strconv.FormatBool(result.UsingDefaults))
+	w.Header().Set(xhttp.KypelloWriteQuorum, strconv.Itoa(result.WriteQuorum))
+	w.Header().Set(xhttp.KypelloStorageClassDefaults, strconv.FormatBool(result.UsingDefaults))
 	// return how many drives are being healed if any
 	if result.HealingDrives > 0 {
-		w.Header().Set(xhttp.MinIOHealingDrives, strconv.Itoa(result.HealingDrives))
+		w.Header().Set(xhttp.KypelloHealingDrives, strconv.Itoa(result.HealingDrives))
 	}
 	if !result.Healthy {
 		// As a maintenance call we are purposefully asked to be taken
@@ -106,11 +106,11 @@ func ClusterReadCheckHandler(w http.ResponseWriter, r *http.Request) {
 		DeploymentType: r.Form.Get("deployment-type"),
 	}
 	result := objLayer.Health(ctx, opts)
-	w.Header().Set(xhttp.MinIOReadQuorum, strconv.Itoa(result.ReadQuorum))
-	w.Header().Set(xhttp.MinIOStorageClassDefaults, strconv.FormatBool(result.UsingDefaults))
+	w.Header().Set(xhttp.KypelloReadQuorum, strconv.Itoa(result.ReadQuorum))
+	w.Header().Set(xhttp.KypelloStorageClassDefaults, strconv.FormatBool(result.UsingDefaults))
 	// return how many drives are being healed if any
 	if result.HealingDrives > 0 {
-		w.Header().Set(xhttp.MinIOHealingDrives, strconv.Itoa(result.HealingDrives))
+		w.Header().Set(xhttp.KypelloHealingDrives, strconv.Itoa(result.HealingDrives))
 	}
 	if !result.HealthyRead {
 		// As a maintenance call we are purposefully asked to be taken
@@ -131,9 +131,9 @@ func ClusterReadCheckHandler(w http.ResponseWriter, r *http.Request) {
 // if configured.
 func ReadinessCheckHandler(w http.ResponseWriter, r *http.Request) {
 	if objLayer := newObjectLayerFn(); objLayer == nil {
-		w.Header().Set(xhttp.MinIOServerStatus, unavailable) // Service not initialized yet
+		w.Header().Set(xhttp.KypelloServerStatus, unavailable) // Service not initialized yet
 	}
-	if r.Header.Get(xhttp.MinIOPeerCall) != "" {
+	if r.Header.Get(xhttp.KypelloPeerCall) != "" {
 		writeResponse(w, http.StatusOK, nil, mimeNone)
 		return
 	}
@@ -191,9 +191,9 @@ func ReadinessCheckHandler(w http.ResponseWriter, r *http.Request) {
 // in K8S environments. Therefore, it does not contact external systems.
 func LivenessCheckHandler(w http.ResponseWriter, r *http.Request) {
 	if objLayer := newObjectLayerFn(); objLayer == nil {
-		w.Header().Set(xhttp.MinIOServerStatus, unavailable) // Service not initialized yet
+		w.Header().Set(xhttp.KypelloServerStatus, unavailable) // Service not initialized yet
 	}
-	if r.Header.Get(xhttp.MinIOPeerCall) != "" {
+	if r.Header.Get(xhttp.KypelloPeerCall) != "" {
 		writeResponse(w, http.StatusOK, nil, mimeNone)
 		return
 	}

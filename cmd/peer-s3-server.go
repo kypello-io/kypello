@@ -57,7 +57,7 @@ func healBucketLocal(ctx context.Context, bucket string, opts madmin.HealOpts) (
 			beforeState[index] = madmin.DriveStateOk
 			afterState[index] = madmin.DriveStateOk
 
-			if bucket == minioReservedBucket {
+			if bucket == kypelloReservedBucket {
 				return nil
 			}
 
@@ -229,7 +229,7 @@ func getBucketInfoLocal(ctx context.Context, bucket string, opts BucketOptions) 
 			volInfo, err := localDrives[index].StatVol(ctx, bucket)
 			if err != nil {
 				if opts.Deleted {
-					dvi, derr := localDrives[index].StatVol(ctx, pathJoin(minioMetaBucket, bucketMetaPrefix, deletedBucketsPrefix, bucket))
+					dvi, derr := localDrives[index].StatVol(ctx, pathJoin(kypelloMetaBucket, bucketMetaPrefix, deletedBucketsPrefix, bucket))
 					if derr != nil {
 						return err
 					}

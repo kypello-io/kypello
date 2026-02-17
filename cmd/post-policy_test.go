@@ -128,7 +128,7 @@ func TestPostPolicyReservedBucketExploit(t *testing.T) {
 // testPostPolicyReservedBucketExploit is a test for the exploit fixed in PR
 // #16849
 func testPostPolicyReservedBucketExploit(obj ObjectLayer, instanceType string, dirs []string, t TestErrHandler) {
-	if err := newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err := newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatalf("Initializing config.json failed")
 	}
 
@@ -136,7 +136,7 @@ func testPostPolicyReservedBucketExploit(obj ObjectLayer, instanceType string, d
 	apiRouter := initTestAPIEndPoints(obj, []string{"PostPolicy"})
 
 	credentials := globalActiveCred
-	bucketName := minioMetaBucket
+	bucketName := kypelloMetaBucket
 	objectName := "config/x"
 
 	// This exploit needs browser to be enabled.
@@ -173,7 +173,7 @@ func testPostPolicyReservedBucketExploit(obj ObjectLayer, instanceType string, d
 	for i := range parts {
 		if errs[i] == nil {
 			if parts[i].Name == objectName+"/upload.txt" {
-				t.Errorf("Test %s: Failed to stop post policy handler from writing to minioMetaBucket", instanceType)
+				t.Errorf("Test %s: Failed to stop post policy handler from writing to kypelloMetaBucket", instanceType)
 			}
 		}
 	}
@@ -186,7 +186,7 @@ func TestPostPolicyBucketHandler(t *testing.T) {
 
 // testPostPolicyBucketHandler - Tests validate post policy handler uploading objects.
 func testPostPolicyBucketHandler(obj ObjectLayer, instanceType string, t TestErrHandler) {
-	if err := newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err := newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatalf("Initializing config.json failed")
 	}
 
@@ -513,7 +513,7 @@ func TestPostPolicyBucketHandlerRedirect(t *testing.T) {
 
 // testPostPolicyBucketHandlerRedirect tests POST Object when success_action_redirect is specified
 func testPostPolicyBucketHandlerRedirect(obj ObjectLayer, instanceType string, t TestErrHandler) {
-	if err := newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err := newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatalf("Initializing config.json failed")
 	}
 

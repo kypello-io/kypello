@@ -1,6 +1,6 @@
 # MinIO Community Helm Chart
 
-[![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![license](https://img.shields.io/badge/license-AGPL%20V3-blue)](https://github.com/minio/minio/blob/master/LICENSE)
+[![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![license](https://img.shields.io/badge/license-AGPL%20V3-blue)](https://github.com/kypello-io/kypello/blob/master/LICENSE)
 
 MinIO is a High Performance Object Storage released under GNU Affero General Public License v3.0. It is API compatible with Amazon S3 cloud storage service. Use MinIO to build high performance infrastructure for machine learning, analytics and application data workloads.
 
@@ -162,7 +162,7 @@ helm install --set tls.enabled=true,tls.certSecret=tls-ssl-minio minio/minio
 
 ### Installing certificates from third party CAs
 
-MinIO can connect to other servers, including MinIO nodes or other server types such as NATs and Redis. If these servers use certificates that were not registered with a known CA, add trust for these certificates to MinIO Server by bundling these certificates into a Kubernetes secret and providing it to Helm via the `trustedCertsSecret` value. If `.Values.tls.enabled` is `true` and you're installing certificates for third party CAs, remember to include MinIO's own certificate with key `public.crt`, if it also needs to be trusted.
+MinIO can connect to other servers, including MinIO nodes or other server types such as NATs and Redis. If these servers use certificates that were not registered with a known CA, add trust for these certificates to Kypello Server by bundling these certificates into a Kubernetes secret and providing it to Helm via the `trustedCertsSecret` value. If `.Values.tls.enabled` is `true` and you're installing certificates for third party CAs, remember to include MinIO's own certificate with key `public.crt`, if it also needs to be trusted.
 
 For instance, given that TLS is enabled and you need to add trust for MinIO's own CA and for the CA of a Keycloak server, a Kubernetes secret can be created from the certificate files using `kubectl`:
 
@@ -183,7 +183,7 @@ trustedCertsSecret: "minio-trusted-certs"
 
 or
 
---set trustedCertsSecret=minio-trusted-certs
+--set trustedCertsSecret=kypello-trusted-certs
 ```
 
 ### Create buckets after install

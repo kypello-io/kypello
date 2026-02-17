@@ -24,8 +24,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/logger"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -34,12 +34,12 @@ type collectorPath string
 
 // metricPrefix converts a collector path to a metric name prefix. The path is
 // converted to snake-case (by replaced '/' and '-' with '_') and prefixed with
-// `minio_`.
+// `kypello_`.
 func (cp collectorPath) metricPrefix() string {
 	s := strings.TrimPrefix(string(cp), SlashSeparator)
 	s = strings.ReplaceAll(s, SlashSeparator, "_")
 	s = strings.ReplaceAll(s, "-", "_")
-	return "minio_" + s
+	return "kypello_" + s
 }
 
 // isDescendantOf returns true if it is a descendant of (or the same as)

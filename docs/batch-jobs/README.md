@@ -28,7 +28,7 @@ replicate:
   apiVersion: v1
   # source of the objects to be replicated
   source:
-	type: TYPE # valid values are "minio"
+	type: TYPE # valid values are "kypello"
 	bucket: BUCKET
 	prefix: PREFIX
 	# NOTE: if source is remote then target must be "local"
@@ -40,7 +40,7 @@ replicate:
 
   # target where the objects must be replicated
   target:
-	type: TYPE # valid values are "minio"
+	type: TYPE # valid values are "kypello"
 	bucket: BUCKET
 	prefix: PREFIX
 	# NOTE: if target is remote then source must be "local"
@@ -121,19 +121,19 @@ Successfully start 'replicate' job `E24HH4nNMcgY5taynaPfxu` on '2022-09-26 17:19
 ```
 mc batch list alias/
 ID                      TYPE            USER            STARTED
-E24HH4nNMcgY5taynaPfxu  replicate       minioadmin      1 minute ago
+E24HH4nNMcgY5taynaPfxu  replicate       kypelloadmin      1 minute ago
 ```
 
 ### List all 'replicate' batch jobs
 ```
 mc batch list alias/ --type replicate
 ID                      TYPE            USER            STARTED
-E24HH4nNMcgY5taynaPfxu  replicate       minioadmin      1 minute ago
+E24HH4nNMcgY5taynaPfxu  replicate       kypelloadmin      1 minute ago
 ```
 
 ### Real-time 'status' for a batch job
 ```
-mc batch status myminio/ E24HH4nNMcgY5taynaPfxu
+mc batch status mykypello/ E24HH4nNMcgY5taynaPfxu
 ●∙∙
 Objects:        28766
 Versions:       28766
@@ -145,7 +145,7 @@ CurrObjName:    share/doc/xml-core/examples/foo.xmlcatalogs
 
 ### 'describe' the batch job yaml.
 ```
-mc batch describe myminio/ E24HH4nNMcgY5taynaPfxu
+mc batch describe mykypello/ E24HH4nNMcgY5taynaPfxu
 replicate:
   apiVersion: v1
 ...

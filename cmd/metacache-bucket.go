@@ -26,7 +26,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/pkg/v3/console"
 )
 
@@ -60,7 +60,7 @@ func newBucketMetacache(bucket string, cleanup bool) *bucketMetacache {
 			ez, ok := objAPI.(deleteAllStorager)
 			if ok {
 				ctx := context.Background()
-				ez.deleteAll(ctx, minioMetaBucket, metacachePrefixForID(bucket, slashSeparator))
+				ez.deleteAll(ctx, kypelloMetaBucket, metacachePrefixForID(bucket, slashSeparator))
 			}
 		}
 	}
@@ -229,7 +229,7 @@ func (b *bucketMetacache) deleteAll() {
 
 	b.updated = true
 	// Delete all.
-	ez.deleteAll(ctx, minioMetaBucket, metacachePrefixForID(b.bucket, slashSeparator))
+	ez.deleteAll(ctx, kypelloMetaBucket, metacachePrefixForID(b.bucket, slashSeparator))
 	b.caches = make(map[string]metacache, 10)
 	b.cachesRoot = make(map[string][]string, 10)
 }

@@ -29,17 +29,17 @@ import (
 	"path"
 	"time"
 
+	bucketsse "github.com/kypello-io/kypello/internal/bucket/encryption"
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
+	objectlock "github.com/kypello-io/kypello/internal/bucket/object/lock"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/bucket/versioning"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/event"
+	"github.com/kypello-io/kypello/internal/kms"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	bucketsse "github.com/minio/minio/internal/bucket/encryption"
-	"github.com/minio/minio/internal/bucket/lifecycle"
-	objectlock "github.com/minio/minio/internal/bucket/object/lock"
-	"github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/bucket/versioning"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/event"
-	"github.com/minio/minio/internal/kms"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/policy"
 	"github.com/minio/sio"
 )
@@ -387,7 +387,7 @@ func (b *BucketMetadata) getAllLegacyConfigs(ctx context.Context, objectAPI Obje
 		if err != nil {
 			if _, ok := err.(ObjectExistsAsDirectory); ok {
 				// in FS mode it possible that we have actual
-				// files in this folder with `.minio.sys/buckets/bucket/configFile`
+				// files in this folder with `.kypello.sys/buckets/bucket/configFile`
 				continue
 			}
 			if errors.Is(err, errConfigNotFound) {

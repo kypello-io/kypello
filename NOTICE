@@ -7,3 +7,13 @@ The MinIO project contains unmodified/modified subcomponents too with
 separate copyright notices and license terms. Your use of the source
 code for these subcomponents is subject to the terms and conditions
 of GNU Affero General Public License 3.0.
+
+========================================================================
+
+Kypello Project, (C) 2025 Kypello Community
+
+This product is a derivative work based on MinIO.
+Modifications and new components are licensed under the GNU Affero
+General Public License 3.0.
+
+Kypello is not affiliated with, endorsed by, or sponsored by MinIO, Inc.

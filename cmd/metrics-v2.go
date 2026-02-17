@@ -30,14 +30,14 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
+	"github.com/kypello-io/kypello/internal/cachevalue"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/mcontext"
+	"github.com/kypello-io/kypello/internal/rest"
 	"github.com/minio/kms-go/kes"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/bucket/lifecycle"
-	"github.com/minio/minio/internal/cachevalue"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/mcontext"
-	"github.com/minio/minio/internal/rest"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/expfmt"
@@ -136,7 +136,7 @@ const (
 	healMetricNamespace      MetricNamespace = "minio_heal"
 	interNodeMetricNamespace MetricNamespace = "minio_inter_node"
 	nodeMetricNamespace      MetricNamespace = "minio_node"
-	minioMetricNamespace     MetricNamespace = "minio"
+	minioMetricNamespace     MetricNamespace = "kypello"
 	s3MetricNamespace        MetricNamespace = "minio_s3"
 )
 
@@ -1557,7 +1557,7 @@ func getMinioFDOpenMD() MetricDescription {
 		Namespace: nodeMetricNamespace,
 		Subsystem: fileDescriptorSubsystem,
 		Name:      openTotal,
-		Help:      "Total number of open file descriptors by the MinIO Server process",
+		Help:      "Total number of open file descriptors by the Kypello Server process",
 		Type:      gaugeMetric,
 	}
 }
@@ -1567,7 +1567,7 @@ func getMinioFDLimitMD() MetricDescription {
 		Namespace: nodeMetricNamespace,
 		Subsystem: fileDescriptorSubsystem,
 		Name:      limitTotal,
-		Help:      "Limit on total number of open file descriptors for the MinIO Server process",
+		Help:      "Limit on total number of open file descriptors for the Kypello Server process",
 		Type:      gaugeMetric,
 	}
 }

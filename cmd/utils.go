@@ -45,22 +45,22 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/dustin/go-humanize"
 	"github.com/felixge/fgprof"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/config/api"
+	xtls "github.com/kypello-io/kypello/internal/config/identity/tls"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/handlers"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	ioutilx "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/logger/message/audit"
+	"github.com/kypello-io/kypello/internal/rest"
 	"github.com/minio/madmin-go/v3"
 	xaudit "github.com/minio/madmin-go/v3/logger/audit"
 	"github.com/minio/minio-go/v7"
 	miniogopolicy "github.com/minio/minio-go/v7/pkg/policy"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/config/api"
-	xtls "github.com/minio/minio/internal/config/identity/tls"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/handlers"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
-	ioutilx "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/logger/message/audit"
-	"github.com/minio/minio/internal/rest"
 	"github.com/minio/mux"
 	"github.com/minio/pkg/v3/certs"
 	"github.com/minio/pkg/v3/env"
@@ -204,11 +204,11 @@ func request2BucketObjectName(r *http.Request) (bucketName, objectName string) {
 func path2BucketObjectWithBasePath(basePath, path string) (bucket, prefix string) {
 	path = strings.TrimPrefix(path, basePath)
 	path = strings.TrimPrefix(path, SlashSeparator)
-	m := strings.Index(path, SlashSeparator)
-	if m < 0 {
+	bucket, prefix, found := strings.Cut(path, SlashSeparator)
+	if !found {
 		return path, ""
 	}
-	return path[:m], path[m+len(SlashSeparator):]
+	return bucket, prefix
 }
 
 func path2BucketObject(s string) (bucket, prefix string) {
@@ -872,13 +872,13 @@ func lcp(strs []string, pre bool) string {
 func getMinioMode() string {
 	switch {
 	case globalIsDistErasure:
-		return globalMinioModeDistErasure
+		return globalKypelloModeDistErasure
 	case globalIsErasure:
-		return globalMinioModeErasure
+		return globalKypelloModeErasure
 	case globalIsErasureSD:
-		return globalMinioModeErasureSD
+		return globalKypelloModeErasureSD
 	default:
-		return globalMinioModeFS
+		return globalKypelloModeFS
 	}
 }
 
@@ -1144,10 +1144,6 @@ func unwrapAll(err error) error {
 func stringsHasPrefixFold(s, prefix string) bool {
 	// Test match with case first.
 	return len(s) >= len(prefix) && (s[0:len(prefix)] == prefix || strings.EqualFold(s[0:len(prefix)], prefix))
-}
-
-func ptr[T any](a T) *T {
-	return &a
 }
 
 // sleepContext sleeps for d duration or until ctx is done.

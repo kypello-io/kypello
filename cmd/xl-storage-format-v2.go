@@ -30,12 +30,11 @@ import (
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/google/uuid"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/minio/minio/internal/bpool"
-	"github.com/minio/minio/internal/bucket/lifecycle"
-	"github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/config/storageclass"
-	xhttp "github.com/minio/minio/internal/http"
+	"github.com/kypello-io/kypello/internal/bpool"
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 	"github.com/tinylib/msgp/msgp"
 )
 
@@ -109,7 +108,6 @@ const (
 	invalidVersionType VersionType = 0
 	ObjectType         VersionType = 1
 	DeleteType         VersionType = 2
-	LegacyType         VersionType = 3
 	lastVersionType    VersionType = 4
 )
 
@@ -143,6 +141,15 @@ const (
 
 func (e ChecksumAlgo) valid() bool {
 	return e > invalidChecksumAlgo && e < lastChecksumAlgo
+}
+
+// StatInfo is a stat info
+type StatInfo struct {
+	Size    int64     `json:"size"`    // Size of the object `xl.meta`.
+	ModTime time.Time `json:"modTime"` // ModTime of the object `xl.meta`.
+	Name    string    `json:"name"`
+	Dir     bool      `json:"dir"`
+	Mode    uint32    `json:"mode"`
 }
 
 // xlMetaV2DeleteMarker defines the data struct for the delete marker journal type
@@ -180,7 +187,6 @@ type xlMetaV2Object struct {
 // to verify which journal type first before accessing rest of the fields.
 type xlMetaV2Version struct {
 	Type             VersionType           `json:"Type" msg:"Type"`
-	ObjectV1         *xlMetaV1Object       `json:"V1Obj,omitempty" msg:"V1Obj,omitempty"`
 	ObjectV2         *xlMetaV2Object       `json:"V2Obj,omitempty" msg:"V2Obj,omitempty"`
 	DeleteMarker     *xlMetaV2DeleteMarker `json:"DelObj,omitempty" msg:"DelObj,omitempty"`
 	WrittenByVersion uint64                `msg:"v"` // Tracks written by MinIO version
@@ -322,14 +328,15 @@ func (x xlMetaV2VersionHeader) sortsBefore(o xlMetaV2VersionHeader) bool {
 
 func (j xlMetaV2Version) getDataDir() string {
 	if j.Valid() {
-		switch j.Type {
-		case LegacyType:
-			return j.ObjectV1.DataDir
-		case ObjectType:
-			return uuid.UUID(j.ObjectV2.DataDir).String()
-		}
+		return uuid.UUID(j.ObjectV2.DataDir).String()
 	}
 	return ""
+}
+
+// Verifies if the backend format metadata is sane by validating
+// the ErasureInfo, i.e. data and parity blocks.
+func isXLMetaErasureInfoValid(data, parity int) bool {
+	return (data >= parity) && (data > 0) && (parity >= 0)
 }
 
 // Valid xl meta xlMetaV2Version is valid
@@ -338,9 +345,6 @@ func (j xlMetaV2Version) Valid() bool {
 		return false
 	}
 	switch j.Type {
-	case LegacyType:
-		return j.ObjectV1 != nil &&
-			j.ObjectV1.valid()
 	case ObjectType:
 		return j.ObjectV2 != nil &&
 			j.ObjectV2.ErasureAlgorithm.valid() &&
@@ -409,8 +413,6 @@ func (j xlMetaV2Version) getSignature() [4]byte {
 		return j.ObjectV2.Signature()
 	case DeleteType:
 		return j.DeleteMarker.Signature()
-	case LegacyType:
-		return j.ObjectV1.Signature()
 	}
 	return signatureErr
 }
@@ -422,8 +424,6 @@ func (j xlMetaV2Version) getModTime() time.Time {
 		return time.Unix(0, j.ObjectV2.ModTime)
 	case DeleteType:
 		return time.Unix(0, j.DeleteMarker.ModTime)
-	case LegacyType:
-		return j.ObjectV1.Stat.ModTime
 	}
 	return time.Time{}
 }
@@ -435,8 +435,6 @@ func (j xlMetaV2Version) getVersionID() [16]byte {
 		return j.ObjectV2.VersionID
 	case DeleteType:
 		return j.DeleteMarker.VersionID
-	case LegacyType:
-		return [16]byte{}
 	}
 	return [16]byte{}
 }
@@ -451,8 +449,6 @@ func (j *xlMetaV2Version) ToFileInfo(volume, path string, allParts bool) (fi Fil
 		fi, err = j.ObjectV2.ToFileInfo(volume, path, allParts)
 	case DeleteType:
 		fi, err = j.DeleteMarker.ToFileInfo(volume, path)
-	case LegacyType:
-		fi, err = j.ObjectV1.ToFileInfo(volume, path)
 	default:
 		return fi, errFileNotFound
 	}
@@ -597,6 +593,19 @@ func (j *xlMetaV2Object) Signature() [4]byte {
 	var tmp [4]byte
 	binary.LittleEndian.PutUint32(tmp[:], uint32(crc^(crc>>32)))
 	return tmp
+}
+
+// ObjectPartInfo Info of each part kept in the multipart metadata
+// file after CompleteMultipartUpload() is called.
+type ObjectPartInfo struct {
+	ETag       string            `json:"etag,omitempty" msg:"e"`
+	Number     int               `json:"number" msg:"n"`
+	Size       int64             `json:"size" msg:"s"`        // Size of the part on the disk.
+	ActualSize int64             `json:"actualSize" msg:"as"` // Original size of the part without compression or encryption bytes.
+	ModTime    time.Time         `json:"modTime" msg:"mt"`    // Date and time at which the part was uploaded.
+	Index      []byte            `json:"index,omitempty" msg:"i,omitempty"`
+	Checksums  map[string]string `json:"crc,omitempty" msg:"crc,omitempty"`   // Content Checksums
+	Error      string            `json:"error,omitempty" msg:"err,omitempty"` // only set while reading part meta from drive.
 }
 
 func (j xlMetaV2Object) ToFileInfo(volume, path string, allParts bool) (FileInfo, error) {
@@ -917,17 +926,7 @@ func (x *xlMetaV2) LoadOrConvert(buf []byte) error {
 		return x.Load(buf)
 	}
 
-	xlMeta := &xlMetaV1Object{}
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	if err := json.Unmarshal(buf, xlMeta); err != nil {
-		return errFileCorrupt
-	}
-	if len(x.versions) > 0 {
-		x.versions = x.versions[:0]
-	}
-	x.data = nil
-	x.metaV = xlMetaVersion
-	return x.AddLegacy(xlMeta)
+	return fmt.Errorf("unknown xl meta format: %s", string(buf))
 }
 
 // Load all versions of the stored data.
@@ -965,7 +964,7 @@ func (x *xlMetaV2) loadIndexed(buf xlMetaBuf, data xlMetaInlineData) error {
 		}
 		ver.meta = meta
 
-		// Fix inconsistent compression index due to https://github.com/minio/minio/pull/20575
+		// Fix inconsistent compression index due to https://github.com/kypello-io/kypello/pull/20575
 		// First search marshaled content for encoded values.
 		// We have bumped metaV to make this check cheaper.
 		if metaV < 3 && ver.header.Type == ObjectType && bytes.Contains(meta, []byte("\xa7PartIdx")) &&
@@ -1303,22 +1302,14 @@ func (x *xlMetaV2) getDataDirs() ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		switch ver.header.Type {
-		case ObjectType:
-			if obj.ObjectV2 == nil {
-				return nil, errors.New("obj.ObjectV2 unexpectedly nil")
-			}
-			dds = append(dds, uuid.UUID(obj.ObjectV2.DataDir).String())
-			if obj.ObjectV2.VersionID == [16]byte{} {
-				dds = append(dds, nullVersionID)
-			} else {
-				dds = append(dds, uuid.UUID(obj.ObjectV2.VersionID).String())
-			}
-		case LegacyType:
-			if obj.ObjectV1 == nil {
-				return nil, errors.New("obj.ObjectV1 unexpectedly nil")
-			}
-			dds = append(dds, obj.ObjectV1.DataDir)
+		if obj.ObjectV2 == nil {
+			return nil, errors.New("obj.ObjectV2 unexpectedly nil")
+		}
+		dds = append(dds, uuid.UUID(obj.ObjectV2.DataDir).String())
+		if obj.ObjectV2.VersionID == [16]byte{} {
+			dds = append(dds, nullVersionID)
+		} else {
+			dds = append(dds, uuid.UUID(obj.ObjectV2.VersionID).String())
 		}
 	}
 	return dds, nil
@@ -1416,16 +1407,6 @@ func (x *xlMetaV2) DeleteVersion(fi FileInfo) (string, error) {
 			continue
 		}
 		switch ver.header.Type {
-		case LegacyType:
-			ver, err := x.getIdx(i)
-			if err != nil {
-				return "", err
-			}
-			x.versions = append(x.versions[:i], x.versions[i+1:]...)
-			if fi.Deleted {
-				err = x.addVersion(ventry)
-			}
-			return ver.ObjectV1.DataDir, err
 		case DeleteType:
 			if updateVersion {
 				ver, err := x.getIdx(i)
@@ -1559,29 +1540,22 @@ func (x *xlMetaV2) UpdateObjectVersion(fi FileInfo) error {
 	}
 
 	for i, version := range x.versions {
-		switch version.header.Type {
-		case LegacyType, DeleteType:
-			if version.header.VersionID == uv {
-				return errMethodNotAllowed
+		if version.header.VersionID == uv {
+			ver, err := x.getIdx(i)
+			if err != nil {
+				return err
 			}
-		case ObjectType:
-			if version.header.VersionID == uv {
-				ver, err := x.getIdx(i)
-				if err != nil {
-					return err
+			for k, v := range fi.Metadata {
+				if len(k) > len(ReservedMetadataPrefixLower) && strings.EqualFold(k[:len(ReservedMetadataPrefixLower)], ReservedMetadataPrefixLower) {
+					ver.ObjectV2.MetaSys[k] = []byte(v)
+				} else {
+					ver.ObjectV2.MetaUser[k] = v
 				}
-				for k, v := range fi.Metadata {
-					if len(k) > len(ReservedMetadataPrefixLower) && strings.EqualFold(k[:len(ReservedMetadataPrefixLower)], ReservedMetadataPrefixLower) {
-						ver.ObjectV2.MetaSys[k] = []byte(v)
-					} else {
-						ver.ObjectV2.MetaUser[k] = v
-					}
-				}
-				if !fi.ModTime.IsZero() {
-					ver.ObjectV2.ModTime = fi.ModTime.UnixNano()
-				}
-				return x.setIdx(i, *ver)
 			}
+			if !fi.ModTime.IsZero() {
+				ver.ObjectV2.ModTime = fi.ModTime.UnixNano()
+			}
+			return x.setIdx(i, *ver)
 		}
 	}
 
@@ -1682,9 +1656,9 @@ func (x *xlMetaV2) AddVersion(fi FileInfo) error {
 			if len(k) > len(ReservedMetadataPrefixLower) && strings.EqualFold(k[:len(ReservedMetadataPrefixLower)], ReservedMetadataPrefixLower) {
 				// Skip tierFVID, tierFVMarker keys; it's used
 				// only for creating free-version.
-				// Also skip xMinIOHealing, xMinIODataMov as used only in RenameData
+				// Also skip xKypelloHealing, xMinIODataMov as used only in RenameData
 				switch k {
-				case tierFVIDKey, tierFVMarkerKey, xMinIOHealing, xMinIODataMov:
+				case tierFVIDKey, tierFVMarkerKey, xKypelloHealing, xMinIODataMov:
 					continue
 				}
 
@@ -1726,11 +1700,6 @@ func (x *xlMetaV2) AddVersion(fi FileInfo) error {
 			continue
 		}
 		switch x.versions[i].header.Type {
-		case LegacyType:
-			// This would convert legacy type into new ObjectType
-			// this means that we are basically purging the `null`
-			// version of the object.
-			return x.setIdx(i, ventry)
 		case ObjectType:
 			return x.setIdx(i, ventry)
 		case DeleteType:
@@ -1785,17 +1754,6 @@ func (x *xlMetaV2) SharedDataDirCountStr(versionID, dataDir string) int {
 		return 0
 	}
 	return x.SharedDataDirCount(uv, ddir)
-}
-
-// AddLegacy adds a legacy version, is only called when no prior
-// versions exist, safe to use it by only one function in xl-storage(RenameData)
-func (x *xlMetaV2) AddLegacy(m *xlMetaV1Object) error {
-	if !m.valid() {
-		return errFileCorrupt
-	}
-	m.VersionID = nullVersionID
-
-	return x.addVersion(xlMetaV2Version{ObjectV1: m, Type: LegacyType, WrittenByVersion: globalVersionUnix})
 }
 
 // ToFileInfo converts xlMetaV2 into a common FileInfo datastructure
@@ -2265,4 +2223,58 @@ func (x xlMetaBuf) AllHidden(topDeleteMarker bool) bool {
 		return nil
 	})
 	return hidden
+}
+
+// unmarshalV unmarshals with a specific header version.
+func (x *xlMetaV2VersionHeader) unmarshalV(v uint8, bts []byte) (o []byte, err error) {
+	if v == xlHeaderVersion {
+		return x.UnmarshalMsg(bts)
+	}
+
+	return bts, fmt.Errorf("unknown xlHeaderVersion: %d", v)
+}
+
+// unmarshalV unmarshals with a specific metadata version.
+func (j *xlMetaV2Version) unmarshalV(v uint8, bts []byte) (o []byte, err error) {
+	if v > xlMetaVersion {
+		return bts, fmt.Errorf("unknown xlMetaVersion: %d", v)
+	}
+
+	// Clear omitempty fields:
+	if j.ObjectV2 != nil && len(j.ObjectV2.PartIndices) > 0 {
+		j.ObjectV2.PartIndices = j.ObjectV2.PartIndices[:0]
+	}
+	o, err = j.UnmarshalMsg(bts)
+
+	// Fix inconsistent X-Minio-internal-replication-timestamp by converting to UTC.
+	// Fixed in version 2 or later
+	if err == nil && j.Type == DeleteType && v < 2 {
+		if val, ok := j.DeleteMarker.MetaSys[ReservedMetadataPrefixLower+ReplicationTimestamp]; ok {
+			tm, err := time.Parse(time.RFC3339Nano, string(val))
+			if err == nil {
+				j.DeleteMarker.MetaSys[ReservedMetadataPrefixLower+ReplicationTimestamp] = []byte(tm.UTC().Format(time.RFC3339Nano))
+			}
+		}
+		if val, ok := j.DeleteMarker.MetaSys[ReservedMetadataPrefixLower+ReplicaTimestamp]; ok {
+			tm, err := time.Parse(time.RFC3339Nano, string(val))
+			if err == nil {
+				j.DeleteMarker.MetaSys[ReservedMetadataPrefixLower+ReplicaTimestamp] = []byte(tm.UTC().Format(time.RFC3339Nano))
+			}
+		}
+	}
+
+	// Clean up PartEtags on v1
+	if j.ObjectV2 != nil {
+		allEmpty := true
+		for _, tag := range j.ObjectV2.PartETags {
+			if len(tag) != 0 {
+				allEmpty = false
+				break
+			}
+		}
+		if allEmpty {
+			j.ObjectV2.PartETags = nil
+		}
+	}
+	return o, err
 }

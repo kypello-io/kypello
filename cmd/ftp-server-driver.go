@@ -31,11 +31,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/auth"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/minio/minio/internal/auth"
-	xioutil "github.com/minio/minio/internal/ioutil"
 	"github.com/minio/pkg/v3/mimedb"
 	ftp "goftp.io/server/v2"
 )
@@ -49,7 +49,7 @@ type ftpDriver struct {
 
 // NewFTPDriver implements ftp.Driver interface
 func NewFTPDriver() ftp.Driver {
-	return &ftpDriver{endpoint: fmt.Sprintf("127.0.0.1:%s", globalMinioPort)}
+	return &ftpDriver{endpoint: fmt.Sprintf("127.0.0.1:%s", globalKypelloPort)}
 }
 
 func buildMinioPath(p string) string {

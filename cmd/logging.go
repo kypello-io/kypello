@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/minio/minio/internal/grid"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/grid"
+	"github.com/kypello-io/kypello/internal/logger"
 )
 
 func proxyLogIf(ctx context.Context, err error, errKind ...any) {

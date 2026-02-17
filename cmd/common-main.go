@@ -41,6 +41,11 @@ import (
 	fcolor "github.com/fatih/color"
 	"github.com/go-openapi/loads"
 	"github.com/inconshreveable/mousetrap"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/color"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/kms"
+	"github.com/kypello-io/kypello/internal/logger"
 	dns2 "github.com/miekg/dns"
 	"github.com/minio/cli"
 	consoleapi "github.com/minio/console/api"
@@ -51,11 +56,6 @@ import (
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/color"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/kms"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/certs"
 	"github.com/minio/pkg/v3/console"
 	"github.com/minio/pkg/v3/env"
@@ -120,12 +120,12 @@ const consolePrefix = "CONSOLE_"
 func minioConfigToConsoleFeatures() {
 	os.Setenv("CONSOLE_PBKDF_SALT", globalDeploymentID())
 	os.Setenv("CONSOLE_PBKDF_PASSPHRASE", globalDeploymentID())
-	if globalMinioEndpoint != "" {
-		os.Setenv("CONSOLE_MINIO_SERVER", globalMinioEndpoint)
+	if globalKypelloEndpoint != "" {
+		os.Setenv("CONSOLE_MINIO_SERVER", globalKypelloEndpoint)
 	} else {
 		// Explicitly set 127.0.0.1 so Console will automatically bypass TLS verification to the local S3 API.
 		// This will save users from providing a certificate with IP or FQDN SAN that points to the local host.
-		os.Setenv("CONSOLE_MINIO_SERVER", fmt.Sprintf("%s://127.0.0.1:%s", getURLScheme(globalIsTLS), globalMinioPort))
+		os.Setenv("CONSOLE_MINIO_SERVER", fmt.Sprintf("%s://127.0.0.1:%s", getURLScheme(globalIsTLS), globalKypelloPort))
 	}
 	if value := env.Get(config.EnvMinIOLogQueryURL, ""); value != "" {
 		os.Setenv("CONSOLE_LOG_QUERY_URL", value)
@@ -275,20 +275,20 @@ func initConsoleServer() (*consoleapi.Server, error) {
 	// register all APIs
 	server.ConfigureAPI()
 
-	consolePort, _ := strconv.Atoi(globalMinioConsolePort)
+	consolePort, _ := strconv.Atoi(globalKypelloConsolePort)
 
-	server.Host = globalMinioConsoleHost
+	server.Host = globalKypelloConsoleHost
 	server.Port = consolePort
-	consoleapi.Port = globalMinioConsolePort
-	consoleapi.Hostname = globalMinioConsoleHost
+	consoleapi.Port = globalKypelloConsolePort
+	consoleapi.Hostname = globalKypelloConsoleHost
 
 	if globalIsTLS {
 		// If TLS certificates are provided enforce the HTTPS.
 		server.EnabledListeners = []string{"https"}
 		server.TLSPort = consolePort
 		// Need to store tls-port, tls-host un config variables so secure.middleware can read from there
-		consoleapi.TLSPort = globalMinioConsolePort
-		consoleapi.Hostname = globalMinioConsoleHost
+		consoleapi.TLSPort = globalKypelloConsolePort
+		consoleapi.Hostname = globalKypelloConsoleHost
 	}
 
 	return server, nil
@@ -364,7 +364,7 @@ func buildServerCtxt(ctx *cli.Context, ctxt *serverCtxt) (err error) {
 	ctxt.Anonymous = ctx.IsSet("anonymous") || ctx.GlobalIsSet("anonymous")
 	// Fetch address option
 	ctxt.Addr = ctx.GlobalString("address")
-	if ctxt.Addr == "" || ctxt.Addr == ":"+GlobalMinioDefaultPort {
+	if ctxt.Addr == "" || ctxt.Addr == ":"+GlobalKypelloDefaultPort {
 		ctxt.Addr = ctx.String("address")
 	}
 
@@ -485,25 +485,25 @@ func handleCommonArgs(ctxt serverCtxt) {
 		}
 	}
 
-	globalMinioHost, globalMinioPort = mustSplitHostPort(addr)
-	if globalMinioPort == "0" {
+	globalKypelloHost, globalKypelloPort = mustSplitHostPort(addr)
+	if globalKypelloPort == "0" {
 		p, err := xnet.GetFreePort()
 		if err != nil {
 			logger.FatalIf(err, "Unable to get free port for S3 API on the host")
 		}
-		globalMinioPort = p.String()
+		globalKypelloPort = p.String()
 		globalDynamicAPIPort = true
 	}
 
 	if globalBrowserEnabled {
-		globalMinioConsoleHost, globalMinioConsolePort = mustSplitHostPort(consoleAddr)
+		globalKypelloConsoleHost, globalKypelloConsolePort = mustSplitHostPort(consoleAddr)
 	}
 
-	if globalMinioPort == globalMinioConsolePort {
+	if globalKypelloPort == globalKypelloConsolePort {
 		logger.FatalIf(errors.New("--console-address port cannot be same as --address port"), "Unable to start the server")
 	}
 
-	globalMinioAddr = addr
+	globalKypelloAddr = addr
 
 	// Set all config, certs and CAs directories.
 	var err error
@@ -738,8 +738,8 @@ func serverHandleEnvVars() {
 			logger.Fatal(err, "Invalid MINIO_SERVER_URL value is environment variable")
 		}
 		u.Path = "" // remove any path component such as `/`
-		globalMinioEndpoint = u.String()
-		globalMinioEndpointURL = u
+		globalKypelloEndpoint = u.String()
+		globalKypelloEndpointURL = u
 	}
 
 	globalFSOSync, err = config.ParseBool(env.Get(config.EnvFSOSync, config.EnableOff))

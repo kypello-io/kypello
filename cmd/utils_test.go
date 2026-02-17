@@ -389,12 +389,12 @@ func TestGetMinioMode(t *testing.T) {
 		}
 	}
 	globalIsDistErasure = true
-	testMinioMode(globalMinioModeDistErasure)
+	testMinioMode(globalKypelloModeDistErasure)
 
 	globalIsDistErasure = false
 	globalIsErasure = true
-	testMinioMode(globalMinioModeErasure)
+	testMinioMode(globalKypelloModeErasure)
 
 	globalIsDistErasure, globalIsErasure = false, false
-	testMinioMode(globalMinioModeFS)
+	testMinioMode(globalKypelloModeFS)
 }

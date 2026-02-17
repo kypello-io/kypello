@@ -22,7 +22,7 @@ import "time"
 const (
 	peerRESTVersion       = "v39" // add more flags to speedtest API
 	peerRESTVersionPrefix = SlashSeparator + peerRESTVersion
-	peerRESTPrefix        = minioReservedBucketPath + "/peer"
+	peerRESTPrefix        = kypelloReservedBucketPath + "/peer"
 	peerRESTPath          = peerRESTPrefix + peerRESTVersionPrefix
 )
 

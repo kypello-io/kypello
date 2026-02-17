@@ -62,7 +62,7 @@ func TestParseBucketSSEConfig(t *testing.T) {
 			{
 				DefaultEncryptionAction: EncryptionAction{
 					Algorithm:   AWSKms,
-					MasterKeyID: "arn:aws:kms:my-minio-key",
+					MasterKeyID: "arn:aws:kms:my-kypello-key",
 				},
 			},
 		},
@@ -84,11 +84,11 @@ func TestParseBucketSSEConfig(t *testing.T) {
 		},
 		// 2. Valid XML SSE-KMS
 		{
-			inputXML:       `<ServerSideEncryptionConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>aws:kms</SSEAlgorithm><KMSMasterKeyID>arn:aws:kms:my-minio-key</KMSMasterKeyID></ApplyServerSideEncryptionByDefault></Rule></ServerSideEncryptionConfiguration>`,
+			inputXML:       `<ServerSideEncryptionConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>aws:kms</SSEAlgorithm><KMSMasterKeyID>arn:aws:kms:my-kypello-key</KMSMasterKeyID></ApplyServerSideEncryptionByDefault></Rule></ServerSideEncryptionConfiguration>`,
 			expectedErr:    nil,
 			shouldPass:     true,
 			expectedConfig: actualKMSConfig,
-			keyID:          "my-minio-key",
+			keyID:          "my-kypello-key",
 		},
 		// 3. Invalid - more than one rule
 		{
@@ -123,7 +123,7 @@ func TestParseBucketSSEConfig(t *testing.T) {
 		},
 		// 8. Space characters in MasterKeyID
 		{
-			inputXML:    `<ServerSideEncryptionConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>aws:kms</SSEAlgorithm><KMSMasterKeyID> arn:aws:kms:my-minio-key </KMSMasterKeyID></ApplyServerSideEncryptionByDefault></Rule></ServerSideEncryptionConfiguration>`,
+			inputXML:    `<ServerSideEncryptionConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Rule><ApplyServerSideEncryptionByDefault><SSEAlgorithm>aws:kms</SSEAlgorithm><KMSMasterKeyID> arn:aws:kms:my-kypello-key </KMSMasterKeyID></ApplyServerSideEncryptionByDefault></Rule></ServerSideEncryptionConfiguration>`,
 			expectedErr: errors.New("MasterKeyID contains unsupported characters"),
 			shouldPass:  false,
 		},

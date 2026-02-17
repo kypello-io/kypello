@@ -31,12 +31,12 @@ import (
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/config/identity/openid"
+	"github.com/kypello-io/kypello/internal/jwt"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/config/identity/openid"
-	"github.com/minio/minio/internal/jwt"
 	"github.com/minio/pkg/v3/env"
 	"github.com/minio/pkg/v3/policy"
 	"github.com/minio/pkg/v3/sync/errgroup"
@@ -46,7 +46,7 @@ import (
 
 const (
 	// IAM configuration directory.
-	iamConfigPrefix = minioConfigPrefix + "/iam"
+	iamConfigPrefix = kypelloConfigPrefix + "/iam"
 
 	// IAM users directory.
 	iamConfigUsersPrefix = iamConfigPrefix + "/users/"

@@ -38,7 +38,7 @@ sudo mount --bind /proc /mnt/export/${USER}/proc
 ### GNU/Linux
 
 ```sh
-sudo chroot --userspec username:group /mnt/export/${USER} /bin/minio --config-dir=/.minio server /data
+sudo chroot --userspec username:group /mnt/export/${USER} /bin/minio --config-dir=/.kypello server /data
 
 Endpoint:  http://192.168.1.92:9000  http://65.19.167.92:9000
 AccessKey: MVPSPBW4NP2CMV1W3TXD
@@ -52,7 +52,7 @@ Instance is now accessible on the host at port 9000, proceed to access the Web b
 ## Explore Further
 
 - [MinIO Erasure Code Overview](https://docs.min.io/community/minio-object-store/operations/concepts/erasure-coding.html)
-- [Use `mc` with MinIO Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html)
-- [Use `aws-cli` with MinIO Server](https://docs.min.io/community/minio-object-store/integrations/aws-cli-with-minio.html)
-- [Use `minio-go` SDK with MinIO Server](https://docs.min.io/community/minio-object-store/developers/go/minio-go.html)
+- [Use `mc` with Kypello Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html)
+- [Use `aws-cli` with Kypello Server](https://docs.min.io/community/minio-object-store/integrations/aws-cli-with-minio.html)
+- [Use `minio-go` SDK with Kypello Server](https://docs.min.io/community/minio-object-store/developers/go/minio-go.html)
 - [The MinIO documentation website](https://docs.min.io/community/minio-object-store/index.html)

@@ -55,7 +55,7 @@ XML error response for this API is similar to [AWS STS AssumeRole](https://docs.
 ## Sample `POST` Request
 
 ```
-http://minio:9000/?Action=AssumeRole&DurationSeconds=3600&Version=2011-06-15&Policy={"Version":"2012-10-17","Statement":[{"Sid":"Stmt1","Effect":"Allow","Action":"s3:*","Resource":"arn:aws:s3:::*"}]}&AUTHPARAMS
+http://kypello:9000/?Action=AssumeRole&DurationSeconds=3600&Version=2011-06-15&Policy={"Version":"2012-10-17","Statement":[{"Sid":"Stmt1","Effect":"Allow","Action":"s3:*","Resource":"arn:aws:s3:::*"}]}&AUTHPARAMS
 ```
 
 ## Sample Response
@@ -84,9 +84,9 @@ http://minio:9000/?Action=AssumeRole&DurationSeconds=3600&Version=2011-06-15&Pol
 ## Using AssumeRole API
 
 ```
-export MINIO_ROOT_USER=minio
-export MINIO_ROOT_PASSWORD=minio123
-minio server ~/test
+export MINIO_ROOT_USER=kypello
+export MINIO_ROOT_PASSWORD=kypello123
+kypello server ~/test
 ```
 
 Create new users following the multi-user guide [here](https://docs.min.io/community/minio-object-store/administration/identity-access-management.html)

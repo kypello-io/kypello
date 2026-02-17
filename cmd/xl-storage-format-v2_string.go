@@ -11,19 +11,27 @@ func _() {
 	_ = x[invalidVersionType-0]
 	_ = x[ObjectType-1]
 	_ = x[DeleteType-2]
-	_ = x[LegacyType-3]
 	_ = x[lastVersionType-4]
 }
 
-const _VersionType_name = "invalidVersionTypeObjectTypeDeleteTypeLegacyTypelastVersionType"
+const (
+	_VersionType_name_0 = "invalidVersionTypeObjectTypeDeleteType"
+	_VersionType_name_1 = "lastVersionType"
+)
 
-var _VersionType_index = [...]uint8{0, 18, 28, 38, 48, 63}
+var (
+	_VersionType_index_0 = [...]uint8{0, 18, 28, 38}
+)
 
 func (i VersionType) String() string {
-	if i >= VersionType(len(_VersionType_index)-1) {
+	switch {
+	case i <= 2:
+		return _VersionType_name_0[_VersionType_index_0[i]:_VersionType_index_0[i+1]]
+	case i == 4:
+		return _VersionType_name_1
+	default:
 		return "VersionType(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _VersionType_name[_VersionType_index[i]:_VersionType_index[i+1]]
 }
 func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
@@ -39,8 +47,9 @@ const _ErasureAlgo_name = "invalidErasureAlgoReedSolomonlastErasureAlgo"
 var _ErasureAlgo_index = [...]uint8{0, 18, 29, 44}
 
 func (i ErasureAlgo) String() string {
-	if i >= ErasureAlgo(len(_ErasureAlgo_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_ErasureAlgo_index)-1 {
 		return "ErasureAlgo(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _ErasureAlgo_name[_ErasureAlgo_index[i]:_ErasureAlgo_index[i+1]]
+	return _ErasureAlgo_name[_ErasureAlgo_index[idx]:_ErasureAlgo_index[idx+1]]
 }

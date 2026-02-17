@@ -266,8 +266,8 @@ FLAGS:
 					}, file)
 				}
 				if baseName == "" {
-					if strings.HasSuffix(file, "/xl.meta") {
-						baseName = strings.TrimSuffix(file, "/xl.meta")
+					if before, ok := strings.CutSuffix(file, "/xl.meta"); ok {
+						baseName = before
 						if idx := strings.LastIndexByte(baseName, '/'); idx > 0 {
 							baseName = baseName[idx+1:]
 						}

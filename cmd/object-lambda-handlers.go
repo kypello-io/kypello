@@ -34,19 +34,19 @@ import (
 	"github.com/minio/mux"
 	"github.com/minio/pkg/v3/policy"
 
-	"github.com/minio/minio/internal/auth"
-	levent "github.com/minio/minio/internal/config/lambda/event"
-	"github.com/minio/minio/internal/hash/sha256"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/auth"
+	levent "github.com/kypello-io/kypello/internal/config/lambda/event"
+	"github.com/kypello-io/kypello/internal/hash/sha256"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
 )
 
 var getLambdaEventData = func(bucket, object string, cred auth.Credentials, r *http.Request) (levent.Event, error) {
 	host := globalLocalNodeName
 	secure := globalIsTLS
-	if globalMinioEndpointURL != nil {
-		host = globalMinioEndpointURL.Host
-		secure = globalMinioEndpointURL.Scheme == "https"
+	if globalKypelloEndpointURL != nil {
+		host = globalKypelloEndpointURL.Host
+		secure = globalKypelloEndpointURL.Scheme == "https"
 	}
 
 	duration := time.Until(cred.Expiration)

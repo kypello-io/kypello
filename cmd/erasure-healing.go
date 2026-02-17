@@ -28,9 +28,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/grid"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/grid"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/sync/errgroup"
 	"github.com/puzpuzpuz/xsync/v3"
 )
@@ -205,8 +205,8 @@ func shouldHealObjectOnDisk(erErr error, partsErrs []int, meta FileInfo, latestM
 }
 
 const (
-	xMinIOHealing = ReservedMetadataPrefix + "healing"
-	xMinIODataMov = ReservedMetadataPrefix + "data-mov"
+	xKypelloHealing = ReservedMetadataPrefix + "healing"
+	xMinIODataMov   = ReservedMetadataPrefix + "data-mov"
 )
 
 // SetHealing marks object (version) as being healed.
@@ -215,13 +215,13 @@ func (fi *FileInfo) SetHealing() {
 	if fi.Metadata == nil {
 		fi.Metadata = make(map[string]string)
 	}
-	fi.Metadata[xMinIOHealing] = "true"
+	fi.Metadata[xKypelloHealing] = "true"
 }
 
 // Healing returns true if object is being healed (i.e fi is being passed down
 // from healObject)
 func (fi FileInfo) Healing() bool {
-	_, ok := fi.Metadata[xMinIOHealing]
+	_, ok := fi.Metadata[xKypelloHealing]
 	return ok
 }
 
@@ -592,13 +592,13 @@ func (er *erasureObjects) healObject(ctx context.Context, bucket string, object 
 
 					writers[i] = newStreamingBitrotWriterBuffer(inlineBuffers[i], DefaultBitrotAlgorithm, erasure.ShardSize())
 				} else {
-					writers[i] = newBitrotWriter(disk, bucket, minioMetaTmpBucket, partPath,
+					writers[i] = newBitrotWriter(disk, bucket, kypelloMetaTmpBucket, partPath,
 						tillOffset, DefaultBitrotAlgorithm, erasure.ShardSize())
 				}
 			}
 
 			// Heal each part. erasure.Heal() will write the healed
-			// part to .minio/tmp/uuid/ which needs to be renamed
+			// part to .kypello/tmp/uuid/ which needs to be renamed
 			// later to the final location.
 			err = erasure.Heal(ctx, writers, readers, partSize, prefer)
 			closeBitrotReaders(readers)
@@ -646,7 +646,7 @@ func (er *erasureObjects) healObject(ctx context.Context, bucket string, object 
 		}
 	}
 
-	defer er.deleteAll(context.Background(), minioMetaTmpBucket, tmpID)
+	defer er.deleteAll(context.Background(), kypelloMetaTmpBucket, tmpID)
 
 	// Rename from tmp location to the actual location.
 	for i, disk := range outDatedDisks {
@@ -660,7 +660,7 @@ func (er *erasureObjects) healObject(ctx context.Context, bucket string, object 
 		// Attempt a rename now from healed data to final location.
 		partsMetadata[i].SetHealing()
 
-		if _, err = disk.RenameData(ctx, minioMetaTmpBucket, tmpID, partsMetadata[i], bucket, object, RenameOptions{}); err != nil {
+		if _, err = disk.RenameData(ctx, kypelloMetaTmpBucket, tmpID, partsMetadata[i], bucket, object, RenameOptions{}); err != nil {
 			return result, err
 		}
 

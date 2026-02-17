@@ -2,14 +2,14 @@
 
 ## Introduction
 
-MinIO provides a custom STS API that allows authentication with client X.509 / TLS certificates.
+Kypello provides a custom STS API that allows authentication with client X.509 / TLS certificates.
 
 A major advantage of certificate-based authentication compared to other STS authentication methods, like OpenID Connect or LDAP/AD, is that client authentication works without any additional/external component that must be constantly available. Therefore, certificate-based authentication may provide better availability / lower operational complexity.
 
-The MinIO TLS STS API can be configured via MinIO's standard configuration API (i.e. using `mc admin config set/get`). Further, it can be configured via the following environment variables:
+The Kypello TLS STS API can be configured via MinIO's standard configuration API (i.e. using `mc admin config set/get`). Further, it can be configured via the following environment variables:
 
 ```
-mc admin config set myminio identity_tls --env
+mc admin config set mykypello identity_tls --env
 KEY:
 identity_tls  enable X.509 TLS certificate SSO support
 
@@ -31,7 +31,7 @@ a client certificate.
 The following curl example shows how to authenticate to a MinIO server with client certificate and obtain STS access credentials.
 
 ```curl
-curl -X POST --key private.key --cert public.crt "https://minio:9000?Action=AssumeRoleWithCertificate&Version=2011-06-15&DurationSeconds=3600"
+curl -X POST --key private.key --cert public.crt "https://kypello:9000?Action=AssumeRoleWithCertificate&Version=2011-06-15&DurationSeconds=3600"
 ```
 
 ```xml

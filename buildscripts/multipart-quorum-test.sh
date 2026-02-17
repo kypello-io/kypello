@@ -5,15 +5,15 @@ if [ -n "$TEST_DEBUG" ]; then
 fi
 
 WORK_DIR="$PWD/.verify-$RANDOM"
-MINIO_CONFIG_DIR="$WORK_DIR/.minio"
-MINIO=("$PWD/minio" --config-dir "$MINIO_CONFIG_DIR" server)
+MINIO_CONFIG_DIR="$WORK_DIR/.kypello"
+MINIO=("$PWD/kypello" --config-dir "$MINIO_CONFIG_DIR" server)
 
-if [ ! -x "$PWD/minio" ]; then
+if [ ! -x "$PWD/kypello" ]; then
 	echo "minio executable binary not found in current directory"
 	exit 1
 fi
 
-if [ ! -x "$PWD/minio" ]; then
+if [ ! -x "$PWD/kypello" ]; then
 	echo "minio executable binary not found in current directory"
 	exit 1
 fi
@@ -31,8 +31,8 @@ catch() {
 	fi
 
 	echo "Cleaning up instances of MinIO"
-	pkill minio || true
-	pkill -9 minio || true
+	pkill kypello || true
+	pkill -9 kypello || true
 	purge "$WORK_DIR"
 	if [ $# -ne 0 ]; then
 		exit $#
@@ -44,9 +44,9 @@ catch
 function start_minio_10drive() {
 	start_port=$1
 
-	export MINIO_ROOT_USER=minio
-	export MINIO_ROOT_PASSWORD=minio123
-	export MC_HOST_minio="http://minio:minio123@127.0.0.1:${start_port}/"
+	export MINIO_ROOT_USER=kypello
+	export MINIO_ROOT_PASSWORD=kypello123
+	export MC_HOST_minio="http://kypello:kypello123@127.0.0.1:${start_port}/"
 	unset MINIO_KMS_AUTO_ENCRYPTION # do not auto-encrypt objects
 	export MINIO_CI_CD=1
 
@@ -81,8 +81,8 @@ function start_minio_10drive() {
 
 	"${PWD}/mc" mb --with-versioning minio/bucket
 
-	export AWS_ACCESS_KEY_ID=minio
-	export AWS_SECRET_ACCESS_KEY=minio123
+	export AWS_ACCESS_KEY_ID=kypello
+	export AWS_SECRET_ACCESS_KEY=kypello123
 	aws --endpoint-url http://localhost:"$start_port" s3api create-multipart-upload --bucket bucket --key obj-1 >upload-id.json
 	uploadId=$(jq -r '.UploadId' upload-id.json)
 
@@ -93,7 +93,7 @@ function start_minio_10drive() {
 			--part-number "$i" --body ./file-5mib
 	done
 	for i in {1..6}; do
-		find ${WORK_DIR}/disk${i}/.minio.sys/multipart/ -type f -name "part.1" -delete
+		find ${WORK_DIR}/disk${i}/.kypello.sys/multipart/ -type f -name "part.1" -delete
 	done
 	cat <<EOF >parts.json
 {

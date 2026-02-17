@@ -27,7 +27,7 @@ To enable Parquet set the environment variable `MINIO_API_SELECT_PARQUET=on`.
 
 ### 1. Prerequisites
 
-- Install MinIO Server from [here](https://docs.min.io/community/minio-object-store/operations/deployments/baremetal-deploy-minio-on-redhat-linux.html#procedure).
+- Install Kypello Server from [here](https://docs.min.io/community/minio-object-store/operations/deployments/baremetal-deploy-minio-on-redhat-linux.html#procedure).
 - Familiarity with AWS S3 API.
 - Familiarity with Python and installing dependencies.
 
@@ -47,8 +47,8 @@ import boto3
 
 s3 = boto3.client('s3',
                   endpoint_url='http://localhost:9000',
-                  aws_access_key_id='minio',
-                  aws_secret_access_key='minio123',
+                  aws_access_key_id='kypello',
+                  aws_secret_access_key='kypello123',
                   region_name='us-east-1')
 
 r = s3.select_object_content(
@@ -83,9 +83,9 @@ Upload a sample dataset to MinIO using the following commands.
 
 ```sh
 curl "https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv" > TotalPopulation.csv
-mc mb myminio/mycsvbucket
+mc mb mykypello/mycsvbucket
 gzip TotalPopulation.csv
-mc cp TotalPopulation.csv.gz myminio/mycsvbucket/sampledata/
+mc cp TotalPopulation.csv.gz mykypello/mycsvbucket/sampledata/
 ```
 
 Now let us proceed to run our select example to query for `Location` which matches `United States`.
@@ -113,10 +113,10 @@ For a more detailed SELECT SQL reference, please see [here](https://docs.aws.ama
 
 ## 5. Explore Further
 
-- [Use `mc` with MinIO Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html)
-- [Use `mc sql` with MinIO Server](https://docs.min.io/community/minio-object-store/reference/minio-mc/mc-sql.html#command-mc.sql)
-- [Use `minio-go` SDK with MinIO Server](https://docs.min.io/community/minio-object-store/developers/go/minio-go.html)
-- [Use `aws-cli` with MinIO Server](https://docs.min.io/community/minio-object-store/integrations/aws-cli-with-minio.html)
+- [Use `mc` with Kypello Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html)
+- [Use `mc sql` with Kypello Server](https://docs.min.io/community/minio-object-store/reference/minio-mc/mc-sql.html#command-mc.sql)
+- [Use `minio-go` SDK with Kypello Server](https://docs.min.io/community/minio-object-store/developers/go/minio-go.html)
+- [Use `aws-cli` with Kypello Server](https://docs.min.io/community/minio-object-store/integrations/aws-cli-with-minio.html)
 - [The MinIO documentation website](https://docs.min.io/community/minio-object-store/index.html)
 
 ## 6. Implementation Status

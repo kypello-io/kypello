@@ -246,8 +246,8 @@ For deployments with [bucket](https://docs.min.io/community/minio-object-store/a
 
 | Name                                       | Description                                                                                                     |
 |:-------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| `minio_node_file_descriptor_limit_total`   | Limit on total number of open file descriptors for the MinIO Server process.                                    |
-| `minio_node_file_descriptor_open_total`    | Total number of open file descriptors by the MinIO Server process.                                              |
+| `minio_node_file_descriptor_limit_total`   | Limit on total number of open file descriptors for the Kypello Server process.                                    |
+| `minio_node_file_descriptor_open_total`    | Total number of open file descriptors by the Kypello Server process.                                              |
 | `minio_node_go_routine_total`              | Total number of go routines running.                                                                            |
 | `minio_node_io_rchar_bytes`                | Total bytes read by the process from the underlying storage system including cache, /proc/[pid]/io rchar.       |
 | `minio_node_io_read_bytes`                 | Total bytes read by the process from the underlying storage system, /proc/[pid]/io read_bytes.                  |

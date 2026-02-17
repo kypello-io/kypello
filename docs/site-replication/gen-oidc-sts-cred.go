@@ -1,5 +1,4 @@
 //go:build ignore
-// +build ignore
 
 // Copyright (c) 2015-2022 MinIO, Inc.
 //
@@ -34,8 +33,8 @@ import (
 	"net/http"
 	"os"
 
+	cmd "github.com/kypello-io/kypello/cmd"
 	cr "github.com/minio/minio-go/v7/pkg/credentials"
-	cmd "github.com/minio/minio/cmd"
 )
 
 func main() {

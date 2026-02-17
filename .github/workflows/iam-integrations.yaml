@@ -26,7 +26,7 @@ jobs:
           - "389:389"
           - "636:636"
         env:
-          LDAP_ORGANIZATION: "MinIO Inc"
+          LDAP_ORGANIZATION: "KypelloIO"
           LDAP_DOMAIN: "min.io"
           LDAP_ADMIN_PASSWORD: "admin"
       etcd:
@@ -61,7 +61,7 @@ jobs:
       # are turned off - i.e. if ldap="", then ldap server is not enabled for
       # the tests.
       matrix:
-        go-version: [1.24.x]
+        go-version: [1.26.x]
         ldap: ["", "localhost:389"]
         etcd: ["", "http://localhost:2379"]
         openid: ["", "http://127.0.0.1:5556/dex"]

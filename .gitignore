@@ -2,6 +2,7 @@
 cover.out
 *~
 minio
+kypello
 !*/
 site/
 **/*.test
@@ -29,10 +30,12 @@ inspect*.zip
 200M*
 hash-set
 minio.RELEASE*
+kypello.RELEASE*
 mc
 nancy
 inspects/*
 .bin/
+.tool/
 *.gz
 docs/debugging/s3-verify/s3-verify
 docs/debugging/xl-meta/xl-meta

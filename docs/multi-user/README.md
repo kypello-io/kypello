@@ -10,7 +10,7 @@ In this document we will explain in detail on how to configure multiple users.
 
 - Install mc - [MinIO Client Quickstart Guide](https://docs.min.io/community/minio-object-store/reference/minio-mc.html#quickstart)
 - Install MinIO - [MinIO Quickstart Guide](https://docs.min.io/community/minio-object-store/operations/deployments/baremetal-deploy-minio-on-redhat-linux.html)
-- Configure etcd - [Etcd V3 Quickstart Guide](https://github.com/minio/minio/blob/master/docs/sts/etcd.md)
+- Configure etcd - [Etcd V3 Quickstart Guide](https://github.com/kypello-io/kypello/blob/master/docs/sts/etcd.md)
 
 ### 2. Create a new user with canned policy
 
@@ -41,31 +41,31 @@ EOF
 Create new canned policy by name `getonly` using `getonly.json` policy file.
 
 ```
-mc admin policy create myminio getonly getonly.json
+mc admin policy create mykypello getonly getonly.json
 ```
 
 Create a new user `newuser` on MinIO use `mc admin user`.
 
 ```
-mc admin user add myminio newuser newuser123
+mc admin user add mykypello newuser newuser123
 ```
 
 Once the user is successfully created you can now apply the `getonly` policy for this user.
 
 ```
-mc admin policy attach myminio getonly --user=newuser
+mc admin policy attach mykypello getonly --user=newuser
 ```
 
 ### 3. Create a new group
 
 ```
-mc admin group add myminio newgroup newuser
+mc admin group add mykypello newgroup newuser
 ```
 
 Once the group is successfully created you can now apply the `getonly` policy for this group.
 
 ```
-mc admin policy attach myminio getonly --group=newgroup
+mc admin policy attach mykypello getonly --group=newgroup
 ```
 
 ### 4. Disable user
@@ -73,13 +73,13 @@ mc admin policy attach myminio getonly --group=newgroup
 Disable user `newuser`.
 
 ```
-mc admin user disable myminio newuser
+mc admin user disable mykypello newuser
 ```
 
 Disable group `newgroup`.
 
 ```
-mc admin group disable myminio newgroup
+mc admin group disable mykypello newgroup
 ```
 
 ### 5. Remove user
@@ -87,19 +87,19 @@ mc admin group disable myminio newgroup
 Remove the user `newuser`.
 
 ```
-mc admin user remove myminio newuser
+mc admin user remove mykypello newuser
 ```
 
 Remove the user `newuser` from a group.
 
 ```
-mc admin group remove myminio newgroup newuser
+mc admin group remove mykypello newgroup newuser
 ```
 
 Remove the group `newgroup`.
 
 ```
-mc admin group remove myminio newgroup
+mc admin group remove mykypello newgroup
 ```
 
 ### 6. Change user or group policy
@@ -107,13 +107,13 @@ mc admin group remove myminio newgroup
 Change the policy for user `newuser` to `putonly` canned policy.
 
 ```
-mc admin policy attach myminio putonly --user=newuser
+mc admin policy attach mykypello putonly --user=newuser
 ```
 
 Change the policy for group `newgroup` to `putonly` canned policy.
 
 ```
-mc admin policy attach myminio putonly --group=newgroup
+mc admin policy attach mykypello putonly --group=newgroup
 ```
 
 ### 7. List all users or groups
@@ -121,20 +121,20 @@ mc admin policy attach myminio putonly --group=newgroup
 List all enabled and disabled users.
 
 ```
-mc admin user list myminio
+mc admin user list mykypello
 ```
 
 List all enabled or disabled groups.
 
 ```
-mc admin group list myminio
+mc admin group list mykypello
 ```
 
 ### 8. Configure `mc`
 
 ```
-mc alias set myminio-newuser http://localhost:9000 newuser newuser123 --api s3v4
-mc cat myminio-newuser/my-bucketname/my-objectname
+mc alias set mykypello-newuser http://localhost:9000 newuser newuser123 --api s3v4
+mc cat mykypello-newuser/my-bucketname/my-objectname
 ```
 
 ### Policy Variables

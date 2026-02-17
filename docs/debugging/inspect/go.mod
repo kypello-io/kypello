@@ -1,4 +1,4 @@
-module github.com/minio/minio/docs/debugging/inspect
+module github.com/kypello-io/kypello/docs/debugging/inspect
 
 go 1.23.0
 

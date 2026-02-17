@@ -25,9 +25,9 @@ import (
 	"io"
 	"sync"
 
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/ringbuffer"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/ringbuffer"
 )
 
 // Calculates bitrot in chunks and writes the hash into the stream.
@@ -118,17 +118,14 @@ func newStreamingBitrotWriter(disk StorageAPI, origvolume, volume, filePath stri
 		canClose:     &sync.WaitGroup{},
 		byteBuf:      buf,
 	}
-	bw.canClose.Add(1)
-	go func() {
-		defer bw.canClose.Done()
-
+	bw.canClose.Go(func() {
 		totalFileSize := int64(-1) // For compressed objects length will be unknown (represented by length=-1)
 		if length != -1 {
 			bitrotSumsTotalSize := ceilFrac(length, shardSize) * int64(h.Size()) // Size used for storing bitrot checksums.
 			totalFileSize = bitrotSumsTotalSize + length
 		}
 		rb.CloseWithError(disk.CreateFile(context.TODO(), origvolume, volume, filePath, totalFileSize, rb))
-	}()
+	})
 	return bw
 }
 

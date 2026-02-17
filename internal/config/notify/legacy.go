@@ -22,8 +22,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/event/target"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/event/target"
 )
 
 // SetNotifyKafka - helper for config migration from older config.
@@ -501,27 +501,6 @@ func SetNotifyNATS(s config.Config, natsName string, cfg target.NATSArgs) error 
 		config.KV{
 			Key:   target.NATSQueueLimit,
 			Value: strconv.Itoa(int(cfg.QueueLimit)),
-		},
-		config.KV{
-			Key: target.NATSStreaming,
-			Value: func() string {
-				if cfg.Streaming.Enable {
-					return config.EnableOn
-				}
-				return config.EnableOff
-			}(),
-		},
-		config.KV{
-			Key:   target.NATSStreamingClusterID,
-			Value: cfg.Streaming.ClusterID,
-		},
-		config.KV{
-			Key:   target.NATSStreamingAsync,
-			Value: config.FormatBool(cfg.Streaming.Async),
-		},
-		config.KV{
-			Key:   target.NATSStreamingMaxPubAcksInFlight,
-			Value: strconv.Itoa(cfg.Streaming.MaxPubAcksInflight),
 		},
 	}
 

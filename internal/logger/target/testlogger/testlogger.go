@@ -34,9 +34,9 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/kypello-io/kypello/internal/logger"
+	types "github.com/kypello-io/kypello/internal/logger/target/loggertypes"
 	"github.com/minio/madmin-go/v3/logger/log"
-	"github.com/minio/minio/internal/logger"
-	types "github.com/minio/minio/internal/logger/target/loggertypes"
 )
 
 const (
@@ -150,14 +150,15 @@ func (t *testLogger) Send(ctx context.Context, entry any) error {
 		if v.Trace == nil {
 			logf("%s: %s", v.Level, v.Message)
 		} else {
-			msg := fmt.Sprintf("%s: %+v", v.Level, v.Trace.Message)
+			var msg strings.Builder
+			msg.WriteString(fmt.Sprintf("%s: %+v", v.Level, v.Trace.Message))
 			for i, m := range v.Trace.Source {
 				if i == 0 && strings.Contains(m, "logger.go:") {
 					continue
 				}
-				msg += fmt.Sprintf("\n%s", m)
+				msg.WriteString(fmt.Sprintf("\n%s", m))
 			}
-			logf("%s", msg)
+			logf("%s", msg.String())
 		}
 	default:
 		logf("%+v (%T)", v, v)

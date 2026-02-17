@@ -17,16 +17,16 @@ When using Veeam Backup and Replication, you can use S3 compatible object storag
 Create a bucket for Veeam Backup, e.g.,
 
 ```
-mc mb myminio/veeambackup
+mc mb mykypello/veeambackup
 ```
 
 > NOTE: For Veeam Backup with Immutability, create the bucket with object lock enabled, e.g.,
 
 ```
-mc mb -l myminio/veeambackup
+mc mb -l mykypello/veeambackup
 ```
 
-> Object locking requires erasure coding enabled on the minio server. For more information see <https://docs.min.io/community/minio-object-store/operations/concepts/erasure-coding.html>.
+> Object locking requires erasure coding enabled on the kypello server. For more information see <https://docs.min.io/community/minio-object-store/operations/concepts/erasure-coding.html>.
 
 ### Add MinIO as an object store for Veeam
 
@@ -65,7 +65,7 @@ For Veeam Backup with Immutability, choose the amount of days you want to make b
 - Create a new bucket for VBO backups
 
 ```
-mc mb -l myminio/vbo
+mc mb -l mykypello/vbo
 ```
 
 - Under Backup Infrastructure, right click on Object Storage Repositories and choose "Add object storage"
@@ -84,7 +84,7 @@ mc mb -l myminio/vbo
 
 ## Test the setup
 
-The next time the backup job runs, you can use the  `mc admin trace myminio` command and verify traffic is flowing to the MinIO nodes. For Veeam Backup and Replication you will need to wait for the backup to complete to the performance tier before it migrates data to the capacity tier (i.e., MinIO).
+The next time the backup job runs, you can use the  `mc admin trace mykypello` command and verify traffic is flowing to the MinIO nodes. For Veeam Backup and Replication you will need to wait for the backup to complete to the performance tier before it migrates data to the capacity tier (i.e., MinIO).
 
 ```
 20:09:10.216 [200 OK] s3.GetObject veeam-minio01:9000/vbo/Veeam/Backup365/vbotest/Organizations/6571606ecbc4455dbfe23b83f6f45597/Webs/ca2d0986229b4ec88e3a217ef8f04a1d/Items/efaa67764b304e77badb213d131beab6/f4f0cf600f494c3eb702d8eafe0fabcc.aac07493e6cd4c71845d2495a4e1e19b 139.178.68.158    9.789ms      ↑ 90 B ↓ 8.5 KiB

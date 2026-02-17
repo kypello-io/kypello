@@ -19,8 +19,8 @@ exit_1() {
 
 cleanup() {
 	echo "Cleaning up instances of MinIO"
-	pkill minio
-	pkill -9 minio
+	pkill kypello
+	pkill -9 kypello
 	rm -rf /tmp/minio-ldap-idp{1,2,3}
 }
 
@@ -33,11 +33,11 @@ unset MINIO_KMS_KES_KEY_NAME
 
 export MINIO_CI_CD=1
 export MINIO_BROWSER=off
-export MINIO_ROOT_USER="minio"
-export MINIO_ROOT_PASSWORD="minio123"
+export MINIO_ROOT_USER="kypello"
+export MINIO_ROOT_PASSWORD="kypello123"
 export MINIO_KMS_AUTO_ENCRYPTION=off
 export MINIO_PROMETHEUS_AUTH_TYPE=public
-export MINIO_KMS_SECRET_KEY=my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
+export MINIO_KMS_SECRET_KEY=my-kypello-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
 export MINIO_IDENTITY_LDAP_SERVER_ADDR="localhost:389"
 export MINIO_IDENTITY_LDAP_SERVER_INSECURE="on"
 export MINIO_IDENTITY_LDAP_LOOKUP_BIND_DN="cn=admin,dc=min,dc=io"
@@ -52,16 +52,16 @@ if [ ! -f ./mc ]; then
 		chmod +x mc
 fi
 
-minio server --config-dir /tmp/minio-ldap --address ":9001" /tmp/minio-ldap-idp1/{1...4} >/tmp/minio1_1.log 2>&1 &
+kypello server --config-dir /tmp/minio-ldap --address ":9001" /tmp/minio-ldap-idp1/{1...4} >/tmp/minio1_1.log 2>&1 &
 site1_pid=$!
-minio server --config-dir /tmp/minio-ldap --address ":9002" /tmp/minio-ldap-idp2/{1...4} >/tmp/minio2_1.log 2>&1 &
+kypello server --config-dir /tmp/minio-ldap --address ":9002" /tmp/minio-ldap-idp2/{1...4} >/tmp/minio2_1.log 2>&1 &
 site2_pid=$!
-minio server --config-dir /tmp/minio-ldap --address ":9003" /tmp/minio-ldap-idp3/{1...4} >/tmp/minio3_1.log 2>&1 &
+kypello server --config-dir /tmp/minio-ldap --address ":9003" /tmp/minio-ldap-idp3/{1...4} >/tmp/minio3_1.log 2>&1 &
 site3_pid=$!
 
-export MC_HOST_minio1=http://minio:minio123@localhost:9001
-export MC_HOST_minio2=http://minio:minio123@localhost:9002
-export MC_HOST_minio3=http://minio:minio123@localhost:9003
+export MC_HOST_minio1=http://kypello:kypello123@localhost:9001
+export MC_HOST_minio2=http://kypello:kypello123@localhost:9002
+export MC_HOST_minio3=http://kypello:kypello123@localhost:9003
 
 ./mc ready minio1
 ./mc ready minio2
@@ -354,7 +354,7 @@ kill -9 ${site1_pid}
 ./mc rb minio2/bucket2
 
 # Restart minio1 instance
-minio server --config-dir /tmp/minio-ldap --address ":9001" /tmp/minio-ldap-idp1/{1...4} >/tmp/minio1_1.log 2>&1 &
+kypello server --config-dir /tmp/minio-ldap --address ":9001" /tmp/minio-ldap-idp1/{1...4} >/tmp/minio1_1.log 2>&1 &
 sleep 200
 
 # Test whether most recent tag update on minio2 is replicated to minio1

@@ -1,5 +1,4 @@
 //go:build (linux && !appengine) || darwin || freebsd || netbsd || openbsd
-// +build linux,!appengine darwin freebsd netbsd openbsd
 
 // Copyright (c) 2015-2021 MinIO, Inc.
 //
@@ -28,7 +27,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/minio/minio/internal/bpool"
+	"github.com/kypello-io/kypello/internal/bpool"
 	"golang.org/x/sys/unix"
 )
 

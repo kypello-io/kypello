@@ -17,7 +17,7 @@
 
 package etcd
 
-import "github.com/minio/minio/internal/config"
+import "github.com/kypello-io/kypello/internal/config"
 
 // etcd config documented in default config
 var (

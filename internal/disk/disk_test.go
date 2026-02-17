@@ -1,5 +1,4 @@
 //go:build !netbsd && !solaris
-// +build !netbsd,!solaris
 
 // Copyright (c) 2015-2021 MinIO, Inc.
 //
@@ -23,7 +22,7 @@ package disk_test
 import (
 	"testing"
 
-	"github.com/minio/minio/internal/disk"
+	"github.com/kypello-io/kypello/internal/disk"
 )
 
 func TestFree(t *testing.T) {

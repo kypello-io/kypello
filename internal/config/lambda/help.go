@@ -18,8 +18,8 @@
 package lambda
 
 import (
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/event/target"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/event/target"
 )
 
 // Help template inputs for all lambda targets

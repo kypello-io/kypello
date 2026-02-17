@@ -24,7 +24,7 @@ import (
 	"testing"
 
 	jwtgo "github.com/golang-jwt/jwt/v4"
-	xjwt "github.com/minio/minio/internal/jwt"
+	xjwt "github.com/kypello-io/kypello/internal/jwt"
 )
 
 func getTokenString(accessKey, secretKey string) (string, error) {
@@ -45,7 +45,7 @@ func TestWebRequestAuthenticate(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(fsDir)
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -102,7 +102,7 @@ func BenchmarkParseJWTStandardClaims(b *testing.B) {
 		b.Fatal(err)
 	}
 	defer os.RemoveAll(fsDir)
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		b.Fatal(err)
 	}
 
@@ -133,7 +133,7 @@ func BenchmarkParseJWTMapClaims(b *testing.B) {
 		b.Fatal(err)
 	}
 	defer os.RemoveAll(fsDir)
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		b.Fatal(err)
 	}
 
@@ -166,7 +166,7 @@ func BenchmarkAuthenticateNode(b *testing.B) {
 		b.Fatal(err)
 	}
 	defer os.RemoveAll(fsDir)
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		b.Fatal(err)
 	}
 

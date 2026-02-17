@@ -4,14 +4,14 @@
 set -E
 set -o pipefail
 
-if [ ! -x "$PWD/minio" ]; then
+if [ ! -x "$PWD/kypello" ]; then
 	echo "minio executable binary not found in current directory"
 	exit 1
 fi
 
 WORK_DIR="$PWD/.verify-$RANDOM"
-MINIO_CONFIG_DIR="$WORK_DIR/.minio"
-MINIO=("$PWD/minio" --config-dir "$MINIO_CONFIG_DIR" server)
+MINIO_CONFIG_DIR="$WORK_DIR/.kypello"
+MINIO=("$PWD/kypello" --config-dir "$MINIO_CONFIG_DIR" server)
 GOPATH=/tmp/gopath
 
 function start_minio_3_node() {
@@ -19,8 +19,8 @@ function start_minio_3_node() {
 		rm "${WORK_DIR}/dist-minio-server$i.log"
 	done
 
-	export MINIO_ROOT_USER=minio
-	export MINIO_ROOT_PASSWORD=minio123
+	export MINIO_ROOT_USER=kypello
+	export MINIO_ROOT_PASSWORD=kypello123
 	export MINIO_ERASURE_SET_DRIVE_COUNT=6
 	export MINIO_CI_CD=1
 
@@ -46,33 +46,33 @@ function start_minio_3_node() {
 	pid3=$!
 	disown $pid3
 
-	export MC_HOST_myminio="http://minio:minio123@127.0.0.1:$((start_port + 1))"
-	timeout 15m /tmp/mc ready myminio || fail
+	export MC_HOST_mykypello="http://kypello:kypello123@127.0.0.1:$((start_port + 1))"
+	timeout 15m /tmp/mc ready mykypello || fail
 
 	[ ${first_time} -eq 0 ] && upload_objects
 	[ ${first_time} -ne 0 ] && sleep 120
 
 	if ! ps -p $pid1 1>&2 >/dev/null; then
-		echo "minio server 1 is not running" && fail
+		echo "kypello server 1 is not running" && fail
 	fi
 
 	if ! ps -p $pid2 1>&2 >/dev/null; then
-		echo "minio server 2 is not running" && fail
+		echo "kypello server 2 is not running" && fail
 	fi
 
 	if ! ps -p $pid3 1>&2 >/dev/null; then
-		echo "minio server 3 is not running" && fail
+		echo "kypello server 3 is not running" && fail
 	fi
 
-	if ! pkill minio; then
+	if ! pkill kypello; then
 		fail
 	fi
 
 	sleep 1
-	if pgrep minio; then
+	if pgrep kypello; then
 		# forcibly killing, to proceed further properly.
-		if ! pkill -9 minio; then
-			echo "no minio process running anymore, proceed."
+		if ! pkill -9 kypello; then
+			echo "no kypello process running anymore, proceed."
 		fi
 	fi
 }
@@ -83,11 +83,11 @@ function check_heal() {
 	fi
 
 	for ((i = 0; i < 20; i++)); do
-		test -f ${WORK_DIR}/$1/1/.minio.sys/format.json
+		test -f ${WORK_DIR}/$1/1/.kypello.sys/format.json
 		v1=$?
 		nextInES=$(($1 + 1)) && [ $nextInES -gt 3 ] && nextInES=1
-		foundFiles1=$(find ${WORK_DIR}/$1/1/ | grep -v .minio.sys | grep xl.meta | wc -l)
-		foundFiles2=$(find ${WORK_DIR}/$nextInES/1/ | grep -v .minio.sys | grep xl.meta | wc -l)
+		foundFiles1=$(find ${WORK_DIR}/$1/1/ | grep -v .kypello.sys | grep xl.meta | wc -l)
+		foundFiles2=$(find ${WORK_DIR}/$nextInES/1/ | grep -v .kypello.sys | grep xl.meta | wc -l)
 		test $foundFiles1 -eq $foundFiles2
 		v2=$?
 		[ $v1 == 0 -a $v2 == 0 ] && return 0
@@ -105,7 +105,7 @@ function fail() {
 		echo "server$i log:"
 		cat "${WORK_DIR}/dist-minio-server$i.log"
 	done
-	pkill -9 minio
+	pkill -9 kypello
 	echo "FAILED"
 	purge "$WORK_DIR"
 	exit 1
@@ -117,7 +117,7 @@ function __init__() {
 	mkdir -p "$MINIO_CONFIG_DIR"
 
 	## version is purposefully set to '3' for minio to migrate configuration file
-	echo '{"version": "3", "credential": {"accessKey": "minio", "secretKey": "minio123"}, "region": "us-east-1"}' >"$MINIO_CONFIG_DIR/config.json"
+	echo '{"version": "3", "credential": {"accessKey": "kypello", "secretKey": "kypello123"}, "region": "us-east-1"}' >"$MINIO_CONFIG_DIR/config.json"
 
 	if [ ! -f /tmp/mc ]; then
 		wget --quiet -O /tmp/mc https://dl.minio.io/client/mc/release/linux-amd64/mc &&
@@ -126,9 +126,9 @@ function __init__() {
 }
 
 function upload_objects() {
-	/tmp/mc mb myminio/testbucket/
+	/tmp/mc mb mykypello/testbucket/
 	for ((i = 0; i < 20; i++)); do
-		echo "my content" | /tmp/mc pipe myminio/testbucket/file-$i
+		echo "my content" | /tmp/mc pipe mykypello/testbucket/file-$i
 	done
 }
 

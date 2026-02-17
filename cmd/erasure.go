@@ -29,9 +29,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/dsync"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/dsync"
-	xioutil "github.com/minio/minio/internal/ioutil"
 	"github.com/minio/pkg/v3/sync/errgroup"
 )
 
@@ -285,10 +285,7 @@ func (er erasureObjects) getOnlineDisksWithHealingAndInfo(inclHealing bool) (new
 	infos := make([]DiskInfo, len(disks))
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for _, i := range r.Perm(len(disks)) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-
+		wg.Go(func() {
 			disk := disks[i]
 			if disk == nil {
 				infos[i].Error = errDiskNotFound.Error()
@@ -302,7 +299,7 @@ func (er erasureObjects) getOnlineDisksWithHealingAndInfo(inclHealing bool) (new
 				//   unformatted or simply not accessible for some reason.
 				infos[i].Error = err.Error()
 			}
-		}()
+		})
 	}
 	wg.Wait()
 
@@ -350,7 +347,7 @@ func (er erasureObjects) getOnlineDisksWithHealing(inclHealing bool) ([]StorageA
 	return newDisks, healing > 0
 }
 
-// Clean-up previously deleted objects. from .minio.sys/tmp/.trash/
+// Clean-up previously deleted objects. from .kypello.sys/tmp/.trash/
 func (er erasureObjects) cleanupDeletedObjects(ctx context.Context) {
 	var wg sync.WaitGroup
 	for _, disk := range er.getLocalDisks() {
@@ -361,11 +358,11 @@ func (er erasureObjects) cleanupDeletedObjects(ctx context.Context) {
 		go func(disk StorageAPI) {
 			defer wg.Done()
 			drivePath := disk.Endpoint().Path
-			readDirFn(pathJoin(drivePath, minioMetaTmpDeletedBucket), func(ddir string, typ os.FileMode) error {
+			readDirFn(pathJoin(drivePath, kypelloMetaTmpDeletedBucket), func(ddir string, typ os.FileMode) error {
 				w := xioutil.NewDeadlineWorker(globalDriveConfig.GetMaxTimeout())
 				return w.Run(func() error {
 					wait := deleteCleanupSleeper.Timer(ctx)
-					removeAll(pathJoin(drivePath, minioMetaTmpDeletedBucket, ddir))
+					removeAll(pathJoin(drivePath, kypelloMetaTmpDeletedBucket, ddir))
 					wait()
 					return nil
 				})

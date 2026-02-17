@@ -25,7 +25,7 @@ import (
 	"regexp"
 	"runtime"
 
-	"github.com/minio/minio/internal/color"
+	"github.com/kypello-io/kypello/internal/color"
 )
 
 var ansiRE = regexp.MustCompile("(\x1b[^m]*m)")

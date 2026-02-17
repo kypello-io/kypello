@@ -29,9 +29,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/crypto"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/minio/internal/crypto"
-	xhttp "github.com/minio/minio/internal/http"
 	xxml "github.com/minio/xxml"
 )
 
@@ -51,7 +51,7 @@ func setEventStreamHeaders(w http.ResponseWriter) {
 // Write http common headers
 func setCommonHeaders(w http.ResponseWriter) {
 	// Set the "Server" http header.
-	w.Header().Set(xhttp.ServerInfo, MinioStoreName)
+	w.Header().Set(xhttp.ServerInfo, KypelloStoreName)
 
 	// Set `x-amz-bucket-region` only if region is set on the server
 	// by default minio uses an empty region.
@@ -251,7 +251,7 @@ func setObjectHeaders(ctx context.Context, w http.ResponseWriter, objInfo Object
 		if i := strings.LastIndexByte(v, '/'); i >= 0 {
 			v = v[i+1:]
 		}
-		w.Header()[xhttp.MinIOCompressed] = []string{v}
+		w.Header()[xhttp.KypelloCompressed] = []string{v}
 	}
 
 	return nil

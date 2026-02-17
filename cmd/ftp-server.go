@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/logger"
 	ftp "goftp.io/server/v2"
 )
 
@@ -146,7 +146,7 @@ func startFTPServer(args []string) {
 
 	ftpServer, err := ftp.NewServer(&ftp.Options{
 		Name:           name,
-		WelcomeMessage: fmt.Sprintf("Welcome to '%s' FTP Server Version='%s' License='%s'", MinioStoreName, MinioLicense, Version),
+		WelcomeMessage: fmt.Sprintf("Welcome to '%s' FTP Server Version='%s' License='%s'", KypelloStoreName, MinioLicense, Version),
 		Driver:         NewFTPDriver(),
 		Port:           port,
 		Perm:           ftp.NewSimplePerm("nobody", "nobody"),

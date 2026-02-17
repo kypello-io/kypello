@@ -24,7 +24,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/logger"
 )
 
 var shortRandom = func(limit int64) io.Reader { return io.LimitReader(rand.Reader, limit) }
@@ -53,7 +53,6 @@ func TestGenerateKey(t *testing.T) {
 	logger.DisableLog = true
 
 	for i, test := range generateKeyTests {
-		i, test := i, test
 		func() {
 			defer recoverTest(i, test.ShouldPass, t)
 			key := GenerateKey(test.ExtKey[:], test.Random)
@@ -79,7 +78,6 @@ func TestGenerateIV(t *testing.T) {
 	logger.DisableLog = true
 
 	for i, test := range generateIVTests {
-		i, test := i, test
 		func() {
 			defer recoverTest(i, test.ShouldPass, t)
 			iv := GenerateIV(test.Random)

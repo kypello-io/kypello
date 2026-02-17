@@ -33,10 +33,10 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/mountinfo"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/mountinfo"
 	"github.com/minio/pkg/v3/env"
 	xnet "github.com/minio/pkg/v3/net"
 )
@@ -115,7 +115,7 @@ func (endpoint Endpoint) GridHost() string {
 // UpdateIsLocal - resolves the host and updates if it is local or not.
 func (endpoint *Endpoint) UpdateIsLocal() (err error) {
 	if endpoint.Host != "" {
-		endpoint.IsLocal, err = isLocalHost(endpoint.Hostname(), endpoint.Port(), globalMinioPort)
+		endpoint.IsLocal, err = isLocalHost(endpoint.Hostname(), endpoint.Port(), globalKypelloPort)
 		if err != nil {
 			return err
 		}
@@ -207,7 +207,7 @@ func NewEndpoint(arg string) (ep Endpoint, e error) {
 		// On windows having a preceding SlashSeparator will cause problems, if the
 		// command line already has C:/<export-folder/ in it. Final resulting
 		// path on windows might become C:/C:/ this will cause problems
-		// of starting minio server properly in distributed mode on windows.
+		// of starting kypello server properly in distributed mode on windows.
 		// As a special case make sure to trim the separator.
 
 		// NOTE: It is also perfectly fine for windows users to have a path
@@ -226,7 +226,7 @@ func NewEndpoint(arg string) (ep Endpoint, e error) {
 	} else {
 		// Only check if the arg is an ip address and ask for scheme since its absent.
 		// localhost, example.com, any FQDN cannot be disambiguated from a regular file path such as
-		// /mnt/export1. So we go ahead and start the minio server in FS modes in these cases.
+		// /mnt/export1. So we go ahead and start the kypello server in FS modes in these cases.
 		if isHostIP(arg) {
 			return ep, fmt.Errorf("invalid URL endpoint format: missing scheme http or https")
 		}
@@ -364,11 +364,11 @@ func (l EndpointServerPools) Localhost() string {
 			}
 		}
 	}
-	host := globalMinioHost
+	host := globalKypelloHost
 	if host == "" {
 		host = sortIPs(localIP4.ToSlice())[0]
 	}
-	return fmt.Sprintf("%s://%s", getURLScheme(globalIsTLS), net.JoinHostPort(host, globalMinioPort))
+	return fmt.Sprintf("%s://%s", getURLScheme(globalIsTLS), net.JoinHostPort(host, globalKypelloPort))
 }
 
 // LocalDisksPaths returns the disk paths of the local disks
@@ -552,7 +552,7 @@ func (l EndpointServerPools) peers() (peers []string, local string) {
 
 			peer := endpoint.Host
 			if endpoint.IsLocal {
-				if _, port := mustSplitHostPort(peer); port == globalMinioPort {
+				if _, port := mustSplitHostPort(peer); port == globalKypelloPort {
 					if local == "" {
 						local = peer
 					}
@@ -671,7 +671,7 @@ func (endpoints Endpoints) UpdateIsLocal() error {
 				// We use IsKubernetes() to check for Kubernetes environment
 				isLocal, err := isLocalHost(endpoints[i].Hostname(),
 					endpoints[i].Port(),
-					globalMinioPort,
+					globalKypelloPort,
 				)
 				if err != nil && !orchestrated {
 					return err
@@ -859,7 +859,7 @@ func (p PoolEndpointList) UpdateIsLocal() error {
 					// We use IsKubernetes() to check for Kubernetes environment
 					isLocal, err := isLocalHost(endpoint.Hostname(),
 						endpoint.Port(),
-						globalMinioPort,
+						globalKypelloPort,
 					)
 					if err != nil && !orchestrated {
 						return err
@@ -1157,7 +1157,7 @@ func CreatePoolEndpoints(serverAddr string, poolsLayout ...poolDisksLayout) ([]E
 	return poolEndpoints, setupType, nil
 }
 
-// GetLocalPeer - returns local peer value, returns globalMinioAddr
+// GetLocalPeer - returns local peer value, returns globalKypelloAddr
 // for FS and Erasure mode. In case of distributed server return
 // the first element from the set of peers which indicate that
 // they are local. There is always one entry that is local
@@ -1176,7 +1176,7 @@ func GetLocalPeer(endpointServerPools EndpointServerPools, host, port string) (l
 	}
 	if peerSet.IsEmpty() {
 		// Local peer can be empty in FS or Erasure coded mode.
-		// If so, return globalMinioHost + globalMinioPort value.
+		// If so, return globalKypelloHost + globalKypelloPort value.
 		if host != "" {
 			return net.JoinHostPort(host, port)
 		}
@@ -1230,7 +1230,7 @@ func updateDomainIPs(endPoints set.StringSet) {
 		if err != nil {
 			if strings.Contains(err.Error(), "missing port in address") {
 				host = e
-				port = globalMinioPort
+				port = globalKypelloPort
 			} else {
 				continue
 			}

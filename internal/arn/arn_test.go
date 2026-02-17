@@ -29,23 +29,23 @@ func TestARN_String(t *testing.T) {
 	}{
 		{
 			arn: ARN{
-				Partition:    "minio",
+				Partition:    "kypello",
 				Service:      "iam",
 				Region:       "us-east-1",
 				ResourceType: "role",
 				ResourceID:   "my-role",
 			},
-			want: "arn:minio:iam:us-east-1::role/my-role",
+			want: "arn:kypello:iam:us-east-1::role/my-role",
 		},
 		{
 			arn: ARN{
-				Partition:    "minio",
+				Partition:    "kypello",
 				Service:      "",
 				Region:       "us-east-1",
 				ResourceType: "role",
 				ResourceID:   "my-role",
 			},
-			want: "arn:minio::us-east-1::role/my-role",
+			want: "arn:kypello::us-east-1::role/my-role",
 		},
 	}
 	for _, tt := range tests {
@@ -159,7 +159,7 @@ func TestParse(t *testing.T) {
 		{
 			name: "valid ARN must succeed",
 			args: args{
-				arnStr: "arn:minio:iam:us-east-1::role/my-role",
+				arnStr: "arn:kypello:iam:us-east-1::role/my-role",
 			},
 			wantArn: ARN{
 				Partition:    "minio",

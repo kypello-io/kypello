@@ -31,9 +31,9 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/kypello-io/kypello/internal/config"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/config"
 	"github.com/minio/pkg/v3/env"
 )
 
@@ -110,7 +110,7 @@ func loadHealingTracker(ctx context.Context, disk StorageAPI) (*healingTracker, 
 	if err != nil {
 		return nil, err
 	}
-	b, err := disk.ReadAll(ctx, minioMetaBucket,
+	b, err := disk.ReadAll(ctx, kypelloMetaBucket,
 		pathJoin(bucketMetaPrefix, healingTrackerFilename))
 	if err != nil {
 		return nil, err
@@ -251,14 +251,14 @@ func (h *healingTracker) save(ctx context.Context) error {
 		return err
 	}
 	globalBackgroundHealState.updateHealStatus(h)
-	return h.disk.WriteAll(ctx, minioMetaBucket,
+	return h.disk.WriteAll(ctx, kypelloMetaBucket,
 		pathJoin(bucketMetaPrefix, healingTrackerFilename),
 		htrackerBytes)
 }
 
 // delete the tracker on disk.
 func (h *healingTracker) delete(ctx context.Context) error {
-	return h.disk.Delete(ctx, minioMetaBucket,
+	return h.disk.Delete(ctx, kypelloMetaBucket,
 		pathJoin(bucketMetaPrefix, healingTrackerFilename),
 		DeleteOptions{
 			Recursive: false,
@@ -431,7 +431,7 @@ func healFreshDisk(ctx context.Context, z *erasureServerPools, endpoint Endpoint
 	}
 
 	// Prevent parallel erasure set healing
-	locker := z.NewNSLock(minioMetaBucket, fmt.Sprintf("new-drive-healing/%d/%d", poolIdx, setIdx))
+	locker := z.NewNSLock(kypelloMetaBucket, fmt.Sprintf("new-drive-healing/%d/%d", poolIdx, setIdx))
 	lkctx, err := locker.GetLock(ctx, newDiskHealingTimeout)
 	if err != nil {
 		return fmt.Errorf("Healing of drive '%v' on %s pool, belonging to %s erasure set already in progress: %w",
@@ -459,14 +459,14 @@ func healFreshDisk(ctx context.Context, z *erasureServerPools, endpoint Endpoint
 	// Buckets data are dispersed in multiple pools/sets, make
 	// sure to heal all bucket metadata configuration.
 	buckets = append(buckets, BucketInfo{
-		Name: pathJoin(minioMetaBucket, minioConfigPrefix),
+		Name: pathJoin(kypelloMetaBucket, kypelloConfigPrefix),
 	}, BucketInfo{
-		Name: pathJoin(minioMetaBucket, bucketMetaPrefix),
+		Name: pathJoin(kypelloMetaBucket, bucketMetaPrefix),
 	})
 
 	// Heal latest buckets first.
 	sort.Slice(buckets, func(i, j int) bool {
-		a, b := strings.HasPrefix(buckets[i].Name, minioMetaBucket), strings.HasPrefix(buckets[j].Name, minioMetaBucket)
+		a, b := strings.HasPrefix(buckets[i].Name, kypelloMetaBucket), strings.HasPrefix(buckets[j].Name, kypelloMetaBucket)
 		if a != b {
 			return a
 		}

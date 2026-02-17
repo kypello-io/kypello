@@ -24,9 +24,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/auth"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/auth"
-	xhttp "github.com/minio/minio/internal/http"
 )
 
 func TestCheckValid(t *testing.T) {
@@ -38,7 +38,7 @@ func TestCheckValid(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(fsDir)
-	if err = newTestConfig(globalMinioDefaultRegion, objLayer); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, objLayer); err != nil {
 		t.Fatalf("unable initialize config file, %s", err)
 	}
 
@@ -194,8 +194,8 @@ func TestIsValidRegion(t *testing.T) {
 		expectedResult bool
 	}{
 		{"", "", true},
-		{globalMinioDefaultRegion, "", true},
-		{globalMinioDefaultRegion, "US", true},
+		{globalKypelloDefaultRegion, "", true},
+		{globalKypelloDefaultRegion, "US", true},
 		{"us-west-1", "US", false},
 		{"us-west-1", "us-west-1", true},
 		// "US" was old naming convention for 'us-east-1'.

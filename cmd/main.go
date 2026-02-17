@@ -29,9 +29,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/color"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/cli"
-	"github.com/minio/minio/internal/color"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/console"
 	"github.com/minio/pkg/v3/env"
 	"github.com/minio/pkg/v3/trie"
@@ -197,7 +197,7 @@ func printMinIOVersion(c *cli.Context) {
 
 var debugNoExit = env.Get("_MINIO_DEBUG_NO_EXIT", "") != ""
 
-// Main main for minio server.
+// Main main for kypello server.
 func Main(args []string) {
 	// Set the minio app name.
 	appName := filepath.Base(args[0])

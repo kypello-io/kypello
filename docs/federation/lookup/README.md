@@ -17,27 +17,27 @@ Bucket lookup from DNS federation requires two dependencies
 
 ## Architecture
 
-![bucket-lookup](https://github.com/minio/minio/blob/master/docs/federation/lookup/bucket-lookup.png?raw=true)
+![bucket-lookup](https://github.com/kypello-io/kypello/blob/master/docs/federation/lookup/bucket-lookup.png?raw=true)
 
 ### Environment variables
 
 #### MINIO_ETCD_ENDPOINTS
 
 This is comma separated list of etcd servers that you want to use as the MinIO federation back-end. This should
-be same across the federated deployment, i.e. all the MinIO instances within a federated deployment should use same
+be same across the federated deployment, i.e. all the Kypello instances within a federated deployment should use same
 etcd back-end.
 
 #### MINIO_DOMAIN
 
 This is the top level domain name used for the federated setup. This domain name should ideally resolve to a load-balancer
-running in front of all the federated MinIO instances. The domain name is used to create sub domain entries to etcd. For
+running in front of all the federated Kypello instances. The domain name is used to create sub domain entries to etcd. For
 example, if the domain is set to `domain.com`, the buckets `bucket1`, `bucket2` will be accessible as `bucket1.domain.com`
 and `bucket2.domain.com`.
 
 #### MINIO_PUBLIC_IPS
 
-This is comma separated list of IP addresses to which buckets created on this MinIO instance will resolve to. For example,
-a bucket `bucket1` created on current MinIO instance will be accessible as `bucket1.domain.com`, and the DNS entry for
+This is comma separated list of IP addresses to which buckets created on this Kypello instance will resolve to. For example,
+a bucket `bucket1` created on current Kypello instance will be accessible as `bucket1.domain.com`, and the DNS entry for
 `bucket1.domain.com` will point to IP address set in `MINIO_PUBLIC_IPS`.
 
 - This field is mandatory for standalone and erasure code MinIO server deployments, to enable federated mode.
@@ -52,7 +52,7 @@ hosts passed to the MinIO server startup and use them for DNS entries.
 export MINIO_ETCD_ENDPOINTS="http://remote-etcd1:2379,http://remote-etcd2:4001"
 export MINIO_DOMAIN=domain.com
 export MINIO_PUBLIC_IPS=44.35.2.1,44.35.2.2,44.35.2.3,44.35.2.4
-minio server http://rack{1...4}.host{1...4}.domain.com/mnt/export{1...32}
+kypello server http://rack{1...4}.host{1...4}.domain.com/mnt/export{1...32}
 ```
 
 > cluster2
@@ -61,7 +61,7 @@ minio server http://rack{1...4}.host{1...4}.domain.com/mnt/export{1...32}
 export MINIO_ETCD_ENDPOINTS="http://remote-etcd1:2379,http://remote-etcd2:4001"
 export MINIO_DOMAIN=domain.com
 export MINIO_PUBLIC_IPS=44.35.1.1,44.35.1.2,44.35.1.3,44.35.1.4
-minio server http://rack{5...8}.host{5...8}.domain.com/mnt/export{1...32}
+kypello server http://rack{5...8}.host{5...8}.domain.com/mnt/export{1...32}
 ```
 
 In this configuration you can see `MINIO_ETCD_ENDPOINTS` points to the etcd backend which manages MinIO's
@@ -80,7 +80,7 @@ To test this setup, access the MinIO server via browser or [`mc`](https://docs.m
 
 ## Explore Further
 
-- [Use `mc` with MinIO Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html)
-- [Use `aws-cli` with MinIO Server](https://docs.min.io/community/minio-object-store/integrations/aws-cli-with-minio.html)
-- [Use `minio-go` SDK with MinIO Server](https://docs.min.io/community/minio-object-store/developers/go/minio-go.html)
+- [Use `mc` with Kypello Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html)
+- [Use `aws-cli` with Kypello Server](https://docs.min.io/community/minio-object-store/integrations/aws-cli-with-minio.html)
+- [Use `minio-go` SDK with Kypello Server](https://docs.min.io/community/minio-object-store/developers/go/minio-go.html)
 - [The MinIO documentation website](https://docs.min.io/community/minio-object-store/index.html)

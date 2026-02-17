@@ -1,4 +1,4 @@
-# MinIO Server Debugging Guide [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Docker Pulls](https://img.shields.io/docker/pulls/minio/minio.svg?maxAge=604800)](https://hub.docker.com/r/minio/minio/)
+# Kypello Server Debugging Guide [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Docker Pulls](https://img.shields.io/docker/pulls/minio/minio.svg?maxAge=604800)](https://hub.docker.com/r/minio/minio/)
 
 ## HTTP Trace
 
@@ -7,25 +7,25 @@ HTTP tracing can be enabled by using [`mc admin trace`](https://docs.min.io/comm
 Example:
 
 ```sh
-minio server /data
+kypello server /data
 ```
 
 Default trace is succinct only to indicate the API operations being called and the HTTP response status.
 
 ```sh
-mc admin trace myminio
+mc admin trace mykypello
 ```
 
 To trace entire HTTP request
 
 ```sh
-mc admin trace --verbose myminio
+mc admin trace --verbose mykypello
 ```
 
 To trace entire HTTP request and also internode communication
 
 ```sh
-mc admin trace --all --verbose myminio
+mc admin trace --all --verbose mykypello
 ```
 
 ## Subnet Health
@@ -35,13 +35,13 @@ Subnet Health diagnostics help ensure that the underlying infrastructure that ru
 Example:
 
 ```sh
-minio server /data{1...4}
+kypello server /data{1...4}
 ```
 
 The command takes no flags
 
 ```sh
-mc support diagnostics myminio/
+mc support diagnostics mykypello/
 ```
 
 The output printed will be of the form
@@ -75,7 +75,7 @@ Metadata is stored in `xl.meta` files for erasure coded objects. Each disk in th
 To install, [Go](https://golang.org/dl/) must be installed. Once installed, execute this to install the binary:
 
 ```bash
-go install github.com/minio/minio/docs/debugging/xl-meta@latest
+go install github.com/kypello-io/kypello/docs/debugging/xl-meta@latest
 ```
 
 ### Using xl-meta
@@ -123,7 +123,7 @@ To install, [Go](https://golang.org/dl/) must be installed.
 Once installed, execute this to install the binary:
 
 ```bash
-go install github.com/minio/minio/docs/debugging/inspect@latest
+go install github.com/kypello-io/kypello/docs/debugging/inspect@latest
 ```
 
 ### Usage

@@ -86,7 +86,7 @@ e.g., To scan objects stored under `user-uploads/` prefix and remove versions ol
 
 This JSON rule is equivalent to the following MinIO Client command:
 ```
-mc ilm rule add --noncurrent-expire-days 365 --prefix "user-uploads/" myminio/mydata
+mc ilm rule add --noncurrent-expire-days 365 --prefix "user-uploads/" mykypello/mydata
 ```
 
 ### 3.2 Automatic removal of noncurrent versions keeping only most recent ones after noncurrent days
@@ -115,7 +115,7 @@ e.g, To remove noncurrent versions of all objects keeping the most recent 5 nonc
 
 This JSON rule is equivalent to the following MinIO Client command:
 ```
-mc ilm rule add --noncurrent-expire-days 30 --noncurrent-expire-newer 5 --prefix "user-uploads/" myminio/mydata
+mc ilm rule add --noncurrent-expire-days 30 --noncurrent-expire-newer 5 --prefix "user-uploads/" mykypello/mydata
 ```
 
 #### 3.2.a Automatic removal of noncurrent versions keeping only most recent ones immediately (MinIO only extension)
@@ -203,7 +203,7 @@ To transition objects in a bucket to a destination bucket on a different cluster
 Using above tier, set up a lifecycle rule with transition:
 
 ```
- mc ilm add --expiry-days 365 --transition-days 45 --storage-class "AZURETIER" myminio/srcbucket
+ mc ilm add --expiry-days 365 --transition-days 45 --storage-class "AZURETIER" mykypello/srcbucket
 ```
 
 Note: In the case of S3, it is possible to create a tier from MinIO running in EC2 to S3 using AWS role attached to EC2 as credentials instead of accesskey/secretkey:

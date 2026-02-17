@@ -21,7 +21,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/minio/minio/internal/lock"
+	"github.com/kypello-io/kypello/internal/lock"
 )
 
 // AppendFile - appends the file "src" to the file "dst"

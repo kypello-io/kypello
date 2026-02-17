@@ -27,8 +27,8 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/klauspost/compress/s2"
-	"github.com/minio/minio/internal/bpool"
-	xioutil "github.com/minio/minio/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/bpool"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/tinylib/msgp/msgp"
 	"github.com/valyala/bytebufferpool"
 )
@@ -166,9 +166,7 @@ func (w *metacacheWriter) stream() (chan<- metaCacheEntry, error) {
 	}
 	objs := make(chan metaCacheEntry, 100)
 	w.streamErr = nil
-	w.streamWg.Add(1)
-	go func() {
-		defer w.streamWg.Done()
+	w.streamWg.Go(func() {
 		for o := range objs {
 			if len(o.name) == 0 || w.streamErr != nil {
 				continue
@@ -193,7 +191,7 @@ func (w *metacacheWriter) stream() (chan<- metaCacheEntry, error) {
 				continue
 			}
 		}
-	}()
+	})
 
 	return objs, nil
 }
@@ -770,9 +768,7 @@ type metacacheBlockWriter struct {
 // The caller should close to indicate the stream has ended.
 func newMetacacheBlockWriter(in <-chan metaCacheEntry, nextBlock func(b *metacacheBlock) error) *metacacheBlockWriter {
 	w := metacacheBlockWriter{blockEntries: cap(in)}
-	w.wg.Add(1)
-	go func() {
-		defer w.wg.Done()
+	w.wg.Go(func() {
 		var current metacacheBlock
 		var n int
 
@@ -821,7 +817,7 @@ func newMetacacheBlockWriter(in <-chan metaCacheEntry, nextBlock func(b *metacac
 			current.EOS = true
 			finishBlock()
 		}
-	}()
+	})
 	return &w
 }
 

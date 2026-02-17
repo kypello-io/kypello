@@ -34,15 +34,15 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/google/uuid"
+	"github.com/kypello-io/kypello/internal/bpool"
+	"github.com/kypello-io/kypello/internal/cachevalue"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7/pkg/s3utils"
 	"github.com/minio/minio-go/v7/pkg/set"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/minio/internal/bpool"
-	"github.com/minio/minio/internal/cachevalue"
-	"github.com/minio/minio/internal/config/storageclass"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/sync/errgroup"
 	"github.com/minio/pkg/v3/wildcard"
 	"github.com/minio/pkg/v3/workers"
@@ -307,7 +307,7 @@ func (z *erasureServerPools) GetRawData(ctx context.Context, volume, file string
 						r = io.NopCloser(bytes.NewBuffer([]byte{}))
 					}
 					// Keep disk path instead of ID, to ensure that the downloaded zip file can be
-					// easily automated with `minio server hostname{1...n}/disk{1...m}`.
+					// easily automated with `kypello server hostname{1...n}/disk{1...m}`.
 					err = fn(r, disk.Hostname(), disk.Endpoint().Path, pathJoin(volume, si.Name), si)
 					r.Close()
 					if err != nil {
@@ -860,7 +860,7 @@ func (z *erasureServerPools) MakeBucket(ctx context.Context, bucket string, opts
 
 		if !opts.NoLock {
 			// Lock the bucket name before creating.
-			lk := z.NewNSLock(minioMetaTmpBucket, bucket+".lck")
+			lk := z.NewNSLock(kypelloMetaTmpBucket, bucket+".lck")
 			lkctx, err := lk.GetLock(ctx, globalOperationTimeout)
 			if err != nil {
 				return err
@@ -1266,7 +1266,6 @@ func (z *erasureServerPools) DeleteObjects(ctx context.Context, bucket string, o
 
 	eg := errgroup.WithNErrs(len(z.serverPools)).WithConcurrency(len(z.serverPools))
 	for i, pool := range z.serverPools {
-		pool := pool
 		eg.Go(func() error {
 			dObjectsByPool[i], dErrsByPool[i] = pool.DeleteObjects(ctx, bucket, objects, opts)
 			return nil
@@ -1610,8 +1609,8 @@ func (z *erasureServerPools) listObjectsGeneric(ctx context.Context, bucket, pre
 		//     spark.sparkContext.setLogLevel("ERROR")
 		//     spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", "http://minio-lb:9000")
 		//     spark.sparkContext.hadoopConfiguration.set("fs.s3a.path.style.access", "true")
-		//     spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", "minioadmin")
-		//     spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", "minioadmin")
+		//     spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", "kypelloadmin")
+		//     spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", "kypelloadmin")
 		//
 		//     val df = spark.read.json("s3a://testbucket/s3.json")
 		//
@@ -2068,7 +2067,7 @@ func (z *erasureServerPools) DeleteBucket(ctx context.Context, bucket string, op
 
 	if !opts.NoLock {
 		// Lock the bucket name before creating.
-		lk := z.NewNSLock(minioMetaTmpBucket, bucket+".lck")
+		lk := z.NewNSLock(kypelloMetaTmpBucket, bucket+".lck")
 		lkctx, err := lk.GetLock(ctx, globalOperationTimeout)
 		if err != nil {
 			return err
@@ -2109,20 +2108,20 @@ func (z *erasureServerPools) DeleteBucket(ctx context.Context, bucket string, op
 	if err == nil || isErrBucketNotFound(err) {
 		// If site replication is configured, hold on to deleted bucket state until sites sync
 		if opts.SRDeleteOp == MarkDelete {
-			z.s3Peer.MakeBucket(context.Background(), pathJoin(minioMetaBucket, bucketMetaPrefix, deletedBucketsPrefix, bucket), MakeBucketOptions{})
+			z.s3Peer.MakeBucket(context.Background(), pathJoin(kypelloMetaBucket, bucketMetaPrefix, deletedBucketsPrefix, bucket), MakeBucketOptions{})
 		}
 	}
 
 	if err == nil {
 		// Purge the entire bucket metadata entirely.
-		z.deleteAll(context.Background(), minioMetaBucket, pathJoin(bucketMetaPrefix, bucket))
+		z.deleteAll(context.Background(), kypelloMetaBucket, pathJoin(bucketMetaPrefix, bucket))
 	}
 
 	return toObjectErr(err, bucket)
 }
 
 // deleteAll will rename bucket+prefix unconditionally across all disks to
-// minioMetaTmpDeletedBucket + unique uuid,
+// kypelloMetaTmpDeletedBucket + unique uuid,
 // Note that set distribution is ignored so it should only be used in cases where
 // data is not distributed across sets. Errors are logged but individual
 // disk failures are not returned.
@@ -2184,7 +2183,7 @@ func (z *erasureServerPools) ListBuckets(ctx context.Context, opts BucketOptions
 
 func (z *erasureServerPools) HealFormat(ctx context.Context, dryRun bool) (madmin.HealResultItem, error) {
 	// Acquire lock on format.json
-	formatLock := z.NewNSLock(minioMetaBucket, formatConfigFile)
+	formatLock := z.NewNSLock(kypelloMetaBucket, formatConfigFile)
 	lkctx, err := formatLock.GetLock(ctx, globalOperationTimeout)
 	if err != nil {
 		return madmin.HealResultItem{}, err
@@ -2447,8 +2446,8 @@ func (z *erasureServerPools) HealObjects(ctx context.Context, bucket, prefix str
 		}
 		// We might land at .metacache, .trash, .multipart
 		// no need to heal them skip, only when bucket
-		// is '.minio.sys'
-		if bucket == minioMetaBucket {
+		// is '.kypello.sys'
+		if bucket == kypelloMetaBucket {
 			if wildcard.Match("buckets/*/.metacache/*", entry.name) {
 				return nil
 			}

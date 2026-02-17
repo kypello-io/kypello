@@ -23,9 +23,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/bucket/replication"
-	xhttp "github.com/minio/minio/internal/http"
 )
 
 var configs = []replication.Config{
@@ -167,7 +167,7 @@ var (
 				ReplicationStatusInternal: "arn1:PENDING;",
 				ReplicationStatus:         replication.Pending,
 				VersionID:                 "a3348c34-c352-4498-82f0-1098e8b34df9",
-				UserDefined:               map[string]string{xhttp.MinIOReplicationResetStatus: fmt.Sprintf("%s;abc", UTCNow().AddDate(0, -1, 0).String())},
+				UserDefined:               map[string]string{xhttp.KypelloReplicationResetStatus: fmt.Sprintf("%s;abc", UTCNow().AddDate(0, -1, 0).String())},
 			},
 			expectedSync: true,
 			dsc:          ReplicateDecision{targetsMap: map[string]replicateTargetDecision{"arn1": newReplicateTargetDecision("arn1", true, false)}},
@@ -186,7 +186,7 @@ var (
 				ReplicationStatusInternal: "arn1:FAILED;",
 				ReplicationStatus:         replication.Failed,
 				VersionID:                 "a3348c34-c352-4498-82f0-1098e8b34df9",
-				UserDefined:               map[string]string{xhttp.MinIOReplicationResetStatus: fmt.Sprintf("%s;abc", UTCNow().AddDate(0, -1, 0).String())},
+				UserDefined:               map[string]string{xhttp.KypelloReplicationResetStatus: fmt.Sprintf("%s;abc", UTCNow().AddDate(0, -1, 0).String())},
 			},
 			dsc: ReplicateDecision{targetsMap: map[string]replicateTargetDecision{"arn1": newReplicateTargetDecision("arn1", true, false)}},
 			rcfg: replicationConfig{
@@ -204,7 +204,7 @@ var (
 				Size:              100,
 				ReplicationStatus: replication.StatusType(""),
 				VersionID:         "a3348c34-c352-4498-82f0-1098e8b34df9",
-				UserDefined:       map[string]string{xhttp.MinIOReplicationResetStatus: fmt.Sprintf("%s;abc", UTCNow().AddDate(0, -1, 0).String())},
+				UserDefined:       map[string]string{xhttp.KypelloReplicationResetStatus: fmt.Sprintf("%s;abc", UTCNow().AddDate(0, -1, 0).String())},
 			},
 			dsc: ReplicateDecision{targetsMap: map[string]replicateTargetDecision{"arn1": newReplicateTargetDecision("arn1", true, false)}},
 			rcfg: replicationConfig{
@@ -225,7 +225,7 @@ var (
 				ReplicationStatusInternal: "arn1:COMPLETED;",
 				ReplicationStatus:         replication.Completed,
 				VersionID:                 "a3348c34-c352-4498-82f0-1098e8b34df8",
-				UserDefined:               map[string]string{xhttp.MinIOReplicationResetStatus: fmt.Sprintf("%s;abc", UTCNow().AddDate(0, -1, 0).String())},
+				UserDefined:               map[string]string{xhttp.KypelloReplicationResetStatus: fmt.Sprintf("%s;abc", UTCNow().AddDate(0, -1, 0).String())},
 			},
 			expectedSync: true,
 			dsc:          ReplicateDecision{targetsMap: map[string]replicateTargetDecision{"arn1": newReplicateTargetDecision("arn1", true, false)}},
@@ -245,7 +245,7 @@ var (
 
 				ReplicationStatus: replication.Pending,
 				VersionID:         "a3348c34-c352-4498-82f0-1098e8b34df9",
-				UserDefined:       map[string]string{xhttp.MinIOReplicationResetStatus: fmt.Sprintf("%s;%s", UTCNow().AddDate(0, 0, -1).Format(http.TimeFormat), "abc")},
+				UserDefined:       map[string]string{xhttp.KypelloReplicationResetStatus: fmt.Sprintf("%s;%s", UTCNow().AddDate(0, 0, -1).Format(http.TimeFormat), "abc")},
 				ModTime:           UTCNow().AddDate(0, 0, -2),
 			},
 			expectedSync: true,
@@ -265,7 +265,7 @@ var (
 				ReplicationStatusInternal: "arn1:COMPLETED;",
 				ReplicationStatus:         replication.Completed,
 				VersionID:                 "a3348c34-c352-4498-82f0-1098e8b34df9",
-				UserDefined:               map[string]string{xhttp.MinIOReplicationResetStatus: fmt.Sprintf("%s;%s", start.Format(http.TimeFormat), "xyz")},
+				UserDefined:               map[string]string{xhttp.KypelloReplicationResetStatus: fmt.Sprintf("%s;%s", start.Format(http.TimeFormat), "xyz")},
 			},
 			expectedSync: false,
 			dsc:          ReplicateDecision{targetsMap: map[string]replicateTargetDecision{"arn1": newReplicateTargetDecision("arn1", true, false)}},

@@ -1,10 +1,10 @@
 # KMS Guide [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io)
 
-MinIO uses a key-management-system (KMS) to support SSE-S3. If a client requests SSE-S3, or auto-encryption is enabled, the MinIO server encrypts each object with a unique object key which is protected by a master key managed by the KMS.
+Kypello uses a key-management-system (KMS) to support SSE-S3. If a client requests SSE-S3, or auto-encryption is enabled, the Kypello server encrypts each object with a unique object key which is protected by a master key managed by the KMS.
 
 ## Quick Start
 
-MinIO supports multiple KMS implementations via our [KES](https://github.com/minio/kes#kes) project. We run a KES instance at `https://play.min.io:7373` for you to experiment and quickly get started. To run MinIO with a KMS just fetch the root identity, set the following environment variables and then start your MinIO server. If you haven't installed MinIO, yet, then follow the MinIO [install instructions](https://docs.min.io/community/minio-object-store/operations/deployments/baremetal-deploy-minio-on-redhat-linux.html) first.
+Kypello supports multiple KMS implementations via our [KES](https://github.com/kypello/kes#kes) project. We run a KES instance at `https://play.min.io:7373` for you to experiment and quickly get started. To run Kypello with a KMS just fetch the root identity, set the following environment variables and then start your Kypello server. If you haven't installed Kypello, yet, then follow the Kypello [install instructions](https://docs.min.io/community/kypello-object-store/operations/deployments/baremetal-deploy-kypello-on-redhat-linux.html) first.
 
 ### 1. Fetch the root identity
 
@@ -12,25 +12,25 @@ As the initial step, fetch the private key and certificate of the root identity:
 
 ```sh
 curl -sSL --tlsv1.2 \
-     -O 'https://raw.githubusercontent.com/minio/kes/master/root.key' \
-     -O 'https://raw.githubusercontent.com/minio/kes/master/root.cert'
+     -O 'https://raw.githubusercontent.com/kypello/kes/master/root.key' \
+     -O 'https://raw.githubusercontent.com/kypello/kes/master/root.cert'
 ```
 
-### 2. Set the MinIO-KES configuration
+### 2. Set the Kypello-KES configuration
 
 ```sh
 export MINIO_KMS_KES_ENDPOINT=https://play.min.io:7373
 export MINIO_KMS_KES_KEY_FILE=root.key
 export MINIO_KMS_KES_CERT_FILE=root.cert
-export MINIO_KMS_KES_KEY_NAME=my-minio-key
+export MINIO_KMS_KES_KEY_NAME=my-kypello-key
 ```
 
-### 3. Start the MinIO Server
+### 3. Start the Kypello Server
 
 ```sh
-export MINIO_ROOT_USER=minio
-export MINIO_ROOT_PASSWORD=minio123
-minio server ~/export
+export MINIO_ROOT_USER=kypello
+export MINIO_ROOT_PASSWORD=kypello123
+kypello server ~/export
 ```
 
 > The KES instance at `https://play.min.io:7373` is meant to experiment and provides a way to get started quickly.
@@ -39,25 +39,25 @@ minio server ~/export
 
 ## Configuration Guides
 
-A typical MinIO deployment that uses a KMS for SSE-S3 looks like this:
+A typical Kypello deployment that uses a KMS for SSE-S3 looks like this:
 
 ```
     ┌────────────┐
     │ ┌──────────┴─┬─────╮          ┌────────────┐
     └─┤ ┌──────────┴─┬───┴──────────┤ ┌──────────┴─┬─────────────────╮
       └─┤ ┌──────────┴─┬─────┬──────┴─┤ KES Server ├─────────────────┤
-        └─┤   MinIO    ├─────╯        └────────────┘            ┌────┴────┐
+        └─┤   Kypello    ├─────╯        └────────────┘            ┌────┴────┐
           └────────────┘                                        │   KMS   │
                                                                 └─────────┘
 ```
 
-In a given setup, there are `n` MinIO instances talking to `m` KES servers but only `1` central KMS. The most simple setup consists of `1` MinIO server or cluster talking to `1` KMS via `1` KES server.
+In a given setup, there are `n` Kypello instances talking to `m` KES servers but only `1` central KMS. The most simple setup consists of `1` Kypello server or cluster talking to `1` KMS via `1` KES server.
 
-The main difference between various MinIO-KMS deployments is the KMS implementation. The following table helps you select the right option for your use case:
+The main difference between various Kypello-KMS deployments is the KMS implementation. The following table helps you select the right option for your use case:
 
 | KMS                                                                                          | Purpose                                                           |
 |:---------------------------------------------------------------------------------------------|:------------------------------------------------------------------|
-| [Hashicorp Vault](https://github.com/minio/kes/wiki/Hashicorp-Vault-Keystore)                | Local KMS. MinIO and KMS on-prem (**Recommended**)                |
+| [Hashicorp Vault](https://github.com/minio/kes/wiki/Hashicorp-Vault-Keystore)                | Local KMS. Kypello and KMS on-prem (**Recommended**)                |
 | [AWS-KMS + SecretsManager](https://github.com/minio/kes/wiki/AWS-SecretsManager)             | Cloud KMS. MinIO in combination with a managed KMS installation   |
 | [Gemalto KeySecure /Thales CipherTrust](https://github.com/minio/kes/wiki/Gemalto-KeySecure) | Local KMS. MinIO and KMS On-Premises.                             |
 | [Google Cloud Platform SecretManager](https://github.com/minio/kes/wiki/GCP-SecretManager)   | Cloud KMS. MinIO in combination with a managed KMS installation   |
@@ -81,13 +81,13 @@ Auto-Encryption is useful when MinIO administrator wants to ensure that all data
 MinIO automatically encrypts all objects on buckets if KMS is successfully configured and bucket encryption configuration is enabled for each bucket as shown below:
 
 ```
-mc encrypt set sse-s3 myminio/bucket/
+mc encrypt set sse-s3 mykypello/bucket/
 ```
 
 Verify if MinIO has `sse-s3` enabled
 
 ```
-mc encrypt info myminio/bucket/
+mc encrypt info mykypello/bucket/
 Auto encryption 'sse-s3' is enabled
 ```
 
@@ -108,12 +108,12 @@ export MINIO_KMS_AUTO_ENCRYPTION=on
 To verify auto-encryption, use the following `mc` command:
 
 ```
-mc cp test.file myminio/bucket/
+mc cp test.file mykypello/bucket/
 test.file:              5 B / 5 B  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100.00% 337 B/s 0s
 ```
 
 ```
-mc stat myminio/bucket/test.file
+mc stat mykypello/bucket/test.file
 Name      : test.file
 ...
 Encrypted :
@@ -137,7 +137,7 @@ Certificates are no secrets and sent in plaintext as part of the TLS handshake.
 
 ## Explore Further
 
-- [Use `mc` with MinIO Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html)
-- [Use `aws-cli` with MinIO Server](https://docs.min.io/community/minio-object-store/integrations/aws-cli-with-minio.html)
-- [Use `minio-go` SDK with MinIO Server](https://docs.min.io/community/minio-object-store/developers/go/minio-go.html)
+- [Use `mc` with Kypello Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html)
+- [Use `aws-cli` with Kypello Server](https://docs.min.io/community/minio-object-store/integrations/aws-cli-with-minio.html)
+- [Use `minio-go` SDK with Kypello Server](https://docs.min.io/community/minio-object-store/developers/go/minio-go.html)
 - [The MinIO documentation website](https://docs.min.io/community/minio-object-store/index.html)

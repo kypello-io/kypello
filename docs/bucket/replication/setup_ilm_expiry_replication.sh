@@ -17,8 +17,8 @@ catch() {
 	fi
 
 	echo "Cleaning up instances of MinIO"
-	pkill minio
-	pkill -9 minio
+	pkill kypello
+	pkill -9 kypello
 	rm -rf /tmp/multisitea
 	rm -rf /tmp/multisiteb
 	rm -rf /tmp/multisitec
@@ -34,11 +34,11 @@ catch
 set -e
 export MINIO_CI_CD=1
 export MINIO_BROWSER=off
-export MINIO_ROOT_USER="minio"
-export MINIO_ROOT_PASSWORD="minio123"
+export MINIO_ROOT_USER="kypello"
+export MINIO_ROOT_PASSWORD="kypello123"
 export MINIO_KMS_AUTO_ENCRYPTION=off
 export MINIO_PROMETHEUS_AUTH_TYPE=public
-export MINIO_KMS_SECRET_KEY=my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
+export MINIO_KMS_SECRET_KEY=my-kypello-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
 unset MINIO_KMS_KES_CERT_FILE
 unset MINIO_KMS_KES_KEY_FILE
 unset MINIO_KMS_KES_ENDPOINT
@@ -49,32 +49,32 @@ if [ ! -f ./mc ]; then
 		chmod +x mc
 fi
 
-minio server --address 127.0.0.1:9001 "http://127.0.0.1:9001/tmp/multisitea/data/disterasure/xl{1...4}" \
+kypello server --address 127.0.0.1:9001 "http://127.0.0.1:9001/tmp/multisitea/data/disterasure/xl{1...4}" \
 	"http://127.0.0.1:9002/tmp/multisitea/data/disterasure/xl{5...8}" >/tmp/sitea_1.log 2>&1 &
-minio server --address 127.0.0.1:9002 "http://127.0.0.1:9001/tmp/multisitea/data/disterasure/xl{1...4}" \
+kypello server --address 127.0.0.1:9002 "http://127.0.0.1:9001/tmp/multisitea/data/disterasure/xl{1...4}" \
 	"http://127.0.0.1:9002/tmp/multisitea/data/disterasure/xl{5...8}" >/tmp/sitea_2.log 2>&1 &
 
-minio server --address 127.0.0.1:9003 "http://127.0.0.1:9003/tmp/multisiteb/data/disterasure/xl{1...4}" \
+kypello server --address 127.0.0.1:9003 "http://127.0.0.1:9003/tmp/multisiteb/data/disterasure/xl{1...4}" \
 	"http://127.0.0.1:9004/tmp/multisiteb/data/disterasure/xl{5...8}" >/tmp/siteb_1.log 2>&1 &
-minio server --address 127.0.0.1:9004 "http://127.0.0.1:9003/tmp/multisiteb/data/disterasure/xl{1...4}" \
+kypello server --address 127.0.0.1:9004 "http://127.0.0.1:9003/tmp/multisiteb/data/disterasure/xl{1...4}" \
 	"http://127.0.0.1:9004/tmp/multisiteb/data/disterasure/xl{5...8}" >/tmp/siteb_2.log 2>&1 &
 
-minio server --address 127.0.0.1:9005 "http://127.0.0.1:9005/tmp/multisitec/data/disterasure/xl{1...4}" \
+kypello server --address 127.0.0.1:9005 "http://127.0.0.1:9005/tmp/multisitec/data/disterasure/xl{1...4}" \
 	"http://127.0.0.1:9006/tmp/multisitec/data/disterasure/xl{5...8}" >/tmp/sitec_1.log 2>&1 &
-minio server --address 127.0.0.1:9006 "http://127.0.0.1:9005/tmp/multisitec/data/disterasure/xl{1...4}" \
+kypello server --address 127.0.0.1:9006 "http://127.0.0.1:9005/tmp/multisitec/data/disterasure/xl{1...4}" \
 	"http://127.0.0.1:9006/tmp/multisitec/data/disterasure/xl{5...8}" >/tmp/sitec_2.log 2>&1 &
 
-minio server --address 127.0.0.1:9007 "http://127.0.0.1:9007/tmp/multisited/data/disterasure/xl{1...4}" \
+kypello server --address 127.0.0.1:9007 "http://127.0.0.1:9007/tmp/multisited/data/disterasure/xl{1...4}" \
 	"http://127.0.0.1:9008/tmp/multisited/data/disterasure/xl{5...8}" >/tmp/sited_1.log 2>&1 &
-minio server --address 127.0.0.1:9008 "http://127.0.0.1:9007/tmp/multisited/data/disterasure/xl{1...4}" \
+kypello server --address 127.0.0.1:9008 "http://127.0.0.1:9007/tmp/multisited/data/disterasure/xl{1...4}" \
 	"http://127.0.0.1:9008/tmp/multisited/data/disterasure/xl{5...8}" >/tmp/sited_2.log 2>&1 &
 
-# Wait to make sure all MinIO instances are up
+# Wait to make sure all Kypello instances are up
 
-export MC_HOST_sitea=http://minio:minio123@127.0.0.1:9001
-export MC_HOST_siteb=http://minio:minio123@127.0.0.1:9004
-export MC_HOST_sitec=http://minio:minio123@127.0.0.1:9006
-export MC_HOST_sited=http://minio:minio123@127.0.0.1:9008
+export MC_HOST_sitea=http://kypello:kypello123@127.0.0.1:9001
+export MC_HOST_siteb=http://kypello:kypello123@127.0.0.1:9004
+export MC_HOST_sitec=http://kypello:kypello123@127.0.0.1:9006
+export MC_HOST_sited=http://kypello:kypello123@127.0.0.1:9008
 
 ./mc ready sitea
 ./mc ready siteb
@@ -90,7 +90,7 @@ export MC_HOST_sited=http://minio:minio123@127.0.0.1:9008
 sleep 10s
 
 ## Add warm tier
-./mc ilm tier add minio sitea WARM-TIER --endpoint http://localhost:9006 --access-key minio --secret-key minio123 --bucket bucket
+./mc ilm tier add minio sitea WARM-TIER --endpoint http://localhost:9006 --access-key kypello --secret-key kypello123 --bucket bucket
 
 ## Add ILM rules
 ./mc ilm add sitea/bucket --transition-days 0 --transition-tier WARM-TIER --transition-days 0 --noncurrent-expire-days 2 --expire-days 3 --prefix "myprefix" --tags "tag1=val1&tag2=val2"

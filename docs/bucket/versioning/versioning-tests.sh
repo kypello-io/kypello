@@ -17,8 +17,8 @@ catch() {
 	fi
 
 	echo "Cleaning up instances of MinIO"
-	pkill minio
-	pkill -9 minio
+	pkill kypello
+	pkill -9 kypello
 	rm -rf /tmp/multisitea
 	if [ $# -ne 0 ]; then
 		exit $#
@@ -32,7 +32,7 @@ export MINIO_CI_CD=1
 export MINIO_BROWSER=off
 export MINIO_KMS_AUTO_ENCRYPTION=off
 export MINIO_PROMETHEUS_AUTH_TYPE=public
-export MINIO_KMS_SECRET_KEY=my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
+export MINIO_KMS_SECRET_KEY=my-kypello-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
 unset MINIO_KMS_KES_CERT_FILE
 unset MINIO_KMS_KES_KEY_FILE
 unset MINIO_KMS_KES_ENDPOINT
@@ -43,13 +43,13 @@ if [ ! -f ./mc ]; then
 		chmod +x mc
 fi
 
-minio server -S /tmp/no-certs --address ":9001" "http://localhost:9001/tmp/multisitea/data/disterasure/xl{1...4}" \
+kypello server -S /tmp/no-certs --address ":9001" "http://localhost:9001/tmp/multisitea/data/disterasure/xl{1...4}" \
 	"http://localhost:9002/tmp/multisitea/data/disterasure/xl{5...8}" >/tmp/sitea_1.log 2>&1 &
 
-minio server -S /tmp/no-certs --address ":9002" "http://localhost:9001/tmp/multisitea/data/disterasure/xl{1...4}" \
+kypello server -S /tmp/no-certs --address ":9002" "http://localhost:9001/tmp/multisitea/data/disterasure/xl{1...4}" \
 	"http://localhost:9002/tmp/multisitea/data/disterasure/xl{5...8}" >/tmp/sitea_2.log 2>&1 &
 
-export MC_HOST_sitea=http://minioadmin:minioadmin@localhost:9002
+export MC_HOST_sitea=http://kypelloadmin:kypelloadmin@localhost:9002
 
 ./mc ready sitea
 

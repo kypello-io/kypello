@@ -34,10 +34,10 @@ import (
 	"github.com/IBM/sarama"
 	saramatls "github.com/IBM/sarama/tools/tls"
 
-	xioutil "github.com/minio/minio/internal/ioutil"
-	types "github.com/minio/minio/internal/logger/target/loggertypes"
-	"github.com/minio/minio/internal/once"
-	"github.com/minio/minio/internal/store"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	types "github.com/kypello-io/kypello/internal/logger/target/loggertypes"
+	"github.com/kypello-io/kypello/internal/once"
+	"github.com/kypello-io/kypello/internal/store"
 	xnet "github.com/minio/pkg/v3/net"
 )
 

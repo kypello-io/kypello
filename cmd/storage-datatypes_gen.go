@@ -92,6 +92,58 @@ func (z BaseOptions) Msgsize() (s int) {
 }
 
 // DecodeMsg implements msgp.Decodable
+func (z *BitrotAlgorithm) DecodeMsg(dc *msgp.Reader) (err error) {
+	{
+		var zb0001 uint
+		zb0001, err = dc.ReadUint()
+		if err != nil {
+			err = msgp.WrapError(err)
+			return
+		}
+		(*z) = BitrotAlgorithm(zb0001)
+	}
+	return
+}
+
+// EncodeMsg implements msgp.Encodable
+func (z BitrotAlgorithm) EncodeMsg(en *msgp.Writer) (err error) {
+	err = en.WriteUint(uint(z))
+	if err != nil {
+		err = msgp.WrapError(err)
+		return
+	}
+	return
+}
+
+// MarshalMsg implements msgp.Marshaler
+func (z BitrotAlgorithm) MarshalMsg(b []byte) (o []byte, err error) {
+	o = msgp.Require(b, z.Msgsize())
+	o = msgp.AppendUint(o, uint(z))
+	return
+}
+
+// UnmarshalMsg implements msgp.Unmarshaler
+func (z *BitrotAlgorithm) UnmarshalMsg(bts []byte) (o []byte, err error) {
+	{
+		var zb0001 uint
+		zb0001, bts, err = msgp.ReadUintBytes(bts)
+		if err != nil {
+			err = msgp.WrapError(err)
+			return
+		}
+		(*z) = BitrotAlgorithm(zb0001)
+	}
+	o = bts
+	return
+}
+
+// Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
+func (z BitrotAlgorithm) Msgsize() (s int) {
+	s = msgp.UintSize
+	return
+}
+
+// DecodeMsg implements msgp.Decodable
 func (z *CheckPartsHandlerParams) DecodeMsg(dc *msgp.Reader) (err error) {
 	var field []byte
 	_ = field
@@ -409,6 +461,167 @@ func (z *CheckPartsResp) UnmarshalMsg(bts []byte) (o []byte, err error) {
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *CheckPartsResp) Msgsize() (s int) {
 	s = 1 + 2 + msgp.ArrayHeaderSize + (len(z.Results) * (msgp.IntSize))
+	return
+}
+
+// DecodeMsg implements msgp.Decodable
+func (z *ChecksumInfo) DecodeMsg(dc *msgp.Reader) (err error) {
+	var field []byte
+	_ = field
+	var zb0001 uint32
+	zb0001, err = dc.ReadMapHeader()
+	if err != nil {
+		err = msgp.WrapError(err)
+		return
+	}
+	for zb0001 > 0 {
+		zb0001--
+		field, err = dc.ReadMapKeyPtr()
+		if err != nil {
+			err = msgp.WrapError(err)
+			return
+		}
+		switch msgp.UnsafeString(field) {
+		case "PartNumber":
+			z.PartNumber, err = dc.ReadInt()
+			if err != nil {
+				err = msgp.WrapError(err, "PartNumber")
+				return
+			}
+		case "Algorithm":
+			{
+				var zb0002 uint
+				zb0002, err = dc.ReadUint()
+				if err != nil {
+					err = msgp.WrapError(err, "Algorithm")
+					return
+				}
+				z.Algorithm = BitrotAlgorithm(zb0002)
+			}
+		case "Hash":
+			z.Hash, err = dc.ReadBytes(z.Hash)
+			if err != nil {
+				err = msgp.WrapError(err, "Hash")
+				return
+			}
+		default:
+			err = dc.Skip()
+			if err != nil {
+				err = msgp.WrapError(err)
+				return
+			}
+		}
+	}
+	return
+}
+
+// EncodeMsg implements msgp.Encodable
+func (z *ChecksumInfo) EncodeMsg(en *msgp.Writer) (err error) {
+	// map header, size 3
+	// write "PartNumber"
+	err = en.Append(0x83, 0xaa, 0x50, 0x61, 0x72, 0x74, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72)
+	if err != nil {
+		return
+	}
+	err = en.WriteInt(z.PartNumber)
+	if err != nil {
+		err = msgp.WrapError(err, "PartNumber")
+		return
+	}
+	// write "Algorithm"
+	err = en.Append(0xa9, 0x41, 0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74, 0x68, 0x6d)
+	if err != nil {
+		return
+	}
+	err = en.WriteUint(uint(z.Algorithm))
+	if err != nil {
+		err = msgp.WrapError(err, "Algorithm")
+		return
+	}
+	// write "Hash"
+	err = en.Append(0xa4, 0x48, 0x61, 0x73, 0x68)
+	if err != nil {
+		return
+	}
+	err = en.WriteBytes(z.Hash)
+	if err != nil {
+		err = msgp.WrapError(err, "Hash")
+		return
+	}
+	return
+}
+
+// MarshalMsg implements msgp.Marshaler
+func (z *ChecksumInfo) MarshalMsg(b []byte) (o []byte, err error) {
+	o = msgp.Require(b, z.Msgsize())
+	// map header, size 3
+	// string "PartNumber"
+	o = append(o, 0x83, 0xaa, 0x50, 0x61, 0x72, 0x74, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72)
+	o = msgp.AppendInt(o, z.PartNumber)
+	// string "Algorithm"
+	o = append(o, 0xa9, 0x41, 0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74, 0x68, 0x6d)
+	o = msgp.AppendUint(o, uint(z.Algorithm))
+	// string "Hash"
+	o = append(o, 0xa4, 0x48, 0x61, 0x73, 0x68)
+	o = msgp.AppendBytes(o, z.Hash)
+	return
+}
+
+// UnmarshalMsg implements msgp.Unmarshaler
+func (z *ChecksumInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
+	var field []byte
+	_ = field
+	var zb0001 uint32
+	zb0001, bts, err = msgp.ReadMapHeaderBytes(bts)
+	if err != nil {
+		err = msgp.WrapError(err)
+		return
+	}
+	for zb0001 > 0 {
+		zb0001--
+		field, bts, err = msgp.ReadMapKeyZC(bts)
+		if err != nil {
+			err = msgp.WrapError(err)
+			return
+		}
+		switch msgp.UnsafeString(field) {
+		case "PartNumber":
+			z.PartNumber, bts, err = msgp.ReadIntBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "PartNumber")
+				return
+			}
+		case "Algorithm":
+			{
+				var zb0002 uint
+				zb0002, bts, err = msgp.ReadUintBytes(bts)
+				if err != nil {
+					err = msgp.WrapError(err, "Algorithm")
+					return
+				}
+				z.Algorithm = BitrotAlgorithm(zb0002)
+			}
+		case "Hash":
+			z.Hash, bts, err = msgp.ReadBytesBytes(bts, z.Hash)
+			if err != nil {
+				err = msgp.WrapError(err, "Hash")
+				return
+			}
+		default:
+			bts, err = msgp.Skip(bts)
+			if err != nil {
+				err = msgp.WrapError(err)
+				return
+			}
+		}
+	}
+	o = bts
+	return
+}
+
+// Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
+func (z *ChecksumInfo) Msgsize() (s int) {
+	s = 1 + 11 + msgp.IntSize + 10 + msgp.UintSize + 5 + msgp.BytesPrefixSize + len(z.Hash)
 	return
 }
 
@@ -2291,6 +2504,338 @@ func (z *DiskMetrics) Msgsize() (s int) {
 		}
 	}
 	s += 13 + msgp.Uint32Size + 24 + msgp.Uint64Size + 19 + msgp.Uint64Size + 12 + msgp.Uint64Size + 13 + msgp.Uint64Size
+	return
+}
+
+// DecodeMsg implements msgp.Decodable
+func (z *ErasureInfo) DecodeMsg(dc *msgp.Reader) (err error) {
+	var field []byte
+	_ = field
+	var zb0001 uint32
+	zb0001, err = dc.ReadMapHeader()
+	if err != nil {
+		err = msgp.WrapError(err)
+		return
+	}
+	for zb0001 > 0 {
+		zb0001--
+		field, err = dc.ReadMapKeyPtr()
+		if err != nil {
+			err = msgp.WrapError(err)
+			return
+		}
+		switch msgp.UnsafeString(field) {
+		case "Algorithm":
+			z.Algorithm, err = dc.ReadString()
+			if err != nil {
+				err = msgp.WrapError(err, "Algorithm")
+				return
+			}
+		case "DataBlocks":
+			z.DataBlocks, err = dc.ReadInt()
+			if err != nil {
+				err = msgp.WrapError(err, "DataBlocks")
+				return
+			}
+		case "ParityBlocks":
+			z.ParityBlocks, err = dc.ReadInt()
+			if err != nil {
+				err = msgp.WrapError(err, "ParityBlocks")
+				return
+			}
+		case "BlockSize":
+			z.BlockSize, err = dc.ReadInt64()
+			if err != nil {
+				err = msgp.WrapError(err, "BlockSize")
+				return
+			}
+		case "Index":
+			z.Index, err = dc.ReadInt()
+			if err != nil {
+				err = msgp.WrapError(err, "Index")
+				return
+			}
+		case "Distribution":
+			var zb0002 uint32
+			zb0002, err = dc.ReadArrayHeader()
+			if err != nil {
+				err = msgp.WrapError(err, "Distribution")
+				return
+			}
+			if cap(z.Distribution) >= int(zb0002) {
+				z.Distribution = (z.Distribution)[:zb0002]
+			} else {
+				z.Distribution = make([]int, zb0002)
+			}
+			for za0001 := range z.Distribution {
+				z.Distribution[za0001], err = dc.ReadInt()
+				if err != nil {
+					err = msgp.WrapError(err, "Distribution", za0001)
+					return
+				}
+			}
+		case "Checksums":
+			var zb0003 uint32
+			zb0003, err = dc.ReadArrayHeader()
+			if err != nil {
+				err = msgp.WrapError(err, "Checksums")
+				return
+			}
+			if cap(z.Checksums) >= int(zb0003) {
+				z.Checksums = (z.Checksums)[:zb0003]
+			} else {
+				z.Checksums = make([]ChecksumInfo, zb0003)
+			}
+			for za0002 := range z.Checksums {
+				err = z.Checksums[za0002].DecodeMsg(dc)
+				if err != nil {
+					err = msgp.WrapError(err, "Checksums", za0002)
+					return
+				}
+			}
+		default:
+			err = dc.Skip()
+			if err != nil {
+				err = msgp.WrapError(err)
+				return
+			}
+		}
+	}
+	return
+}
+
+// EncodeMsg implements msgp.Encodable
+func (z *ErasureInfo) EncodeMsg(en *msgp.Writer) (err error) {
+	// map header, size 7
+	// write "Algorithm"
+	err = en.Append(0x87, 0xa9, 0x41, 0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74, 0x68, 0x6d)
+	if err != nil {
+		return
+	}
+	err = en.WriteString(z.Algorithm)
+	if err != nil {
+		err = msgp.WrapError(err, "Algorithm")
+		return
+	}
+	// write "DataBlocks"
+	err = en.Append(0xaa, 0x44, 0x61, 0x74, 0x61, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x73)
+	if err != nil {
+		return
+	}
+	err = en.WriteInt(z.DataBlocks)
+	if err != nil {
+		err = msgp.WrapError(err, "DataBlocks")
+		return
+	}
+	// write "ParityBlocks"
+	err = en.Append(0xac, 0x50, 0x61, 0x72, 0x69, 0x74, 0x79, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x73)
+	if err != nil {
+		return
+	}
+	err = en.WriteInt(z.ParityBlocks)
+	if err != nil {
+		err = msgp.WrapError(err, "ParityBlocks")
+		return
+	}
+	// write "BlockSize"
+	err = en.Append(0xa9, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x69, 0x7a, 0x65)
+	if err != nil {
+		return
+	}
+	err = en.WriteInt64(z.BlockSize)
+	if err != nil {
+		err = msgp.WrapError(err, "BlockSize")
+		return
+	}
+	// write "Index"
+	err = en.Append(0xa5, 0x49, 0x6e, 0x64, 0x65, 0x78)
+	if err != nil {
+		return
+	}
+	err = en.WriteInt(z.Index)
+	if err != nil {
+		err = msgp.WrapError(err, "Index")
+		return
+	}
+	// write "Distribution"
+	err = en.Append(0xac, 0x44, 0x69, 0x73, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x69, 0x6f, 0x6e)
+	if err != nil {
+		return
+	}
+	err = en.WriteArrayHeader(uint32(len(z.Distribution)))
+	if err != nil {
+		err = msgp.WrapError(err, "Distribution")
+		return
+	}
+	for za0001 := range z.Distribution {
+		err = en.WriteInt(z.Distribution[za0001])
+		if err != nil {
+			err = msgp.WrapError(err, "Distribution", za0001)
+			return
+		}
+	}
+	// write "Checksums"
+	err = en.Append(0xa9, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x73, 0x75, 0x6d, 0x73)
+	if err != nil {
+		return
+	}
+	err = en.WriteArrayHeader(uint32(len(z.Checksums)))
+	if err != nil {
+		err = msgp.WrapError(err, "Checksums")
+		return
+	}
+	for za0002 := range z.Checksums {
+		err = z.Checksums[za0002].EncodeMsg(en)
+		if err != nil {
+			err = msgp.WrapError(err, "Checksums", za0002)
+			return
+		}
+	}
+	return
+}
+
+// MarshalMsg implements msgp.Marshaler
+func (z *ErasureInfo) MarshalMsg(b []byte) (o []byte, err error) {
+	o = msgp.Require(b, z.Msgsize())
+	// map header, size 7
+	// string "Algorithm"
+	o = append(o, 0x87, 0xa9, 0x41, 0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74, 0x68, 0x6d)
+	o = msgp.AppendString(o, z.Algorithm)
+	// string "DataBlocks"
+	o = append(o, 0xaa, 0x44, 0x61, 0x74, 0x61, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x73)
+	o = msgp.AppendInt(o, z.DataBlocks)
+	// string "ParityBlocks"
+	o = append(o, 0xac, 0x50, 0x61, 0x72, 0x69, 0x74, 0x79, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x73)
+	o = msgp.AppendInt(o, z.ParityBlocks)
+	// string "BlockSize"
+	o = append(o, 0xa9, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x69, 0x7a, 0x65)
+	o = msgp.AppendInt64(o, z.BlockSize)
+	// string "Index"
+	o = append(o, 0xa5, 0x49, 0x6e, 0x64, 0x65, 0x78)
+	o = msgp.AppendInt(o, z.Index)
+	// string "Distribution"
+	o = append(o, 0xac, 0x44, 0x69, 0x73, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x69, 0x6f, 0x6e)
+	o = msgp.AppendArrayHeader(o, uint32(len(z.Distribution)))
+	for za0001 := range z.Distribution {
+		o = msgp.AppendInt(o, z.Distribution[za0001])
+	}
+	// string "Checksums"
+	o = append(o, 0xa9, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x73, 0x75, 0x6d, 0x73)
+	o = msgp.AppendArrayHeader(o, uint32(len(z.Checksums)))
+	for za0002 := range z.Checksums {
+		o, err = z.Checksums[za0002].MarshalMsg(o)
+		if err != nil {
+			err = msgp.WrapError(err, "Checksums", za0002)
+			return
+		}
+	}
+	return
+}
+
+// UnmarshalMsg implements msgp.Unmarshaler
+func (z *ErasureInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
+	var field []byte
+	_ = field
+	var zb0001 uint32
+	zb0001, bts, err = msgp.ReadMapHeaderBytes(bts)
+	if err != nil {
+		err = msgp.WrapError(err)
+		return
+	}
+	for zb0001 > 0 {
+		zb0001--
+		field, bts, err = msgp.ReadMapKeyZC(bts)
+		if err != nil {
+			err = msgp.WrapError(err)
+			return
+		}
+		switch msgp.UnsafeString(field) {
+		case "Algorithm":
+			z.Algorithm, bts, err = msgp.ReadStringBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "Algorithm")
+				return
+			}
+		case "DataBlocks":
+			z.DataBlocks, bts, err = msgp.ReadIntBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "DataBlocks")
+				return
+			}
+		case "ParityBlocks":
+			z.ParityBlocks, bts, err = msgp.ReadIntBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "ParityBlocks")
+				return
+			}
+		case "BlockSize":
+			z.BlockSize, bts, err = msgp.ReadInt64Bytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "BlockSize")
+				return
+			}
+		case "Index":
+			z.Index, bts, err = msgp.ReadIntBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "Index")
+				return
+			}
+		case "Distribution":
+			var zb0002 uint32
+			zb0002, bts, err = msgp.ReadArrayHeaderBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "Distribution")
+				return
+			}
+			if cap(z.Distribution) >= int(zb0002) {
+				z.Distribution = (z.Distribution)[:zb0002]
+			} else {
+				z.Distribution = make([]int, zb0002)
+			}
+			for za0001 := range z.Distribution {
+				z.Distribution[za0001], bts, err = msgp.ReadIntBytes(bts)
+				if err != nil {
+					err = msgp.WrapError(err, "Distribution", za0001)
+					return
+				}
+			}
+		case "Checksums":
+			var zb0003 uint32
+			zb0003, bts, err = msgp.ReadArrayHeaderBytes(bts)
+			if err != nil {
+				err = msgp.WrapError(err, "Checksums")
+				return
+			}
+			if cap(z.Checksums) >= int(zb0003) {
+				z.Checksums = (z.Checksums)[:zb0003]
+			} else {
+				z.Checksums = make([]ChecksumInfo, zb0003)
+			}
+			for za0002 := range z.Checksums {
+				bts, err = z.Checksums[za0002].UnmarshalMsg(bts)
+				if err != nil {
+					err = msgp.WrapError(err, "Checksums", za0002)
+					return
+				}
+			}
+		default:
+			bts, err = msgp.Skip(bts)
+			if err != nil {
+				err = msgp.WrapError(err)
+				return
+			}
+		}
+	}
+	o = bts
+	return
+}
+
+// Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
+func (z *ErasureInfo) Msgsize() (s int) {
+	s = 1 + 10 + msgp.StringPrefixSize + len(z.Algorithm) + 11 + msgp.IntSize + 13 + msgp.IntSize + 10 + msgp.Int64Size + 6 + msgp.IntSize + 13 + msgp.ArrayHeaderSize + (len(z.Distribution) * (msgp.IntSize)) + 10 + msgp.ArrayHeaderSize
+	for za0002 := range z.Checksums {
+		s += z.Checksums[za0002].Msgsize()
+	}
 	return
 }
 

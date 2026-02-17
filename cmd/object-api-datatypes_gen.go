@@ -3,7 +3,7 @@
 package cmd
 
 import (
-	"github.com/minio/minio/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
 	"github.com/tinylib/msgp/msgp"
 )
 

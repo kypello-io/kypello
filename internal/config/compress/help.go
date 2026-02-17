@@ -17,7 +17,7 @@
 
 package compress
 
-import "github.com/minio/minio/internal/config"
+import "github.com/kypello-io/kypello/internal/config"
 
 // Help template for compress feature.
 var (

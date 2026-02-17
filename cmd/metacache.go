@@ -196,5 +196,5 @@ func (m *metacache) delete(ctx context.Context) {
 		bugLogIf(ctx, errors.New("metacache.delete: expected objAPI to be 'deleteAllStorager'"))
 		return
 	}
-	ez.deleteAll(ctx, minioMetaBucket, metacachePrefixForID(m.bucket, m.id))
+	ez.deleteAll(ctx, kypelloMetaBucket, metacachePrefixForID(m.bucket, m.id))
 }

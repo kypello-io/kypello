@@ -275,11 +275,9 @@ func Test_metacacheReader_readAll(t *testing.T) {
 	var readErr error
 	objs := make(chan metaCacheEntry, 1)
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		readErr = r.readAll(t.Context(), objs)
-		wg.Done()
-	}()
+	})
 	want := loadMetacacheSampleNames
 	i := 0
 	for entry := range objs {

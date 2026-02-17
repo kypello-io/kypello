@@ -19,8 +19,8 @@ exit_1() {
 
 cleanup() {
 	echo "Cleaning up instances of MinIO"
-	pkill minio
-	pkill -9 minio
+	pkill kypello
+	pkill -9 kypello
 	rm -rf /tmp/minio-internal-idp{1,2,3}
 }
 
@@ -33,39 +33,39 @@ unset MINIO_KMS_KES_KEY_NAME
 
 export MINIO_CI_CD=1
 export MINIO_BROWSER=off
-export MINIO_ROOT_USER="minio"
-export MINIO_ROOT_PASSWORD="minio123"
+export MINIO_ROOT_USER="kypello"
+export MINIO_ROOT_PASSWORD="kypello123"
 export MINIO_KMS_AUTO_ENCRYPTION=off
 export MINIO_PROMETHEUS_AUTH_TYPE=public
-export MINIO_KMS_SECRET_KEY=my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
+export MINIO_KMS_SECRET_KEY=my-kypello-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
 
 if [ ! -f ./mc ]; then
 	wget -O mc https://dl.minio.io/client/mc/release/linux-amd64/mc &&
 		chmod +x mc
 fi
 
-minio server --config-dir /tmp/minio-internal --address ":9001" http://localhost:9001/tmp/minio-internal-idp1/{1...4} http://localhost:9010/tmp/minio-internal-idp1/{5...8} >/tmp/minio1_1.log 2>&1 &
+kypello server --config-dir /tmp/minio-internal --address ":9001" http://localhost:9001/tmp/minio-internal-idp1/{1...4} http://localhost:9010/tmp/minio-internal-idp1/{5...8} >/tmp/minio1_1.log 2>&1 &
 site1_pid1=$!
-minio server --config-dir /tmp/minio-internal --address ":9010" http://localhost:9001/tmp/minio-internal-idp1/{1...4} http://localhost:9010/tmp/minio-internal-idp1/{5...8} >/tmp/minio1_2.log 2>&1 &
+kypello server --config-dir /tmp/minio-internal --address ":9010" http://localhost:9001/tmp/minio-internal-idp1/{1...4} http://localhost:9010/tmp/minio-internal-idp1/{5...8} >/tmp/minio1_2.log 2>&1 &
 site1_pid2=$!
 
-minio server --config-dir /tmp/minio-internal --address ":9002" http://localhost:9002/tmp/minio-internal-idp2/{1...4} http://localhost:9020/tmp/minio-internal-idp2/{5...8} >/tmp/minio2_1.log 2>&1 &
+kypello server --config-dir /tmp/minio-internal --address ":9002" http://localhost:9002/tmp/minio-internal-idp2/{1...4} http://localhost:9020/tmp/minio-internal-idp2/{5...8} >/tmp/minio2_1.log 2>&1 &
 site2_pid1=$!
-minio server --config-dir /tmp/minio-internal --address ":9020" http://localhost:9002/tmp/minio-internal-idp2/{1...4} http://localhost:9020/tmp/minio-internal-idp2/{5...8} >/tmp/minio2_2.log 2>&1 &
+kypello server --config-dir /tmp/minio-internal --address ":9020" http://localhost:9002/tmp/minio-internal-idp2/{1...4} http://localhost:9020/tmp/minio-internal-idp2/{5...8} >/tmp/minio2_2.log 2>&1 &
 site2_pid2=$!
 
-minio server --config-dir /tmp/minio-internal --address ":9003" http://localhost:9003/tmp/minio-internal-idp3/{1...4} http://localhost:9030/tmp/minio-internal-idp3/{5...8} >/tmp/minio3_1.log 2>&1 &
+kypello server --config-dir /tmp/minio-internal --address ":9003" http://localhost:9003/tmp/minio-internal-idp3/{1...4} http://localhost:9030/tmp/minio-internal-idp3/{5...8} >/tmp/minio3_1.log 2>&1 &
 site3_pid1=$!
-minio server --config-dir /tmp/minio-internal --address ":9030" http://localhost:9003/tmp/minio-internal-idp3/{1...4} http://localhost:9030/tmp/minio-internal-idp3/{5...8} >/tmp/minio3_2.log 2>&1 &
+kypello server --config-dir /tmp/minio-internal --address ":9030" http://localhost:9003/tmp/minio-internal-idp3/{1...4} http://localhost:9030/tmp/minio-internal-idp3/{5...8} >/tmp/minio3_2.log 2>&1 &
 site3_pid2=$!
 
-export MC_HOST_minio1=http://minio:minio123@localhost:9001
-export MC_HOST_minio2=http://minio:minio123@localhost:9002
-export MC_HOST_minio3=http://minio:minio123@localhost:9003
+export MC_HOST_minio1=http://kypello:kypello123@localhost:9001
+export MC_HOST_minio2=http://kypello:kypello123@localhost:9002
+export MC_HOST_minio3=http://kypello:kypello123@localhost:9003
 
-export MC_HOST_minio10=http://minio:minio123@localhost:9010
-export MC_HOST_minio20=http://minio:minio123@localhost:9020
-export MC_HOST_minio30=http://minio:minio123@localhost:9030
+export MC_HOST_minio10=http://kypello:kypello123@localhost:9010
+export MC_HOST_minio20=http://kypello:kypello123@localhost:9020
+export MC_HOST_minio30=http://kypello:kypello123@localhost:9030
 
 ./mc ready minio1
 ./mc ready minio2
@@ -169,7 +169,7 @@ if [ $? -ne 0 ]; then
 	exit_1
 fi
 
-./mc admin user svcacct add minio2 minio --access-key testsvc2 --secret-key testsvc123
+./mc admin user svcacct add minio2 kypello --access-key testsvc2 --secret-key testsvc123
 if [ $? -ne 0 ]; then
 	echo "adding root svc account testsvc2 failed, exiting.."
 	exit_1
@@ -422,8 +422,8 @@ kill -9 ${site1_pid1} ${site1_pid2}
 ./mc rb minio2/bucket2
 
 # Restart minio1 instance
-minio server --config-dir /tmp/minio-internal --address ":9001" http://localhost:9001/tmp/minio-internal-idp1/{1...4} http://localhost:9010/tmp/minio-internal-idp1/{5...8} >/tmp/minio1_1.log 2>&1 &
-minio server --config-dir /tmp/minio-internal --address ":9010" http://localhost:9001/tmp/minio-internal-idp1/{1...4} http://localhost:9010/tmp/minio-internal-idp1/{5...8} >/tmp/minio1_2.log 2>&1 &
+kypello server --config-dir /tmp/minio-internal --address ":9001" http://localhost:9001/tmp/minio-internal-idp1/{1...4} http://localhost:9010/tmp/minio-internal-idp1/{5...8} >/tmp/minio1_1.log 2>&1 &
+kypello server --config-dir /tmp/minio-internal --address ":9010" http://localhost:9001/tmp/minio-internal-idp1/{1...4} http://localhost:9010/tmp/minio-internal-idp1/{5...8} >/tmp/minio1_2.log 2>&1 &
 sleep 200
 
 # Test whether most recent tag update on minio2 is replicated to minio1

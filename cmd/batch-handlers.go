@@ -37,22 +37,22 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/kypello-io/kypello/internal/config/batch"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/lithammer/shortuuid/v4"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/minio/minio-go/v7/pkg/encrypt"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/minio/internal/config/batch"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
 	"github.com/minio/pkg/v3/console"
 	"github.com/minio/pkg/v3/env"
 	"github.com/minio/pkg/v3/policy"
 	"github.com/minio/pkg/v3/workers"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 var globalBatchConfig batch.Config
@@ -1618,7 +1618,7 @@ func (a adminAPIHandlers) ListBatchJobs(w http.ResponseWriter, r *http.Request) 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	if err := objectAPI.Walk(ctx, minioMetaBucket, batchJobPrefix, resultCh, WalkOptions{}); err != nil {
+	if err := objectAPI.Walk(ctx, kypelloMetaBucket, batchJobPrefix, resultCh, WalkOptions{}); err != nil {
 		writeErrorResponseJSON(ctx, w, toAPIError(ctx, err), r.URL)
 		return
 	}
@@ -1771,22 +1771,22 @@ func (a adminAPIHandlers) StartBatchJob(w http.ResponseWriter, r *http.Request) 
 	// Fill with default values
 	if job.Replicate != nil {
 		if job.Replicate.Source.Snowball.Disable == nil {
-			job.Replicate.Source.Snowball.Disable = ptr(false)
+			job.Replicate.Source.Snowball.Disable = new(false)
 		}
 		if job.Replicate.Source.Snowball.Batch == nil {
-			job.Replicate.Source.Snowball.Batch = ptr(100)
+			job.Replicate.Source.Snowball.Batch = new(100)
 		}
 		if job.Replicate.Source.Snowball.InMemory == nil {
-			job.Replicate.Source.Snowball.InMemory = ptr(true)
+			job.Replicate.Source.Snowball.InMemory = new(true)
 		}
 		if job.Replicate.Source.Snowball.Compress == nil {
-			job.Replicate.Source.Snowball.Compress = ptr(false)
+			job.Replicate.Source.Snowball.Compress = new(false)
 		}
 		if job.Replicate.Source.Snowball.SmallerThan == nil {
-			job.Replicate.Source.Snowball.SmallerThan = ptr("5MiB")
+			job.Replicate.Source.Snowball.SmallerThan = new("5MiB")
 		}
 		if job.Replicate.Source.Snowball.SkipErrs == nil {
-			job.Replicate.Source.Snowball.SkipErrs = ptr(true)
+			job.Replicate.Source.Snowball.SkipErrs = new(true)
 		}
 	}
 
@@ -1910,7 +1910,7 @@ func (j *BatchJobPool) cleanupReports(randomWait func() time.Duration) {
 			results := make(chan itemOrErr[ObjectInfo], 100)
 			ctx, cancel := context.WithCancel(j.ctx)
 			defer cancel()
-			if err := j.objLayer.Walk(ctx, minioMetaBucket, batchJobReportsPrefix, results, WalkOptions{}); err != nil {
+			if err := j.objLayer.Walk(ctx, kypelloMetaBucket, batchJobReportsPrefix, results, WalkOptions{}); err != nil {
 				batchLogIf(j.ctx, err)
 				t.Reset(randomWait())
 				continue
@@ -1941,7 +1941,7 @@ func (j *BatchJobPool) resume(randomWait func() time.Duration) {
 	results := make(chan itemOrErr[ObjectInfo], 100)
 	ctx, cancel := context.WithCancel(j.ctx)
 	defer cancel()
-	if err := j.objLayer.Walk(ctx, minioMetaBucket, batchJobPrefix, results, WalkOptions{}); err != nil {
+	if err := j.objLayer.Walk(ctx, kypelloMetaBucket, batchJobPrefix, results, WalkOptions{}); err != nil {
 		batchLogIf(j.ctx, err)
 		return
 	}
@@ -2231,7 +2231,7 @@ func (m *batchJobMetrics) init(ctx context.Context, objectAPI ObjectLayer) error
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	if err := objectAPI.Walk(ctx, minioMetaBucket, batchJobReportsPrefix, resultCh, WalkOptions{}); err != nil {
+	if err := objectAPI.Walk(ctx, kypelloMetaBucket, batchJobReportsPrefix, resultCh, WalkOptions{}); err != nil {
 		return err
 	}
 

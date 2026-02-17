@@ -27,8 +27,8 @@ import (
 	"io"
 	"path"
 
-	"github.com/minio/minio/internal/hash/sha256"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/hash/sha256"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/sio"
 )
 

@@ -33,7 +33,7 @@
       "includeVars": true,
       "keepTime": true,
       "tags": [
-        "minio"
+        "kypello"
       ],
       "type": "dashboards"
     }
@@ -2596,7 +2596,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Number of online drives per MinIO Server",
+      "description": "Number of online drives per Kypello Server",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3786,7 +3786,7 @@
   "refresh": "",
   "schemaVersion": 39,
   "tags": [
-    "minio"
+    "kypello"
   ],
   "templating": {
     "list": [

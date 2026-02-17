@@ -39,28 +39,28 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/klauspost/compress/gzhttp"
+	"github.com/kypello-io/kypello/internal/amztime"
+	"github.com/kypello-io/kypello/internal/auth"
+	sse "github.com/kypello-io/kypello/internal/bucket/encryption"
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
+	objectlock "github.com/kypello-io/kypello/internal/bucket/object/lock"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/config/dns"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/etag"
+	"github.com/kypello-io/kypello/internal/event"
+	"github.com/kypello-io/kypello/internal/handlers"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/kms"
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/s3select"
 	miniogo "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/minio/minio-go/v7/pkg/encrypt"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/minio/internal/amztime"
-	"github.com/minio/minio/internal/auth"
-	sse "github.com/minio/minio/internal/bucket/encryption"
-	"github.com/minio/minio/internal/bucket/lifecycle"
-	objectlock "github.com/minio/minio/internal/bucket/object/lock"
-	"github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/config/dns"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/etag"
-	"github.com/minio/minio/internal/event"
-	"github.com/minio/minio/internal/handlers"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/kms"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/s3select"
 	"github.com/minio/mux"
 	"github.com/minio/pkg/v3/policy"
 )
@@ -445,10 +445,10 @@ func (api objectAPIHandlers) getObjectHandler(ctx context.Context, objectAPI Obj
 			if gr != nil {
 				if !gr.ObjInfo.VersionPurgeStatus.Empty() {
 					// Shows the replication status of a permanent delete of a version
-					w.Header()[xhttp.MinIODeleteReplicationStatus] = []string{string(gr.ObjInfo.VersionPurgeStatus)}
+					w.Header()[xhttp.KypelloDeleteReplicationStatus] = []string{string(gr.ObjInfo.VersionPurgeStatus)}
 				}
 				if !gr.ObjInfo.ReplicationStatus.Empty() && gr.ObjInfo.DeleteMarker {
-					w.Header()[xhttp.MinIODeleteMarkerReplicationStatus] = []string{string(gr.ObjInfo.ReplicationStatus)}
+					w.Header()[xhttp.KypelloDeleteMarkerReplicationStatus] = []string{string(gr.ObjInfo.ReplicationStatus)}
 				}
 
 				// Versioning enabled quite possibly object is deleted might be delete-marker
@@ -852,9 +852,9 @@ func (api objectAPIHandlers) headObjectHandler(ctx context.Context, objectAPI Ob
 	if err != nil && !proxy.Proxy {
 		switch {
 		case !objInfo.VersionPurgeStatus.Empty():
-			w.Header()[xhttp.MinIODeleteReplicationStatus] = []string{string(objInfo.VersionPurgeStatus)}
+			w.Header()[xhttp.KypelloDeleteReplicationStatus] = []string{string(objInfo.VersionPurgeStatus)}
 		case !objInfo.ReplicationStatus.Empty() && objInfo.DeleteMarker:
-			w.Header()[xhttp.MinIODeleteMarkerReplicationStatus] = []string{string(objInfo.ReplicationStatus)}
+			w.Header()[xhttp.KypelloDeleteMarkerReplicationStatus] = []string{string(objInfo.ReplicationStatus)}
 		}
 		// Versioning enabled quite possibly object is deleted might be delete-marker
 		// if present set the headers, no idea why AWS S3 sets these headers.
@@ -871,7 +871,7 @@ func (api objectAPIHandlers) headObjectHandler(ctx context.Context, objectAPI Ob
 			topts.VersionID = ""
 			goi, gerr := getObjectInfo(ctx, bucket, object, topts)
 			if gerr == nil || goi.VersionID != "" { // object layer returned more info because object is deleted
-				w.Header().Set(xhttp.MinIOTargetReplicationReady, "true")
+				w.Header().Set(xhttp.KypelloTargetReplicationReady, "true")
 			}
 		}
 
@@ -1252,7 +1252,7 @@ func (api objectAPIHandlers) CopyObjectHandler(w http.ResponseWriter, r *http.Re
 		VersionID:          srcOpts.VersionID,
 		Versioned:          srcOpts.Versioned,
 		VersionSuspended:   srcOpts.VersionSuspended,
-		ReplicationRequest: r.Header.Get(xhttp.MinIOSourceReplicationRequest) == "true",
+		ReplicationRequest: r.Header.Get(xhttp.KypelloSourceReplicationRequest) == "true",
 	}
 	getSSE := encrypt.SSE(srcOpts.ServerSideEncryption)
 	if getSSE != srcOpts.ServerSideEncryption {
@@ -1380,7 +1380,7 @@ func (api objectAPIHandlers) CopyObjectHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 	// Encryption parameters not present for this object.
-	if crypto.SSEC.IsEncrypted(srcInfo.UserDefined) && !crypto.SSECopy.IsRequested(r.Header) && r.Header.Get(xhttp.MinIOSourceReplicationRequest) != "true" {
+	if crypto.SSEC.IsEncrypted(srcInfo.UserDefined) && !crypto.SSECopy.IsRequested(r.Header) && r.Header.Get(xhttp.KypelloSourceReplicationRequest) != "true" {
 		writeErrorResponse(ctx, w, errorCodes.ToAPIErr(ErrInvalidSSECustomerAlgorithm), r.URL)
 		return
 	}
@@ -1918,7 +1918,7 @@ func (api objectAPIHandlers) PutObjectHandler(w http.ResponseWriter, r *http.Req
 		}
 	}
 
-	if _, ok := r.Header[xhttp.MinIOSourceReplicationCheck]; ok {
+	if _, ok := r.Header[xhttp.KypelloSourceReplicationCheck]; ok {
 		// requests to just validate replication settings and permissions are not allowed to write data
 		writeErrorResponse(ctx, w, errorCodes.ToAPIErr(ErrReplicationPermissionCheckError), r.URL)
 		return
@@ -2276,9 +2276,9 @@ func (api objectAPIHandlers) PutObjectExtractHandler(w http.ResponseWriter, r *h
 	)
 
 	var opts untarOptions
-	opts.ignoreDirs = strings.EqualFold(r.Header.Get(xhttp.MinIOSnowballIgnoreDirs), "true")
-	opts.ignoreErrs = strings.EqualFold(r.Header.Get(xhttp.MinIOSnowballIgnoreErrors), "true")
-	opts.prefixAll = r.Header.Get(xhttp.MinIOSnowballPrefix)
+	opts.ignoreDirs = strings.EqualFold(r.Header.Get(xhttp.KypelloSnowballIgnoreDirs), "true")
+	opts.ignoreErrs = strings.EqualFold(r.Header.Get(xhttp.KypelloSnowballIgnoreErrors), "true")
+	opts.prefixAll = r.Header.Get(xhttp.KypelloSnowballPrefix)
 	if opts.prefixAll != "" {
 		opts.prefixAll = trimLeadingSlash(pathJoin(opts.prefixAll, slashSeparator))
 	}
@@ -2583,7 +2583,7 @@ func (api objectAPIHandlers) DeleteObjectHandler(w http.ResponseWriter, r *http.
 		writeErrorResponse(ctx, w, errorCodes.ToAPIErr(s3Error), r.URL)
 		return
 	}
-	if _, ok := r.Header[xhttp.MinIOSourceReplicationCheck]; ok {
+	if _, ok := r.Header[xhttp.KypelloSourceReplicationCheck]; ok {
 		// requests to just validate replication settings and permissions are not allowed to delete data
 		writeErrorResponse(ctx, w, errorCodes.ToAPIErr(ErrReplicationPermissionCheckError), r.URL)
 		return
@@ -3130,7 +3130,7 @@ func (api objectAPIHandlers) GetObjectTaggingHandler(w http.ResponseWriter, r *h
 					return
 				} // overlay tags from peer site.
 				ot = tags
-				w.Header()[xhttp.MinIOTaggingProxied] = []string{"true"} // indicate that the request was proxied.
+				w.Header()[xhttp.KypelloTaggingProxied] = []string{"true"} // indicate that the request was proxied.
 			} else {
 				writeErrorResponse(ctx, w, toAPIError(ctx, err), r.URL)
 				return
@@ -3232,7 +3232,7 @@ func (api objectAPIHandlers) PutObjectTaggingHandler(w http.ResponseWriter, r *h
 					writeErrorResponse(ctx, w, toAPIError(ctx, perr.Err), r.URL)
 					return
 				}
-				w.Header()[xhttp.MinIOTaggingProxied] = []string{"true"}
+				w.Header()[xhttp.KypelloTaggingProxied] = []string{"true"}
 				writeSuccessResponseHeadersOnly(w)
 				// when tagging is proxied, the object version is not available to return
 				// as header in the response, or ObjectInfo in the notification event.
@@ -3331,7 +3331,7 @@ func (api objectAPIHandlers) DeleteObjectTaggingHandler(w http.ResponseWriter, r
 				}
 				// when delete tagging is proxied, the object version/tags are not available to return
 				// as header in the response, nor ObjectInfo in the notification event.
-				w.Header()[xhttp.MinIOTaggingProxied] = []string{"true"}
+				w.Header()[xhttp.KypelloTaggingProxied] = []string{"true"}
 				writeSuccessNoContent(w)
 				sendEvent(eventArgs{
 					EventName:    event.ObjectCreatedDeleteTagging,
