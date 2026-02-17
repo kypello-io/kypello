@@ -32,7 +32,7 @@ func TestNewerNoncurrentVersions(t *testing.T) {
 			ruleID := fmt.Sprintf("rule-%d", i)
 			tag := Tag{
 				Key:   tagKeys[i],
-				Value: "minio",
+				Value: "kypello",
 			}
 			lc.Rules = append(lc.Rules, Rule{
 				ID:     ruleID,
@@ -74,7 +74,7 @@ func TestNewerNoncurrentVersions(t *testing.T) {
 			Name:        "obj",
 			VersionID:   verIDs[i],
 			ModTime:     curModTime.Add(time.Duration(-i) * time.Second),
-			UserTags:    fmt.Sprintf("%s=minio", tagKeys[i]),
+			UserTags:    fmt.Sprintf("%s=kypello", tagKeys[i]),
 			NumVersions: len(verIDs),
 		}
 		if i == 0 {

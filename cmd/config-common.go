@@ -24,13 +24,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/minio/minio/internal/hash"
+	"github.com/kypello-io/kypello/internal/hash"
 )
 
 var errConfigNotFound = errors.New("config file not found")
 
 func readConfigWithMetadata(ctx context.Context, store objectIO, configFile string, opts ObjectOptions) ([]byte, ObjectInfo, error) {
-	r, err := store.GetObjectNInfo(ctx, minioMetaBucket, configFile, nil, http.Header{}, opts)
+	r, err := store.GetObjectNInfo(ctx, kypelloMetaBucket, configFile, nil, http.Header{}, opts)
 	if err != nil {
 		if isErrObjectNotFound(err) {
 			return nil, ObjectInfo{}, errConfigNotFound
@@ -60,7 +60,7 @@ type objectDeleter interface {
 }
 
 func deleteConfig(ctx context.Context, objAPI objectDeleter, configFile string) error {
-	_, err := objAPI.DeleteObject(ctx, minioMetaBucket, configFile, ObjectOptions{
+	_, err := objAPI.DeleteObject(ctx, kypelloMetaBucket, configFile, ObjectOptions{
 		DeletePrefix:       true,
 		DeletePrefixObject: true, // use prefix delete on exact object (this is an optimization to avoid fan-out calls)
 	})
@@ -76,7 +76,7 @@ func saveConfigWithOpts(ctx context.Context, store objectIO, configFile string, 
 		return err
 	}
 
-	_, err = store.PutObject(ctx, minioMetaBucket, configFile, NewPutObjReader(hashReader), opts)
+	_, err = store.PutObject(ctx, kypelloMetaBucket, configFile, NewPutObjReader(hashReader), opts)
 	return err
 }
 
@@ -85,7 +85,7 @@ func saveConfig(ctx context.Context, store objectIO, configFile string, data []b
 }
 
 func checkConfig(ctx context.Context, objAPI ObjectLayer, configFile string) error {
-	if _, err := objAPI.GetObjectInfo(ctx, minioMetaBucket, configFile, ObjectOptions{}); err != nil {
+	if _, err := objAPI.GetObjectInfo(ctx, kypelloMetaBucket, configFile, ObjectOptions{}); err != nil {
 		// Treat object not found as config not found.
 		if isErrObjectNotFound(err) {
 			return errConfigNotFound

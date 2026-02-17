@@ -27,7 +27,7 @@ import (
 	"testing"
 
 	"github.com/klauspost/compress/zip"
-	"github.com/minio/minio/internal/s3select/sql"
+	"github.com/kypello-io/kypello/internal/s3select/sql"
 )
 
 func TestRead(t *testing.T) {
@@ -540,7 +540,7 @@ func BenchmarkReaderHuge(b *testing.B) {
 	for n := range 11 {
 		f := openTestFile(b, "nyc-taxi-data-100k.csv")
 		want := 309
-		for i := 0; i < n; i++ {
+		for range n {
 			f = append(f, f...)
 			want *= 2
 		}

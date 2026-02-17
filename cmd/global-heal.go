@@ -27,14 +27,14 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
+	objectlock "github.com/kypello-io/kypello/internal/bucket/object/lock"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/bucket/versioning"
+	"github.com/kypello-io/kypello/internal/color"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/bucket/lifecycle"
-	objectlock "github.com/minio/minio/internal/bucket/object/lock"
-	"github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/bucket/versioning"
-	"github.com/minio/minio/internal/color"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/console"
 	"github.com/minio/pkg/v3/wildcard"
 	"github.com/minio/pkg/v3/workers"
@@ -59,7 +59,7 @@ func newBgHealSequence() *healSequence {
 		startTime:   UTCNow(),
 		clientToken: bgHealingUUID,
 		// run-background heal with reserved bucket
-		bucket:   minioReservedBucket,
+		bucket:   kypelloReservedBucket,
 		settings: hs,
 		currentStatus: healSequenceStatus{
 			Summary:      healNotStartedStatus,
@@ -400,8 +400,8 @@ func (er *erasureObjects) healErasureSet(ctx context.Context, buckets []string, 
 
 			// We might land at .metacache, .trash, .multipart
 			// no need to heal them skip, only when bucket
-			// is '.minio.sys'
-			if bucket == minioMetaBucket {
+			// is '.kypello.sys'
+			if bucket == kypelloMetaBucket {
 				if wildcard.Match("buckets/*/.metacache/*", entry.name) {
 					return
 				}

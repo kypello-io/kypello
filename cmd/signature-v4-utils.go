@@ -27,10 +27,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/hash/sha256"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/hash/sha256"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/pkg/v3/policy"
 )
 
@@ -133,12 +133,12 @@ func isValidRegion(reqRegion string, confRegion string) bool {
 		return true
 	}
 	if confRegion == "US" {
-		confRegion = globalMinioDefaultRegion
+		confRegion = globalKypelloDefaultRegion
 	}
 	// Some older s3 clients set region as "US" instead of
-	// globalMinioDefaultRegion, handle it.
+	// globalKypelloDefaultRegion, handle it.
 	if reqRegion == "US" {
-		reqRegion = globalMinioDefaultRegion
+		reqRegion = globalKypelloDefaultRegion
 	}
 	return reqRegion == confRegion
 }

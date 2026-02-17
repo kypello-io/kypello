@@ -6,12 +6,12 @@ This document explains the design, architecture and advanced use cases of the Mi
 
 ```
 NAME:
-  minio server - start object storage server
+  kypello server - start object storage server
 
 USAGE:
-  minio server [FLAGS] DIR1 [DIR2..]
-  minio server [FLAGS] DIR{1...64}
-  minio server [FLAGS] DIR{1...64} DIR{65...128}
+  kypello server [FLAGS] DIR1 [DIR2..]
+  kypello server [FLAGS] DIR{1...64}
+  kypello server [FLAGS] DIR{1...64} DIR{65...128}
 
 DIR:
   DIR points to a directory on a filesystem. When you want to combine
@@ -26,13 +26,13 @@ DIR:
 Standalone erasure coded configuration with 4 sets with 16 drives each.
 
 ```
-minio server dir{1...64}
+kypello server dir{1...64}
 ```
 
 Distributed erasure coded configuration with 64 sets with 16 drives each.
 
 ```
-minio server http://host{1...16}/export{1...64}
+kypello server http://host{1...16}/export{1...64}
 ```
 
 ## Architecture
@@ -54,7 +54,7 @@ Expansion of ellipses and choice of erasure sets based on this expansion is an a
 - In this algorithm, we also make sure that we spread the drives out evenly. MinIO server expands ellipses passed as arguments. Here is a sample expansion to demonstrate the process.
 
 ```
-minio server http://host{1...2}/export{1...8}
+kypello server http://host{1...2}/export{1...8}
 ```
 
 Expected expansion
@@ -105,7 +105,7 @@ Input for the key is the object name specified in `PutObject()`, returns a uniqu
 ### There are no limits on how many server pools can be combined
 
 ```
-minio server http://host{1...32}/export{1...32} http://host{1...12}/export{1...12}
+kypello server http://host{1...32}/export{1...32} http://host{1...12}/export{1...12}
 ```
 
 In above example there are two server pools
@@ -115,7 +115,7 @@ In above example there are two server pools
 
 > Notice the requirement of common SLA here original cluster had 1024 drives with 16 drives per erasure set with default parity of '4', second pool is expected to have a minimum of 8 drives per erasure set to match the original cluster SLA (parity count) of '4'. '12' drives stripe per erasure set in the second pool satisfies the original pool's parity count.
 
-Refer to the sizing guide with details on the default parity count chosen for different erasure stripe sizes [here](https://github.com/minio/minio/blob/master/docs/distributed/SIZING.md)
+Refer to the sizing guide with details on the default parity count chosen for different erasure stripe sizes [here](https://github.com/kypello-io/kypello/blob/master/docs/distributed/SIZING.md)
 
 MinIO places new objects in server pools based on proportionate free space, per pool. Following pseudo code demonstrates this behavior.
 
@@ -144,23 +144,23 @@ func getAvailablePoolIdx(ctx context.Context) int {
 Standalone erasure coded configuration with 4 sets with 16 drives each, which spawns drives across controllers.
 
 ```
-minio server /mnt/controller{1...4}/data{1...16}
+kypello server /mnt/controller{1...4}/data{1...16}
 ```
 
 Standalone erasure coded configuration with 16 sets, 16 drives per set, across mounts and controllers.
 
 ```
-minio server /mnt{1...4}/controller{1...4}/data{1...16}
+kypello server /mnt{1...4}/controller{1...4}/data{1...16}
 ```
 
 Distributed erasure coded configuration with 2 sets, 16 drives per set across hosts.
 
 ```
-minio server http://host{1...32}/disk1
+kypello server http://host{1...32}/disk1
 ```
 
 Distributed erasure coded configuration with rack level redundancy 32 sets in total, 16 drives per set.
 
 ```
-minio server http://rack{1...4}-host{1...8}.example.net/export{1...16}
+kypello server http://rack{1...4}-host{1...8}.example.net/export{1...16}
 ```

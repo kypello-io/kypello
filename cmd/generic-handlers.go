@@ -30,17 +30,17 @@ import (
 	"unicode"
 
 	"github.com/dustin/go-humanize"
+	"github.com/kypello-io/kypello/internal/grid"
 	"github.com/minio/minio-go/v7/pkg/s3utils"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/grid"
 	xnet "github.com/minio/pkg/v3/net"
 
-	"github.com/minio/minio/internal/amztime"
-	"github.com/minio/minio/internal/config/dns"
-	"github.com/minio/minio/internal/crypto"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/mcontext"
+	"github.com/kypello-io/kypello/internal/amztime"
+	"github.com/kypello-io/kypello/internal/config/dns"
+	"github.com/kypello-io/kypello/internal/crypto"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/mcontext"
 )
 
 const (
@@ -141,8 +141,8 @@ func setRequestLimitMiddleware(h http.Handler) http.Handler {
 
 // Reserved bucket.
 const (
-	minioReservedBucket     = "minio"
-	minioReservedBucketPath = SlashSeparator + minioReservedBucket
+	kypelloReservedBucket     = "minio"
+	kypelloReservedBucketPath = SlashSeparator + kypelloReservedBucket
 
 	loginPathPrefix = SlashSeparator + "login"
 )
@@ -170,11 +170,11 @@ func setBrowserRedirectMiddleware(h http.Handler) http.Handler {
 }
 
 var redirectPrefixes = map[string]struct{}{
-	"favicon-16x16.png": {},
-	"favicon-32x32.png": {},
-	"favicon-96x96.png": {},
-	"index.html":        {},
-	minioReservedBucket: {},
+	"favicon-16x16.png":   {},
+	"favicon-32x32.png":   {},
+	"favicon-96x96.png":   {},
+	"index.html":          {},
+	kypelloReservedBucket: {},
 }
 
 // Fetch redirect location if urlPath satisfies certain
@@ -198,7 +198,7 @@ func getRedirectLocation(r *http.Request) *xnet.URL {
 			return nil
 		}
 		return &xnet.URL{
-			Host: net.JoinHostPort(xhost.Name, globalMinioConsolePort),
+			Host: net.JoinHostPort(xhost.Name, globalKypelloConsolePort),
 			Scheme: func() string {
 				scheme := "http"
 				if r.TLS != nil {
@@ -233,12 +233,12 @@ func guessIsMetricsReq(req *http.Request) bool {
 	}
 	aType := getRequestAuthType(req)
 	return (aType == authTypeAnonymous || aType == authTypeJWT) &&
-		req.URL.Path == minioReservedBucketPath+prometheusMetricsPathLegacy ||
-		req.URL.Path == minioReservedBucketPath+prometheusMetricsV2ClusterPath ||
-		req.URL.Path == minioReservedBucketPath+prometheusMetricsV2NodePath ||
-		req.URL.Path == minioReservedBucketPath+prometheusMetricsV2BucketPath ||
-		req.URL.Path == minioReservedBucketPath+prometheusMetricsV2ResourcePath ||
-		strings.HasPrefix(req.URL.Path, minioReservedBucketPath+metricsV3Path)
+		req.URL.Path == kypelloReservedBucketPath+prometheusMetricsPathLegacy ||
+		req.URL.Path == kypelloReservedBucketPath+prometheusMetricsV2ClusterPath ||
+		req.URL.Path == kypelloReservedBucketPath+prometheusMetricsV2NodePath ||
+		req.URL.Path == kypelloReservedBucketPath+prometheusMetricsV2BucketPath ||
+		req.URL.Path == kypelloReservedBucketPath+prometheusMetricsV2ResourcePath ||
+		strings.HasPrefix(req.URL.Path, kypelloReservedBucketPath+metricsV3Path)
 }
 
 // guessIsRPCReq - returns true if the request is for an RPC endpoint.
@@ -254,7 +254,7 @@ func guessIsRPCReq(req *http.Request) bool {
 	}
 
 	return (req.Method == http.MethodPost || req.Method == http.MethodGet) &&
-		strings.HasPrefix(req.URL.Path, minioReservedBucketPath+SlashSeparator)
+		strings.HasPrefix(req.URL.Path, kypelloReservedBucketPath+SlashSeparator)
 }
 
 // Check to allow access to the reserved "bucket" `/minio` for Admin

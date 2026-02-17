@@ -25,8 +25,8 @@ import (
 
 	jwtgo "github.com/golang-jwt/jwt/v4"
 	jwtreq "github.com/golang-jwt/jwt/v4/request"
-	"github.com/minio/minio/internal/auth"
-	xjwt "github.com/minio/minio/internal/jwt"
+	"github.com/kypello-io/kypello/internal/auth"
+	xjwt "github.com/kypello-io/kypello/internal/jwt"
 	"github.com/minio/pkg/v3/policy"
 )
 

@@ -29,7 +29,7 @@ LDAP STS configuration can be performed via MinIO's standard configuration API (
 LDAP is configured via the following environment variables:
 
 ```
-$ mc admin config set myminio identity_ldap --env
+$ mc admin config set mykypello identity_ldap --env
 KEY:
 identity_ldap  enable LDAP SSO support
 
@@ -159,27 +159,27 @@ In the configuration variables, `%s` is substituted with the _username_ from the
 Access policies may be associated by their name with a group or user directly. Access policies are first defined on the MinIO server using IAM policy JSON syntax. To define a new policy, you can use the [AWS policy generator](https://awspolicygen.s3.amazonaws.com/policygen.html). Copy the policy into a text file `mypolicy.json` and issue the command like so:
 
 ```sh
-mc admin policy create myminio mypolicy mypolicy.json
+mc admin policy create mykypello mypolicy mypolicy.json
 ```
 
 To associate the policy with an LDAP user or group, use the full DN of the user or group:
 
 ```sh
-mc idp ldap policy attach myminio mypolicy --user='uid=james,cn=accounts,dc=myldapserver,dc=com'
+mc idp ldap policy attach mykypello mypolicy --user='uid=james,cn=accounts,dc=myldapserver,dc=com'
 ```
 
 ```sh
-mc idp ldap policy attach myminio mypolicy ----group='cn=projectx,ou=groups,ou=hwengg,dc=min,dc=io'
+mc idp ldap policy attach mykypello mypolicy ----group='cn=projectx,ou=groups,ou=hwengg,dc=min,dc=io'
 ```
 
 To remove a policy association, use the similar `detach` command:
 
 ```sh
-mc idp ldap policy detach myminio mypolicy --user='uid=james,cn=accounts,dc=myldapserver,dc=com'
+mc idp ldap policy detach mykypello mypolicy --user='uid=james,cn=accounts,dc=myldapserver,dc=com'
 ```
 
 ```sh
-mc idp ldap policy detach myminio mypolicy ----group='cn=projectx,ou=groups,ou=hwengg,dc=min,dc=io'
+mc idp ldap policy detach mykypello mypolicy ----group='cn=projectx,ou=groups,ou=hwengg,dc=min,dc=io'
 ```
 
 
@@ -190,12 +190,12 @@ Note that the commands above attempt to validate if the given entity (user or gr
 Please **do not use** these as they may be removed or their behavior may change.
 
 ```sh
-mc admin policy attach myminio mypolicy --user='uid=james,cn=accounts,dc=myldapserver,dc=com'
+mc admin policy attach mykypello mypolicy --user='uid=james,cn=accounts,dc=myldapserver,dc=com'
 ```
 
 
 ```sh
-mc admin policy attach myminio mypolicy --group='cn=projectx,ou=groups,ou=hwengg,dc=min,dc=io'
+mc admin policy attach mykypello mypolicy --group='cn=projectx,ou=groups,ou=hwengg,dc=min,dc=io'
 ```
 
 </details>
@@ -293,14 +293,14 @@ http://minio.cluster:9000?Action=AssumeRoleWithLDAPIdentity&LDAPUsername=foouser
 With multiple OU hierarchies for users, and multiple group search base DN's.
 
 ```
-export MINIO_ROOT_USER=minio
-export MINIO_ROOT_PASSWORD=minio123
+export MINIO_ROOT_USER=kypello
+export MINIO_ROOT_PASSWORD=kypello123
 export MINIO_IDENTITY_LDAP_SERVER_ADDR='my.ldap-active-dir-server.com:636'
 export MINIO_IDENTITY_LDAP_LOOKUP_BIND_DN='cn=admin,dc=min,dc=io'
 export MINIO_IDENTITY_LDAP_LOOKUP_BIND_PASSWORD=admin
-export MINIO_IDENTITY_LDAP_GROUP_SEARCH_BASE_DN='dc=minioad,dc=local;dc=somedomain,dc=com'
+export MINIO_IDENTITY_LDAP_GROUP_SEARCH_BASE_DN='dc=kypelload,dc=local;dc=somedomain,dc=com'
 export MINIO_IDENTITY_LDAP_GROUP_SEARCH_FILTER='(&(objectclass=groupOfNames)(member=%d))'
-minio server ~/test
+kypello server ~/test
 ```
 
 You can make sure it works appropriately using our [example program](https://raw.githubusercontent.com/minio/minio/master/docs/sts/ldap.go):

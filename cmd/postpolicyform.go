@@ -29,10 +29,10 @@ import (
 	"strings"
 	"time"
 
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/s3select/jstream"
 	"github.com/minio/minio-go/v7/pkg/encrypt"
 	"github.com/minio/minio-go/v7/pkg/set"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/s3select/jstream"
 )
 
 // startWithConds - map which indicates if a given condition supports starts-with policy operator
@@ -186,7 +186,7 @@ func parsePostPolicyForm(r io.Reader) (PostPolicyForm, error) {
 			for k, v := range condt {
 				if !isString(v) { // Pre-check value type.
 					// All values must be of type string.
-					return parsedPolicy, fmt.Errorf("Unknown type %s of conditional field value %s found in POST policy form", reflect.TypeOf(condt).String(), condt)
+					return parsedPolicy, fmt.Errorf("Unknown type %s of conditional field value %s found in POST policy form", reflect.TypeFor[map[string]any]().String(), condt)
 				}
 				// {"acl": "public-read" } is an alternate way to indicate - [ "eq", "$acl", "public-read" ]
 				// In this case we will just collapse this into "eq" for all use cases.
@@ -200,14 +200,14 @@ func parsePostPolicyForm(r io.Reader) (PostPolicyForm, error) {
 			}
 		case []any: // Handle array types.
 			if len(condt) != 3 { // Return error if we have insufficient elements.
-				return parsedPolicy, fmt.Errorf("Malformed conditional fields %s of type %s found in POST policy form", condt, reflect.TypeOf(condt).String())
+				return parsedPolicy, fmt.Errorf("Malformed conditional fields %s of type %s found in POST policy form", condt, reflect.TypeFor[[]any]().String())
 			}
 			switch toLowerString(condt[0]) {
 			case policyCondEqual, policyCondStartsWith:
 				for _, v := range condt { // Pre-check all values for type.
 					if !isString(v) {
 						// All values must be of type string.
-						return parsedPolicy, fmt.Errorf("Unknown type %s of conditional field value %s found in POST policy form", reflect.TypeOf(condt).String(), condt)
+						return parsedPolicy, fmt.Errorf("Unknown type %s of conditional field value %s found in POST policy form", reflect.TypeFor[[]any]().String(), condt)
 					}
 				}
 				operator, matchType, value := toLowerString(condt[0]), toLowerString(condt[1]), toString(condt[2])
@@ -240,7 +240,7 @@ func parsePostPolicyForm(r io.Reader) (PostPolicyForm, error) {
 			default:
 				// Condition should be valid.
 				return parsedPolicy, fmt.Errorf("Unknown type %s of conditional field value %s found in POST policy form",
-					reflect.TypeOf(condt).String(), condt)
+					reflect.TypeFor[[]any]().String(), condt)
 			}
 		default:
 			return parsedPolicy, fmt.Errorf("Unknown field %s of type %s found in POST policy form",

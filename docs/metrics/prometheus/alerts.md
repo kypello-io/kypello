@@ -57,15 +57,15 @@ groups:
       severity: critical
     annotations:
       summary: "Instance {{ $labels.server }} has lost quorum on pool {{ $labels.pool }} on set {{ $labels.set }}"
-      description: "MinIO instance {{ $labels.server }} of job {{ $labels.job }} has lost quorum on pool {{ $labels.pool }} on set {{ $labels.set }} for more than 5 minutes."
+      description: "Kypello instance {{ $labels.server }} of job {{ $labels.job }} has lost quorum on pool {{ $labels.pool }} on set {{ $labels.set }} for more than 5 minutes."
 ```
 
 ## Verify the configuration and alerts
 To verify the above sample alert follow below steps
 
-1. Start a distributed MinIO instance (4 nodes setup)
+1. Start a distributed Kypello instance (4 nodes setup)
 2. Start Prometheus server and AlertManager
-3. Bring down couple of MinIO instances to bring down the Erasure Set tolerance to -1 and verify the same with `mc admin prometheus metrics ALIAS | grep minio_cluster_health_erasure_set_status`
+3. Bring down couple of Kypello instances to bring down the Erasure Set tolerance to -1 and verify the same with `mc admin prometheus metrics ALIAS | grep minio_cluster_health_erasure_set_status`
 4. Wait for 5 mins (as alert is configured to be firing after 5 mins), and verify that you see an entry in webhook for the alert as well as in Prometheus console as shown below
 
 ```json
@@ -85,12 +85,12 @@ To verify the above sample alert follow below steps
         "severity": "critical"
       },
       "annotations": {
-        "description": "MinIO instance 127.0.0.1:9000 of job minio-job has tolerance <=0 for more than 5 minutes.",
+        "description": "Kypello instance 127.0.0.1:9000 of job minio-job has tolerance <=0 for more than 5 minutes.",
         "summary": "Instance 127.0.0.1:9000 unable to tolerate node failures"
       },
       "startsAt": "2023-11-18T06:20:09.456Z",
       "endsAt": "0001-01-01T00:00:00Z",
-      "generatorURL": "http://fedora-minio:9090/graph?g0.expr=minio_cluster_health_erasure_set_tolerance+%3C%3D+0&g0.tab=1",
+      "generatorURL": "http://fedora-minio:9090/graph?g0.expr=kypello_cluster_health_erasure_set_tolerance+%3C%3D+0&g0.tab=1",
       "fingerprint": "2255608b0da28ca3"
     }
   ],
@@ -107,7 +107,7 @@ To verify the above sample alert follow below steps
     "severity": "critical"
   },
   "commonAnnotations": {
-    "description": "MinIO instance 127.0.0.1:9000 of job minio-job has lost quorum on pool 0 on set 0 for more than 5 minutes.",
+    "description": "Kypello instance 127.0.0.1:9000 of job minio-job has lost quorum on pool 0 on set 0 for more than 5 minutes.",
     "summary": "Instance 127.0.0.1:9000 has lost quorum on pool 0 on set 0"
   },
   "externalURL": "http://fedora-minio:9093",

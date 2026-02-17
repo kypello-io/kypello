@@ -74,81 +74,81 @@ func Test_minioEnvironFromFile(t *testing.T) {
 	}{
 		{
 			`
-export MINIO_ROOT_USER=minio
-export MINIO_ROOT_PASSWORD=minio123`,
+export MINIO_ROOT_USER=kypello
+export MINIO_ROOT_PASSWORD=kypello123`,
 			false,
 			[]envKV{
 				{
 					Key:   "MINIO_ROOT_USER",
-					Value: "minio",
+					Value: "kypello",
 				},
 				{
 					Key:   "MINIO_ROOT_PASSWORD",
-					Value: "minio123",
+					Value: "kypello123",
 				},
 			},
 		},
 		// Value with double quotes
 		{
-			`export MINIO_ROOT_USER="minio"`,
+			`export MINIO_ROOT_USER="kypello"`,
 			false,
 			[]envKV{
 				{
 					Key:   "MINIO_ROOT_USER",
-					Value: "minio",
+					Value: "kypello",
 				},
 			},
 		},
 		// Value with single quotes
 		{
-			`export MINIO_ROOT_USER='minio'`,
+			`export MINIO_ROOT_USER='kypello'`,
 			false,
 			[]envKV{
 				{
 					Key:   "MINIO_ROOT_USER",
-					Value: "minio",
+					Value: "kypello",
 				},
 			},
 		},
 		{
 			`
-MINIO_ROOT_USER=minio
-MINIO_ROOT_PASSWORD=minio123`,
+MINIO_ROOT_USER=kypello
+MINIO_ROOT_PASSWORD=kypello123`,
 			false,
 			[]envKV{
 				{
 					Key:   "MINIO_ROOT_USER",
-					Value: "minio",
+					Value: "kypello",
 				},
 				{
 					Key:   "MINIO_ROOT_PASSWORD",
-					Value: "minio123",
+					Value: "kypello123",
 				},
 			},
 		},
 		{
 			`
-export MINIO_ROOT_USERminio
-export MINIO_ROOT_PASSWORD=minio123`,
+export MINIO_ROOT_USERkypello
+export MINIO_ROOT_PASSWORD=kypello123`,
 			true,
 			nil,
 		},
 		{
 			`
 # simple comment
-# MINIO_ROOT_USER=minioadmin
-# MINIO_ROOT_PASSWORD=minioadmin
-MINIO_ROOT_USER=minio
-MINIO_ROOT_PASSWORD=minio123`,
+# MINIO_ROOT_USER=kypelloadmin
+# MINIO_ROOT_PASSWORD=kypelloadmin
+MINIO_ROOT_USER=kypello
+MINIO_ROOT_PASSWORD=kypello123`,
 			false,
 			[]envKV{
 				{
 					Key:   "MINIO_ROOT_USER",
-					Value: "minio",
+					Value: "kypello",
 				},
 				{
 					Key:   "MINIO_ROOT_PASSWORD",
-					Value: "minio123",
+					Value: "kypello123",
 				},
 			},
 		},

@@ -40,13 +40,13 @@ const (
 func (setupType SetupType) String() string {
 	switch setupType {
 	case FSSetupType:
-		return globalMinioModeFS
+		return globalKypelloModeFS
 	case ErasureSDSetupType:
-		return globalMinioModeErasureSD
+		return globalKypelloModeErasureSD
 	case ErasureSetupType:
-		return globalMinioModeErasure
+		return globalKypelloModeErasure
 	case DistErasureSetupType:
-		return globalMinioModeDistErasure
+		return globalKypelloModeDistErasure
 	}
 
 	return "unknown"

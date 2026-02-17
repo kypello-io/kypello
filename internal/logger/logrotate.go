@@ -26,8 +26,8 @@ import (
 	"time"
 
 	"github.com/klauspost/compress/gzip"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/minio/madmin-go/v3/logger/log"
-	xioutil "github.com/minio/minio/internal/ioutil"
 )
 
 func defaultFilenameFunc() string {

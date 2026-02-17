@@ -28,7 +28,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/minio/minio/internal/config"
+	"github.com/kypello-io/kypello/internal/config"
 )
 
 // Tests validate bucket LocationConstraint.
@@ -41,7 +41,7 @@ func TestIsValidLocationConstraint(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(fsDir)
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -74,16 +74,16 @@ func TestIsValidLocationConstraint(t *testing.T) {
 		expectedCode       APIErrorCode
 	}{
 		// Test case - 1.
-		{createExpectedRequest(&http.Request{}, "eu-central-1"), globalMinioDefaultRegion, ErrNone},
+		{createExpectedRequest(&http.Request{}, "eu-central-1"), globalKypelloDefaultRegion, ErrNone},
 		// Test case - 2.
 		// In case of empty request body ErrNone is returned.
-		{createExpectedRequest(&http.Request{}, ""), globalMinioDefaultRegion, ErrNone},
+		{createExpectedRequest(&http.Request{}, ""), globalKypelloDefaultRegion, ErrNone},
 		// Test case - 3
 		// In case of garbage request body ErrMalformedXML is returned.
-		{badRequest, globalMinioDefaultRegion, ErrMalformedXML},
+		{badRequest, globalKypelloDefaultRegion, ErrMalformedXML},
 		// Test case - 4
 		// In case of invalid XML request body ErrMalformedXML is returned.
-		{malformedReq, globalMinioDefaultRegion, ErrMalformedXML},
+		{malformedReq, globalKypelloDefaultRegion, ErrMalformedXML},
 	}
 
 	for i, testCase := range testCases {

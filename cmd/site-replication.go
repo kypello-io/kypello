@@ -37,22 +37,22 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
+	sreplication "github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/minio/minio-go/v7/pkg/replication"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/bucket/lifecycle"
-	sreplication "github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/logger"
 	xldap "github.com/minio/pkg/v3/ldap"
 	"github.com/minio/pkg/v3/policy"
 	"github.com/puzpuzpuz/xsync/v3"
 )
 
 const (
-	srStatePrefix = minioConfigPrefix + "/site-replication"
+	srStatePrefix = kypelloConfigPrefix + "/site-replication"
 	srStateFile   = "state.json"
 )
 
@@ -722,9 +722,7 @@ func (c *SiteReplicationSys) Netperf(ctx context.Context, duration time.Duration
 	for _, info := range infos.Sites {
 		// will call siteNetperf, means call others's adminAPISiteReplicationDevNull
 		if globalDeploymentID() == info.DeploymentID {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				result := madmin.SiteNetPerfNodeResult{}
 				cli, err := globalSiteReplicationSys.getAdminClient(ctx, info.DeploymentID)
 				if err != nil {
@@ -736,12 +734,10 @@ func (c *SiteReplicationSys) Netperf(ctx context.Context, duration time.Duration
 				resultsMu.Lock()
 				results.NodeResults = append(results.NodeResults, result)
 				resultsMu.Unlock()
-			}()
+			})
 			continue
 		}
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			ctx, cancel := context.WithTimeout(ctx, duration+10*time.Second)
 			defer cancel()
 			result := perfNetRequest(
@@ -753,7 +749,7 @@ func (c *SiteReplicationSys) Netperf(ctx context.Context, duration time.Duration
 			resultsMu.Lock()
 			results.NodeResults = append(results.NodeResults, result)
 			resultsMu.Unlock()
-		}()
+		})
 	}
 	wg.Wait()
 	return results, err
@@ -4353,11 +4349,11 @@ type srStatusInfo struct {
 type SRBucketDeleteOp string
 
 const (
-	// MarkDelete creates .minio.sys/buckets/.deleted/<bucket> vol entry to hold onto deleted bucket's state
+	// MarkDelete creates .kypello.sys/buckets/.deleted/<bucket> vol entry to hold onto deleted bucket's state
 	// until peers are synced in site replication setup.
 	MarkDelete SRBucketDeleteOp = "MarkDelete"
 
-	// Purge deletes the .minio.sys/buckets/.deleted/<bucket> vol entry
+	// Purge deletes the .kypello.sys/buckets/.deleted/<bucket> vol entry
 	Purge SRBucketDeleteOp = "Purge"
 	// NoOp no action needed
 	NoOp SRBucketDeleteOp = "NoOp"
@@ -4996,7 +4992,7 @@ func (c *SiteReplicationSys) purgeDeletedBucket(ctx context.Context, objAPI Obje
 	if !ok {
 		return
 	}
-	z.s3Peer.DeleteBucket(context.Background(), pathJoin(minioMetaBucket, bucketMetaPrefix, deletedBucketsPrefix, bucket), DeleteBucketOptions{})
+	z.s3Peer.DeleteBucket(context.Background(), pathJoin(kypelloMetaBucket, bucketMetaPrefix, deletedBucketsPrefix, bucket), DeleteBucketOptions{})
 }
 
 // healBucket creates/deletes the bucket according to latest state across clusters participating in site replication.
@@ -5114,7 +5110,7 @@ func (c *SiteReplicationSys) healBucket(ctx context.Context, objAPI ObjectLayer,
 		}
 		return nil
 	}
-	// all buckets are marked deleted across sites at this point. It should be safe to purge the .minio.sys/buckets/.deleted/<bucket> entry
+	// all buckets are marked deleted across sites at this point. It should be safe to purge the .kypello.sys/buckets/.deleted/<bucket> entry
 	// from disk
 	if deleteOp == Purge {
 		for _, dID := range missingB {
@@ -5745,8 +5741,8 @@ func (c *SiteReplicationSys) getPeerForUpload(deplID string) (pi srPeerInfo, loc
 }
 
 // startResync initiates resync of data to peerSite specified. The overall site resync status
-// is maintained in .minio.sys/buckets/site-replication/resync/<deployment-id.meta>, while collecting
-// individual bucket resync status in .minio.sys/buckets/<bucket-name>/replication/resync.bin
+// is maintained in .kypello.sys/buckets/site-replication/resync/<deployment-id.meta>, while collecting
+// individual bucket resync status in .kypello.sys/buckets/<bucket-name>/replication/resync.bin
 func (c *SiteReplicationSys) startResync(ctx context.Context, objAPI ObjectLayer, peer madmin.PeerInfo) (res madmin.SRResyncOpStatus, err error) {
 	if !c.isEnabled() {
 		return res, errSRNotEnabled

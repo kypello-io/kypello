@@ -32,14 +32,14 @@ import (
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/klauspost/compress/zip"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/minio/madmin-go/v3"
-	xioutil "github.com/minio/minio/internal/ioutil"
 	xnet "github.com/minio/pkg/v3/net"
 	"github.com/minio/pkg/v3/sync/errgroup"
 	"github.com/minio/pkg/v3/workers"
 
-	"github.com/minio/minio/internal/bucket/bandwidth"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/bucket/bandwidth"
+	"github.com/kypello-io/kypello/internal/logger"
 )
 
 // This file contains peer related notifications. For sending notifications to
@@ -268,7 +268,6 @@ func (sys *NotificationSys) BackgroundHealStatus(ctx context.Context) ([]madmin.
 	ng := WithNPeers(len(sys.peerClients))
 	states := make([]madmin.BgHealState, len(sys.peerClients))
 	for idx, client := range sys.peerClients {
-		client := client
 		ng.Go(ctx, func() error {
 			if client == nil {
 				return errPeerNotReachable
@@ -476,7 +475,6 @@ func (sys *NotificationSys) GetLocks(ctx context.Context, r *http.Request) []*Pe
 	locksResp := make([]*PeerLocks, len(sys.peerClients))
 	g := errgroup.WithNErrs(len(sys.peerClients))
 	for index, client := range sys.peerClients {
-		client := client
 		g.Go(func() error {
 			if client == nil {
 				return errPeerNotReachable
@@ -560,7 +558,6 @@ func (sys *NotificationSys) GetClusterAllBucketStats(ctx context.Context) []Buck
 	ng := WithNPeers(len(sys.peerClients)).WithRetries(1)
 	replicationStats := make([]BucketStatsMap, len(sys.peerClients))
 	for index, client := range sys.peerClients {
-		client := client
 		ng.Go(ctx, func() error {
 			if client == nil {
 				return errPeerNotReachable
@@ -601,7 +598,6 @@ func (sys *NotificationSys) GetClusterBucketStats(ctx context.Context, bucketNam
 	ng := WithNPeers(len(sys.peerClients)).WithRetries(1)
 	bucketStats := make([]BucketStats, len(sys.peerClients))
 	for index, client := range sys.peerClients {
-		client := client
 		ng.Go(ctx, func() error {
 			if client == nil {
 				return errPeerNotReachable
@@ -635,7 +631,6 @@ func (sys *NotificationSys) GetClusterSiteMetrics(ctx context.Context) []SRMetri
 	ng := WithNPeers(len(sys.peerClients)).WithRetries(1)
 	siteStats := make([]SRMetricsSummary, len(sys.peerClients))
 	for index, client := range sys.peerClients {
-		client := client
 		ng.Go(ctx, func() error {
 			if client == nil {
 				return errPeerNotReachable
@@ -1387,9 +1382,7 @@ func (sys *NotificationSys) Netperf(ctx context.Context, duration time.Duration)
 		}(index)
 	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		r := netperf(ctx, duration)
 		u := &url.URL{
 			Scheme: scheme,
@@ -1397,7 +1390,7 @@ func (sys *NotificationSys) Netperf(ctx context.Context, duration time.Duration)
 		}
 		results[len(results)-1] = r
 		results[len(results)-1].Endpoint = u.String()
-	}()
+	})
 	wg.Wait()
 
 	return results
@@ -1440,9 +1433,7 @@ func (sys *NotificationSys) SpeedTest(ctx context.Context, sopts speedTestOpts) 
 		}(index)
 	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		r, err := selfSpeedTest(ctx, sopts)
 		u := &url.URL{
 			Scheme: scheme,
@@ -1454,7 +1445,7 @@ func (sys *NotificationSys) SpeedTest(ctx context.Context, sopts speedTestOpts) 
 			results[len(results)-1] = r
 		}
 		results[len(results)-1].Endpoint = u.String()
-	}()
+	})
 	wg.Wait()
 
 	return results
@@ -1487,14 +1478,12 @@ func (sys *NotificationSys) DriveSpeedTest(ctx context.Context, opts madmin.Driv
 		}(client)
 	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		select {
 		case <-ctx.Done():
 		case ch <- driveSpeedTest(ctx, opts):
 		}
-	}()
+	})
 
 	go func(wg *sync.WaitGroup, ch chan madmin.DriveSpeedTestResult) {
 		wg.Wait()

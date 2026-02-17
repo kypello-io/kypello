@@ -36,19 +36,19 @@ import (
 	"time"
 
 	"github.com/klauspost/readahead"
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
+	"github.com/kypello-io/kypello/internal/bucket/object/lock"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/event"
+	"github.com/kypello-io/kypello/internal/grid"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/minio/internal/bucket/lifecycle"
-	"github.com/minio/minio/internal/bucket/object/lock"
-	"github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/event"
-	"github.com/minio/minio/internal/grid"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/mimedb"
 	"github.com/minio/pkg/v3/sync/errgroup"
 	"github.com/minio/sio"
@@ -683,8 +683,8 @@ func pickLatestQuorumFilesInfo(ctx context.Context, rawFileInfos []RawFileInfo, 
 //	   err: reduced errs
 //	bucket: the object name in question
 func shouldCheckForDangling(err error, errs []error, bucket string) bool {
-	// Avoid data in .minio.sys for now
-	if bucket == minioMetaBucket {
+	// Avoid data in .kypello.sys for now
+	if bucket == kypelloMetaBucket {
 		return false
 	}
 	switch {
@@ -1132,7 +1132,7 @@ func (er erasureObjects) putMetacacheObject(ctx context.Context, key string, r *
 	// Initialize parts metadata
 	partsMetadata := make([]FileInfo, len(storageDisks))
 
-	fi := newFileInfo(pathJoin(minioMetaBucket, key), dataDrives, parityDrives)
+	fi := newFileInfo(pathJoin(kypelloMetaBucket, key), dataDrives, parityDrives)
 	fi.DataDir = mustGetUUID()
 
 	// Initialize erasure metadata.
@@ -1146,7 +1146,7 @@ func (er erasureObjects) putMetacacheObject(ctx context.Context, key string, r *
 
 	erasure, err := NewErasure(ctx, fi.Erasure.DataBlocks, fi.Erasure.ParityBlocks, fi.Erasure.BlockSize)
 	if err != nil {
-		return ObjectInfo{}, toObjectErr(err, minioMetaBucket, key)
+		return ObjectInfo{}, toObjectErr(err, kypelloMetaBucket, key)
 	}
 
 	// Fetch buffer for I/O, returns from the pool if not allocates a new one and returns.
@@ -1183,17 +1183,17 @@ func (er erasureObjects) putMetacacheObject(ctx context.Context, key string, r *
 	n, erasureErr := erasure.Encode(ctx, data, writers, buffer, writeQuorum)
 	closeErrs := closeBitrotWriters(writers)
 	if erasureErr != nil {
-		return ObjectInfo{}, toObjectErr(erasureErr, minioMetaBucket, key)
+		return ObjectInfo{}, toObjectErr(erasureErr, kypelloMetaBucket, key)
 	}
 
 	if closeErr := reduceWriteQuorumErrs(ctx, closeErrs, objectOpIgnoredErrs, writeQuorum); closeErr != nil {
-		return ObjectInfo{}, toObjectErr(closeErr, minioMetaBucket, key)
+		return ObjectInfo{}, toObjectErr(closeErr, kypelloMetaBucket, key)
 	}
 
 	// Should return IncompleteBody{} error when reader has fewer bytes
 	// than specified in request header.
 	if n < data.Size() {
-		return ObjectInfo{}, IncompleteBody{Bucket: minioMetaBucket, Object: key}
+		return ObjectInfo{}, IncompleteBody{Bucket: kypelloMetaBucket, Object: key}
 	}
 	var index []byte
 	if opts.IndexCB != nil {
@@ -1235,11 +1235,11 @@ func (er erasureObjects) putMetacacheObject(ctx context.Context, key string, r *
 		}
 	}
 
-	if _, err = writeUniqueFileInfo(ctx, onlineDisks, "", minioMetaBucket, key, partsMetadata, writeQuorum); err != nil {
-		return ObjectInfo{}, toObjectErr(err, minioMetaBucket, key)
+	if _, err = writeUniqueFileInfo(ctx, onlineDisks, "", kypelloMetaBucket, key, partsMetadata, writeQuorum); err != nil {
+		return ObjectInfo{}, toObjectErr(err, kypelloMetaBucket, key)
 	}
 
-	return fi.ToObjectInfo(minioMetaBucket, key, opts.Versioned || opts.VersionSuspended), nil
+	return fi.ToObjectInfo(kypelloMetaBucket, key, opts.Versioned || opts.VersionSuspended), nil
 }
 
 // PutObject - creates an object upon reading from the input stream
@@ -1328,7 +1328,7 @@ func (er erasureObjects) putObject(ctx context.Context, bucket string, object st
 		}
 
 		if parityOrig != parityDrives {
-			userDefined[minIOErasureUpgraded] = strconv.Itoa(parityOrig) + "->" + strconv.Itoa(parityDrives)
+			userDefined[kypelloErasureUpgraded] = strconv.Itoa(parityOrig) + "->" + strconv.Itoa(parityDrives)
 		}
 	}
 	dataDrives := len(storageDisks) - parityDrives
@@ -1393,7 +1393,7 @@ func (er erasureObjects) putObject(ctx context.Context, bucket string, object st
 	partName := "part.1"
 	tempErasureObj := pathJoin(uniqueID, fi.DataDir, partName)
 
-	defer er.deleteAll(context.Background(), minioMetaTmpBucket, tempObj)
+	defer er.deleteAll(context.Background(), kypelloMetaTmpBucket, tempObj)
 
 	var inlineBuffers []*bytes.Buffer
 	if globalStorageClass.ShouldInline(erasure.ShardFileSize(data.ActualSize()), opts.Versioned) {
@@ -1419,7 +1419,7 @@ func (er erasureObjects) putObject(ctx context.Context, bucket string, object st
 			continue
 		}
 
-		writers[i] = newBitrotWriter(disk, bucket, minioMetaTmpBucket, tempErasureObj, shardFileSize, DefaultBitrotAlgorithm, erasure.ShardSize())
+		writers[i] = newBitrotWriter(disk, bucket, kypelloMetaTmpBucket, tempErasureObj, shardFileSize, DefaultBitrotAlgorithm, erasure.ShardSize())
 	}
 
 	toEncode := io.Reader(data)
@@ -1561,7 +1561,7 @@ func (er erasureObjects) putObject(ctx context.Context, bucket string, object st
 	}
 
 	// Rename the successfully written temporary object to final location.
-	onlineDisks, versions, oldDataDir, err := renameData(ctx, onlineDisks, minioMetaTmpBucket, tempObj, partsMetadata, bucket, object, writeQuorum)
+	onlineDisks, versions, oldDataDir, err := renameData(ctx, onlineDisks, kypelloMetaTmpBucket, tempObj, partsMetadata, bucket, object, writeQuorum)
 	if err != nil {
 		if errors.Is(err, errFileNotFound) {
 			// An in-quorum errFileNotFound means that client stream

@@ -24,12 +24,12 @@ import (
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
-	"github.com/minio/minio/internal/cachevalue"
+	"github.com/kypello-io/kypello/internal/cachevalue"
 )
 
 const (
 	dataUsageRoot   = SlashSeparator
-	dataUsageBucket = minioMetaBucket + SlashSeparator + bucketMetaPrefix
+	dataUsageBucket = kypelloMetaBucket + SlashSeparator + bucketMetaPrefix
 
 	dataUsageObjName       = ".usage.json"
 	dataUsageObjNamePath   = bucketMetaPrefix + SlashSeparator + dataUsageObjName
@@ -118,7 +118,7 @@ func loadDataUsageFromBackend(ctx context.Context, objAPI ObjectLayer) (DataUsag
 			if errors.Is(err, errConfigNotFound) {
 				return DataUsageInfo{}, nil
 			}
-			return DataUsageInfo{}, toObjectErr(err, minioMetaBucket, dataUsageObjNamePath)
+			return DataUsageInfo{}, toObjectErr(err, kypelloMetaBucket, dataUsageObjNamePath)
 		}
 	}
 

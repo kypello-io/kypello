@@ -24,12 +24,12 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/logger/target/console"
+	types "github.com/kypello-io/kypello/internal/logger/target/loggertypes"
+	"github.com/kypello-io/kypello/internal/pubsub"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/madmin-go/v3/logger/log"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/logger/target/console"
-	types "github.com/minio/minio/internal/logger/target/loggertypes"
-	"github.com/minio/minio/internal/pubsub"
 	xnet "github.com/minio/pkg/v3/net"
 )
 

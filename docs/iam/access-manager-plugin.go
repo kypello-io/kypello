@@ -1,5 +1,4 @@
 //go:build ignore
-// +build ignore
 
 // Copyright (c) 2015-2022 MinIO, Inc.
 //
@@ -74,9 +73,9 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	accountValue := m["account"].(string)
 	actionValue := m["action"].(string)
 
-	// Allow user `minio` to perform any action.
+	// Allow user `kypello` to perform any action.
 	var res Result
-	if accountValue == "minio" {
+	if accountValue == "kypello" {
 		res.Result = true
 	} else {
 		// All other users may not perform any `s3:Put*` operations.

@@ -24,11 +24,11 @@ import (
 	"strconv"
 	"time"
 
+	internalAudit "github.com/kypello-io/kypello/internal/logger/message/audit"
+	"github.com/kypello-io/kypello/internal/mcontext"
 	"github.com/minio/madmin-go/v3/logger/audit"
-	internalAudit "github.com/minio/minio/internal/logger/message/audit"
-	"github.com/minio/minio/internal/mcontext"
 
-	xhttp "github.com/minio/minio/internal/http"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 )
 
 const contextAuditKey = contextKeyType("audit-entry")

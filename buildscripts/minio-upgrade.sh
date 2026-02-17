@@ -51,7 +51,7 @@ verify_checksum_mc() {
 add_alias() {
 	for i in $(seq 1 4); do
 		echo "... attempting to add alias $i"
-		until (mc alias set minio http://127.0.0.1:9000 minioadmin minioadmin); do
+		until (mc alias set minio http://127.0.0.1:9000 kypelloadmin kypelloadmin); do
 			echo "...waiting... for 5secs" && sleep 5
 		done
 	done
@@ -76,7 +76,7 @@ __init__() {
 
 	cleanup
 
-	TAG=minio/minio:dev make docker
+	TAG=kypello/minio:dev make docker
 
 	MINIO_VERSION=RELEASE.2019-12-19T22-52-26Z docker-compose \
 		-f "buildscripts/upgrade-tests/compose.yml" \

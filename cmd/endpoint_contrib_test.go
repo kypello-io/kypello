@@ -23,11 +23,11 @@ import (
 )
 
 func TestUpdateDomainIPs(t *testing.T) {
-	tempGlobalMinioPort := globalMinioPort
+	tempGlobalMinioPort := globalKypelloPort
 	defer func() {
-		globalMinioPort = tempGlobalMinioPort
+		globalKypelloPort = tempGlobalMinioPort
 	}()
-	globalMinioPort = "9000"
+	globalKypelloPort = "9000"
 
 	tempGlobalDomainIPs := globalDomainIPs
 	defer func() {

@@ -137,7 +137,7 @@ func filterLocalDisks(node, args string) ([]localDisk, error) {
 }
 
 func getFormatJSON(path string) (format, error) {
-	formatJSON, err := os.ReadFile(filepath.Join(path, ".minio.sys/format.json"))
+	formatJSON, err := os.ReadFile(filepath.Join(path, ".kypello.sys/format.json"))
 	if err != nil {
 		return format{}, err
 	}

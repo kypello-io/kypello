@@ -30,15 +30,15 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
+	objectlock "github.com/kypello-io/kypello/internal/bucket/object/lock"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/bucket/versioning"
+	"github.com/kypello-io/kypello/internal/hash"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/lithammer/shortuuid/v4"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/bucket/lifecycle"
-	objectlock "github.com/minio/minio/internal/bucket/object/lock"
-	"github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/bucket/versioning"
-	"github.com/minio/minio/internal/hash"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/env"
 	"github.com/minio/pkg/v3/workers"
 )
@@ -540,7 +540,7 @@ func (z *erasureServerPools) rebalanceBucket(ctx context.Context, bucket string,
 	var lc *lifecycle.Lifecycle
 	var lr objectlock.Retention
 	var rcfg *replication.Config
-	if bucket != minioMetaBucket {
+	if bucket != kypelloMetaBucket {
 		vc, err = globalBucketVersioningSys.Get(bucket)
 		if err != nil {
 			return err
@@ -792,10 +792,10 @@ const (
 )
 
 func (z *erasureServerPools) saveRebalanceStats(ctx context.Context, poolIdx int, opts rebalSaveOpts) error {
-	lock := z.serverPools[0].NewNSLock(minioMetaBucket, rebalMetaName)
+	lock := z.serverPools[0].NewNSLock(kypelloMetaBucket, rebalMetaName)
 	lkCtx, err := lock.GetLock(ctx, globalOperationTimeout)
 	if err != nil {
-		rebalanceLogIf(ctx, fmt.Errorf("failed to acquire write lock on %s/%s: %w", minioMetaBucket, rebalMetaName, err))
+		rebalanceLogIf(ctx, fmt.Errorf("failed to acquire write lock on %s/%s: %w", kypelloMetaBucket, rebalMetaName, err))
 		return err
 	}
 	defer lock.Unlock(lkCtx)

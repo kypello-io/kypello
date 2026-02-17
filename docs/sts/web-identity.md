@@ -13,7 +13,7 @@ By default, the temporary security credentials created by AssumeRoleWithWebIdent
 Configuration can be performed via MinIO's standard configuration API (i.e. using `mc admin config set/get` commands) or equivalently via environment variables. For brevity we show only environment variables here:
 
 ```
-$ mc admin config set myminio identity_openid --env
+$ mc admin config set mykypello identity_openid --env
 KEY:
 identity_openid[:name]  enable OpenID SSO support
 
@@ -47,7 +47,7 @@ Sample environment variables:
 ```
 MINIO_IDENTITY_OPENID_DISPLAY_NAME="my first openid"
 MINIO_IDENTITY_OPENID_CONFIG_URL=http://myopenid.com/.well-known/openid-configuration
-MINIO_IDENTITY_OPENID_CLIENT_ID="minio-client-app"
+MINIO_IDENTITY_OPENID_CLIENT_ID="kypello-client-app"
 MINIO_IDENTITY_OPENID_CLIENT_SECRET="minio-client-app-secret"
 MINIO_IDENTITY_OPENID_SCOPES="openid,groups"
 MINIO_IDENTITY_OPENID_REDIRECT_URI="http://127.0.0.1:10000/oauth_callback"
@@ -93,7 +93,7 @@ The **deprecated** parameter `MINIO_IDENTITY_OPENID_REDIRECT_URI` works similar 
 
 ## Specifying Access Control with IAM Policies
 
-The STS API authenticates the user by verifying the JWT provided in the request. However access to object storage resources are controlled via named IAM policies defined in the MinIO instance. Once authenticated via the STS API, the MinIO server applies one or more IAM policies to the generated credentials. MinIO's AssumeRoleWithWebIdentity implementation supports specifying IAM policies in two ways:
+The STS API authenticates the user by verifying the JWT provided in the request. However access to object storage resources are controlled via named IAM policies defined in the Kypello instance. Once authenticated via the STS API, the MinIO server applies one or more IAM policies to the generated credentials. MinIO's AssumeRoleWithWebIdentity implementation supports specifying IAM policies in two ways:
 
 1. Role Policy (Recommended): When specified as part of the OpenID provider configuration, all users authenticating via this provider are authorized to (only) use the specified role policy. The policy to associate with such users is specified via the `role_policy` configuration parameter or the `MINIO_IDENTITY_OPENID_ROLE_POLICY` environment variable. The value is a comma-separated list of IAM access policy names already defined in the server. In this situation, the server prints a role ARN at startup that must be specified as a `RoleArn` API request parameter in the STS AssumeRoleWithWebIdentity API call. When using Role Policies, multiple OpenID providers and/or client applications (with unique client IDs) may be configured with independent role policies. Each configuration is assigned a unique RoleARN by the MinIO server and this is used to select the policies to apply to temporary credentials generated in the AssumeRoleWithWebIdentity call.
 
@@ -196,19 +196,19 @@ http://minio.cluster:9000?Action=AssumeRoleWithWebIdentity&DurationSeconds=3600&
 ## Using WebIdentity API
 
 ```
-export MINIO_ROOT_USER=minio
-export MINIO_ROOT_PASSWORD=minio123
+export MINIO_ROOT_USER=kypello
+export MINIO_ROOT_PASSWORD=kypello123
 export MINIO_IDENTITY_OPENID_CONFIG_URL=https://accounts.google.com/.well-known/openid-configuration
 export MINIO_IDENTITY_OPENID_CLIENT_ID="843351d4-1080-11ea-aa20-271ecba3924a"
 # Optional: Allow to specify the requested OpenID scopes (OpenID only requires the `openid` scope)
 #export MINIO_IDENTITY_OPENID_SCOPES="openid,profile,email"
-minio server /mnt/export
+kypello server /mnt/export
 ```
 
 or using `mc`
 
 ```
-mc admin config get myminio identity_openid
+mc admin config get mykypello identity_openid
 identity_openid config_url=https://accounts.google.com/.well-known/openid-configuration client_id=843351d4-1080-11ea-aa20-271ecba3924a
 ```
 
@@ -252,11 +252,11 @@ $ go run web-identity.go -cid 204367807228-ok7601k6gj1pgge7m09h7d79co8p35xx.apps
 To support WebIdentity based login for MinIO Console, set openid configuration and restart MinIO
 
 ```
-mc admin config set myminio identity_openid config_url="<CONFIG_URL>" client_id="<client_identifier>"
+mc admin config set mykypello identity_openid config_url="<CONFIG_URL>" client_id="<client_identifier>"
 ```
 
 ```
-mc admin service restart myminio
+mc admin service restart mykypello
 ```
 
 Sample URLs for Keycloak are

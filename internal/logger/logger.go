@@ -32,11 +32,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/color"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 	"github.com/minio/highwayhash"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/madmin-go/v3/logger/log"
-	"github.com/minio/minio/internal/color"
-	xhttp "github.com/minio/minio/internal/http"
 )
 
 // HighwayHash key for logging in anonymous mode
@@ -189,10 +189,10 @@ func Init(goPath string, goRoot string) {
 	// Remove duplicate entries.
 	trimStrings = uniqueEntries(trimStrings)
 
-	// Add "github.com/minio/minio" as the last to cover
-	// paths like "{GOROOT}/src/github.com/minio/minio"
-	// and "{GOPATH}/src/github.com/minio/minio"
-	trimStrings = append(trimStrings, filepath.Join("github.com", "minio", "minio")+string(filepath.Separator))
+	// Add "github.com/kypello-io/kypello" as the last to cover
+	// paths like "{GOROOT}/src/github.com/kypello-io/kypello"
+	// and "{GOPATH}/src/github.com/kypello-io/kypello"
+	trimStrings = append(trimStrings, filepath.Join("github.com", "kypello-io", "kypello")+string(filepath.Separator))
 }
 
 func trimTrace(f string) string {

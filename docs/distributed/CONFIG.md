@@ -2,14 +2,14 @@
 
 MinIO now supports starting the server arguments and configuration via a YAML configuration file. This YAML configuration describes everything that can be configured in a MinIO setup, such as '--address', '--console-address' and command line arguments for the MinIO server.
 
-Historically everything to MinIO was provided via command arguments for the hostnames and the drives via an ellipses syntax such as `minio server http://host{1...4}/disk{1...4}` this requirement added an additional burden to have sequential hostnames for us to make sure that we can provide horizontal distribution, however we have come across situations where sometimes this is not feasible and there are no easier alternatives without modifying /etc/hosts on the host system as root user.  Many times in airgapped deployments this is not allowed or requires audits and approvals.
+Historically everything to MinIO was provided via command arguments for the hostnames and the drives via an ellipses syntax such as `kypello server http://host{1...4}/disk{1...4}` this requirement added an additional burden to have sequential hostnames for us to make sure that we can provide horizontal distribution, however we have come across situations where sometimes this is not feasible and there are no easier alternatives without modifying /etc/hosts on the host system as root user.  Many times in airgapped deployments this is not allowed or requires audits and approvals.
 
 MinIO server configuration file allows users to provide topology that allows for heterogeneous hostnames, allowing MinIO to deployed in pre-existing environments without any further OS level configurations.
 
 ### Usage
 
 ```
-minio server --config config.yaml
+kypello server --config config.yaml
 ```
 
 Lets you start MinIO server with all inputs to start MinIO server provided via this configuration file, once the configuration file is provided all other pre-existing values on disk for configuration are overridden by the new values set in this configuration file.
@@ -18,10 +18,10 @@ Following is an example YAML configuration structure.
 ```yaml
 version: v2
 address: ":9000"
-rootUser: "minioadmin"
-rootPassword: "minioadmin"
+rootUser: "kypelloadmin"
+rootPassword: "kypelloadmin"
 console-address: ":9001"
-certs-dir: "/home/user/.minio/certs/"
+certs-dir: "/home/user/.kypello/certs/"
 pools: # Specify the nodes and drives with pools
   - args:
       - "https://server-example-pool1:9000/mnt/disk{1...4}/"

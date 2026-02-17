@@ -28,20 +28,20 @@ import (
 	"sync"
 	"time"
 
-	"github.com/minio/minio/internal/grid"
-	xioutil "github.com/minio/minio/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/grid"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 )
 
 func renameAllBucketMetacache(epPath string) error {
-	// Rename all previous `.minio.sys/buckets/<bucketname>/.metacache` to
-	// to `.minio.sys/tmp/` for deletion.
-	return readDirFn(pathJoin(epPath, minioMetaBucket, bucketMetaPrefix), func(name string, typ os.FileMode) error {
+	// Rename all previous `.kypello.sys/buckets/<bucketname>/.metacache` to
+	// to `.kypello.sys/tmp/` for deletion.
+	return readDirFn(pathJoin(epPath, kypelloMetaBucket, bucketMetaPrefix), func(name string, typ os.FileMode) error {
 		if typ == os.ModeDir {
-			tmpMetacacheOld := pathutil.Join(epPath, minioMetaTmpDeletedBucket, mustGetUUID())
-			if err := renameAll(pathJoin(epPath, minioMetaBucket, metacachePrefixForID(name, slashSeparator)),
+			tmpMetacacheOld := pathutil.Join(epPath, kypelloMetaTmpDeletedBucket, mustGetUUID())
+			if err := renameAll(pathJoin(epPath, kypelloMetaBucket, metacachePrefixForID(name, slashSeparator)),
 				tmpMetacacheOld, epPath); err != nil && err != errFileNotFound {
 				return fmt.Errorf("unable to rename (%s -> %s) %w",
-					pathJoin(epPath, minioMetaBucket+metacachePrefixForID(minioMetaBucket, slashSeparator)),
+					pathJoin(epPath, kypelloMetaBucket+metacachePrefixForID(kypelloMetaBucket, slashSeparator)),
 					tmpMetacacheOld,
 					osErrToFileErr(err))
 			}
@@ -374,7 +374,7 @@ func triggerExpiryAndRepl(ctx context.Context, o listPathOptions, obj metaCacheE
 
 func (z *erasureServerPools) listAndSave(ctx context.Context, o *listPathOptions) (entries metaCacheEntriesSorted, err error) {
 	// Use ID as the object name...
-	o.pool = z.getAvailablePoolIdx(ctx, minioMetaBucket, o.ID, 10<<20)
+	o.pool = z.getAvailablePoolIdx(ctx, kypelloMetaBucket, o.ID, 10<<20)
 	if o.pool < 0 {
 		// No space or similar, don't persist the listing.
 		o.pool = 0

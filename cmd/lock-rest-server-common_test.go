@@ -24,7 +24,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/minio/minio/internal/dsync"
+	"github.com/kypello-io/kypello/internal/dsync"
 )
 
 // Helper function to create a lock server for testing
@@ -33,7 +33,7 @@ func createLockTestServer(ctx context.Context, t *testing.T) (string, *lockRESTS
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatalf("unable initialize config file, %s", err)
 	}
 

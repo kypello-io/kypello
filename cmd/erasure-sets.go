@@ -32,11 +32,11 @@ import (
 
 	"github.com/dchest/siphash"
 	"github.com/google/uuid"
+	"github.com/kypello-io/kypello/internal/dsync"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7/pkg/set"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/minio/internal/dsync"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/console"
 	"github.com/minio/pkg/v3/sync/errgroup"
 	"github.com/puzpuzpuz/xsync/v3"
@@ -707,7 +707,7 @@ func listDeletedBuckets(ctx context.Context, storageDisks []StorageAPI, delBucke
 				// we ignore disk not found errors
 				return nil
 			}
-			volsInfo, err := storageDisks[index].ListDir(ctx, "", minioMetaBucket, pathJoin(bucketMetaPrefix, deletedBucketsPrefix), -1)
+			volsInfo, err := storageDisks[index].ListDir(ctx, "", kypelloMetaBucket, pathJoin(bucketMetaPrefix, deletedBucketsPrefix), -1)
 			if err != nil {
 				if errors.Is(err, errFileNotFound) {
 					return nil
@@ -715,7 +715,7 @@ func listDeletedBuckets(ctx context.Context, storageDisks []StorageAPI, delBucke
 				return err
 			}
 			for _, volName := range volsInfo {
-				vi, err := storageDisks[index].StatVol(ctx, pathJoin(minioMetaBucket, bucketMetaPrefix, deletedBucketsPrefix, volName))
+				vi, err := storageDisks[index].StatVol(ctx, pathJoin(kypelloMetaBucket, bucketMetaPrefix, deletedBucketsPrefix, volName))
 				if err == nil {
 					vi.Name = strings.TrimSuffix(volName, SlashSeparator)
 					delBuckets.Store(volName, vi)

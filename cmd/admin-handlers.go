@@ -47,18 +47,18 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/klauspost/compress/zip"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/dsync"
+	"github.com/kypello-io/kypello/internal/grid"
+	"github.com/kypello-io/kypello/internal/handlers"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/kms"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/madmin-go/v3/estream"
 	"github.com/minio/madmin-go/v3/logger/log"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/dsync"
-	"github.com/minio/minio/internal/grid"
-	"github.com/minio/minio/internal/handlers"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/kms"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/mux"
 	xnet "github.com/minio/pkg/v3/net"
 	"github.com/minio/pkg/v3/policy"
@@ -84,7 +84,7 @@ const (
 
 // ServerUpdateV2Handler - POST /minio/admin/v3/update?updateURL={updateURL}&type=2
 // ----------
-// updates all minio servers and restarts them gracefully.
+// updates all kypello servers and restarts them gracefully.
 func (a adminAPIHandlers) ServerUpdateV2Handler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -320,7 +320,7 @@ func (a adminAPIHandlers) ServerUpdateV2Handler(w http.ResponseWriter, r *http.R
 
 // ServerUpdateHandler - POST /minio/admin/v3/update?updateURL={updateURL}
 // ----------
-// updates all minio servers and restarts them gracefully.
+// updates all kypello servers and restarts them gracefully.
 func (a adminAPIHandlers) ServerUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -461,8 +461,8 @@ func (a adminAPIHandlers) ServerUpdateHandler(w http.ResponseWriter, r *http.Req
 // ServiceHandler - POST /minio/admin/v3/service?action={action}
 // ----------
 // Supports following actions:
-// - restart (restarts all the MinIO instances in a setup)
-// - stop (stops all the MinIO instances in a setup)
+// - restart (restarts all the Kypello instances in a setup)
+// - stop (stops all the Kypello instances in a setup)
 // - freeze (freezes all incoming S3 API calls)
 // - unfreeze (unfreezes previously frozen S3 API calls)
 func (a adminAPIHandlers) ServiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -536,8 +536,8 @@ type serviceResult struct {
 // ServiceV2Handler - POST /minio/admin/v3/service?action={action}&type=2
 // ----------
 // Supports following actions:
-// - restart (restarts all the MinIO instances in a setup)
-// - stop (stops all the MinIO instances in a setup)
+// - restart (restarts all the Kypello instances in a setup)
+// - stop (stops all the Kypello instances in a setup)
 // - freeze (freezes all incoming S3 API calls)
 // - unfreeze (unfreezes previously frozen S3 API calls)
 //
@@ -1523,7 +1523,7 @@ func (a adminAPIHandlers) SitePerfHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	nsLock := objectAPI.NewNSLock(minioMetaBucket, "site-net-perf")
+	nsLock := objectAPI.NewNSLock(kypelloMetaBucket, "site-net-perf")
 	lkctx, err := nsLock.GetLock(ctx, globalOperationTimeout)
 	if err != nil {
 		writeErrorResponseJSON(ctx, w, errorCodes.ToAPIErr(toAPIErrorCode(ctx, err)), r.URL)
@@ -1583,7 +1583,7 @@ func (a adminAPIHandlers) ClientDevNull(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	nsLock := objectAPI.NewNSLock(minioMetaBucket, "client-perf")
+	nsLock := objectAPI.NewNSLock(kypelloMetaBucket, "client-perf")
 	lkctx, err := nsLock.GetLock(ctx, globalOperationTimeout)
 	if err != nil {
 		writeErrorResponseJSON(ctx, w, errorCodes.ToAPIErr(toAPIErrorCode(ctx, err)), r.URL)
@@ -1630,7 +1630,7 @@ func (a adminAPIHandlers) NetperfHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	nsLock := objectAPI.NewNSLock(minioMetaBucket, "netperf")
+	nsLock := objectAPI.NewNSLock(kypelloMetaBucket, "netperf")
 	lkctx, err := nsLock.GetLock(ctx, globalOperationTimeout)
 	if err != nil {
 		writeErrorResponseJSON(ctx, w, errorCodes.ToAPIErr(toAPIErrorCode(ctx, err)), r.URL)
@@ -1997,7 +1997,7 @@ func shouldTrace(trcInfo madmin.TraceInfo, opts madmin.ServiceTraceOpts) (should
 	}
 
 	// Check internal path
-	isInternal := isHTTP && HasPrefix(trcInfo.HTTP.ReqInfo.Path, minioReservedBucketPath+SlashSeparator)
+	isInternal := isHTTP && HasPrefix(trcInfo.HTTP.ReqInfo.Path, kypelloReservedBucketPath+SlashSeparator)
 	if isInternal && !opts.Internal {
 		return false
 	}
@@ -2701,14 +2701,14 @@ func fetchHealthInfo(healthCtx context.Context, objectAPI ObjectLayer, query *ur
 		if !globalIsDistErasure {
 			// FS mode - single server - hard code to `server1`
 			anonCmdLine := strings.ReplaceAll(cmdLine, globalLocalNodeName, "server1")
-			if len(globalMinioConsoleHost) > 0 {
-				anonCmdLine = strings.ReplaceAll(anonCmdLine, globalMinioConsoleHost, "server1")
+			if len(globalKypelloConsoleHost) > 0 {
+				anonCmdLine = strings.ReplaceAll(anonCmdLine, globalKypelloConsoleHost, "server1")
 			}
 			return anonCmdLine
 		}
 
 		// Server start command regex groups:
-		// 1 - minio server
+		// 1 - kypello server
 		// 2 - flags e.g. `--address :9000 --certs-dir /etc/minio/certs`
 		// 3 - pool args e.g. `https://node{01...16}.domain/data/disk{001...204} https://node{17...32}.domain/data/disk{001...204}`
 		re := regexp.MustCompile(`^(.*minio\s+server\s+)(--[^\s]+\s+[^\s]+\s+)*(.*)`)
@@ -2931,7 +2931,7 @@ func (a adminAPIHandlers) HealthInfoHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	nsLock := objectAPI.NewNSLock(minioMetaBucket, "health-check-in-progress")
+	nsLock := objectAPI.NewNSLock(kypelloMetaBucket, "health-check-in-progress")
 	lkctx, err := nsLock.GetLock(ctx, newDynamicTimeout(deadline, deadline))
 	if err != nil { // returns a locked lock
 		errResp(err)
@@ -3420,8 +3420,8 @@ func (a adminAPIHandlers) InspectDataHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	// save the format.json as part of inspect by default
-	if volume != minioMetaBucket || file != formatConfigFile {
-		err = o.GetRawData(ctx, minioMetaBucket, formatConfigFile, rawDataFn)
+	if volume != kypelloMetaBucket || file != formatConfigFile {
+		err = o.GetRawData(ctx, kypelloMetaBucket, formatConfigFile, rawDataFn)
 	}
 	if !errors.Is(err, errFileNotFound) {
 		adminLogIf(ctx, err)
@@ -3445,16 +3445,16 @@ function main() {
 	# Read content of inspect-input.txt
 	MINIO_OPTS=$(grep "Server command line args" <./inspect-input.txt | sed "s/Server command line args: //g" | sed -r "s#%s:\/\/#\.\/#g")
 
-	# Start MinIO instance using the options
-	START_CMD="CI=on _MINIO_AUTO_DRIVE_HEALING=off minio server ${MINIO_OPTS} &"
+	# Start Kypello instance using the options
+	START_CMD="CI=on _MINIO_AUTO_DRIVE_HEALING=off kypello server ${MINIO_OPTS} &"
 	echo
-	echo "Starting MinIO instance: ${START_CMD}"
+	echo "Starting Kypello instance: ${START_CMD}"
 	echo
 	eval "$START_CMD"
 	MINIO_SRVR_PID="$!"
-	echo "MinIO Server PID: ${MINIO_SRVR_PID}"
+	echo "Kypello Server PID: ${MINIO_SRVR_PID}"
 	echo
-	echo "Waiting for MinIO instance to get ready!"
+	echo "Waiting for Kypello instance to get ready!"
 	sleep 10
 }
 

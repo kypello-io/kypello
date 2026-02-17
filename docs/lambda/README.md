@@ -83,7 +83,7 @@ Press CTRL+C to quit
 
 Register MinIO with a Lambda function, we are calling our target name as `function`, but you may call it any other friendly name of your choice.
 ```
-MINIO_LAMBDA_WEBHOOK_ENABLE_function=on MINIO_LAMBDA_WEBHOOK_ENDPOINT_function=http://localhost:5000 minio server /data &
+MINIO_LAMBDA_WEBHOOK_ENABLE_function=on MINIO_LAMBDA_WEBHOOK_ENDPOINT_function=http://localhost:5000 kypello server /data &
 ...
 ...
 MinIO Object Storage Server
@@ -102,22 +102,22 @@ Object Lambda ARNs: arn:minio:s3-object-lambda::function:webhook
 If your lambda target expects an authorization token then you can enable it per function target as follows
 
 ```
-MINIO_LAMBDA_WEBHOOK_ENABLE_function=on MINIO_LAMBDA_WEBHOOK_ENDPOINT_function=http://localhost:5000 MINIO_LAMBDA_WEBHOOK_AUTH_TOKEN="mytoken" minio server /data &
+MINIO_LAMBDA_WEBHOOK_ENABLE_function=on MINIO_LAMBDA_WEBHOOK_ENDPOINT_function=http://localhost:5000 MINIO_LAMBDA_WEBHOOK_AUTH_TOKEN="mytoken" kypello server /data &
 ```
 
 ### Lambda Target with mTLS authentication
 
 If your lambda target expects mTLS client you can enable it per function target as follows
 ```
-MINIO_LAMBDA_WEBHOOK_ENABLE_function=on MINIO_LAMBDA_WEBHOOK_ENDPOINT_function=http://localhost:5000 MINIO_LAMBDA_WEBHOOK_CLIENT_CERT=client.crt MINIO_LAMBDA_WEBHOOK_CLIENT_KEY=client.key minio server /data &
+MINIO_LAMBDA_WEBHOOK_ENABLE_function=on MINIO_LAMBDA_WEBHOOK_ENDPOINT_function=http://localhost:5000 MINIO_LAMBDA_WEBHOOK_CLIENT_CERT=client.crt MINIO_LAMBDA_WEBHOOK_CLIENT_KEY=client.key kypello server /data &
 ```
 
 ## Create a bucket and upload some data
 
 Create a bucket named `functionbucket`
 ```
-mc alias set myminio/ http://localhost:9000 minioadmin minioadmin
-mc mb myminio/functionbucket
+mc alias set mykypello/ http://localhost:9000 kypelloadmin kypelloadmin
+mc mb mykypello/functionbucket
 ```
 
 Create a file `testobject` with some test data that will be transformed
@@ -129,7 +129,7 @@ EOF
 
 Upload this object to the bucket via `mc cp`
 ```
-mc cp testobject myminio/functionbucket/
+mc cp testobject mykypello/functionbucket/
 ```
 
 ## Invoke Lambda transformation via PresignedGET
@@ -151,7 +151,7 @@ import (
 
 func main() {
 	s3Client, err := minio.New("localhost:9000", &minio.Options{
-		Creds:  credentials.NewStaticV4("minioadmin", "minioadmin", ""),
+		Creds:  credentials.NewStaticV4("kypelloadmin", "kypelloadmin", ""),
 		Secure: false,
 	})
 	if err != nil {
@@ -176,7 +176,7 @@ Use the Presigned URL via `curl` to receive the transformed object.
 curl -v $(go run presigned.go)
 ...
 ...
-> GET /functionbucket/testobject?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20230205%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230205T173023Z&X-Amz-Expires=1000&X-Amz-SignedHeaders=host&lambdaArn=arn%3Aminio%3As3-object-lambda%3A%3Atoupper%3Awebhook&X-Amz-Signature=d7e343f0da9d4fa2bc822c12ad2f54300ff16796a1edaa6d31f1313c8e94d5b2 HTTP/1.1
+> GET /functionbucket/testobject?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=kypelloadmin%2F20230205%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20230205T173023Z&X-Amz-Expires=1000&X-Amz-SignedHeaders=host&lambdaArn=arn%3Aminio%3As3-object-lambda%3A%3Atoupper%3Awebhook&X-Amz-Signature=d7e343f0da9d4fa2bc822c12ad2f54300ff16796a1edaa6d31f1313c8e94d5b2 HTTP/1.1
 > Host: localhost:9000
 > User-Agent: curl/7.81.0
 > Accept: */*

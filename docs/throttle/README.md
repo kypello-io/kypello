@@ -1,4 +1,4 @@
-# MinIO Server Throttling Guide [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Docker Pulls](https://img.shields.io/docker/pulls/minio/minio.svg?maxAge=604800)](https://hub.docker.com/r/minio/minio/)
+# Kypello Server Throttling Guide [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Docker Pulls](https://img.shields.io/docker/pulls/minio/minio.svg?maxAge=604800)](https://hub.docker.com/r/minio/minio/)
 
 MinIO server allows to throttle incoming requests:
 
@@ -19,14 +19,14 @@ Example: Limit a MinIO cluster to accept at max 1600 simultaneous S3 API request
 export MINIO_API_REQUESTS_MAX=1600
 export MINIO_ROOT_USER=your-access-key
 export MINIO_ROOT_PASSWORD=your-secret-key
-minio server http://server{1...8}/mnt/hdd{1...16}
+kypello server http://server{1...8}/mnt/hdd{1...16}
 ```
 
 or
 
 ```sh
-mc admin config set myminio/ api requests_max=1600
-mc admin service restart myminio/
+mc admin config set mykypello/ api requests_max=1600
+mc admin service restart mykypello/
 ```
 
 > NOTE: A zero value of `requests_max` means MinIO will automatically calculate requests based on available RAM size and that is the default behavior.

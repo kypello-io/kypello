@@ -31,8 +31,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/auth"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/auth"
 	"github.com/minio/mux"
 )
 
@@ -64,8 +64,8 @@ func prepareAdminErasureTestBed(ctx context.Context) (*adminErasureTestBed, erro
 		return nil, xlErr
 	}
 
-	// Initialize minio server config.
-	if err := newTestConfig(globalMinioDefaultRegion, objLayer); err != nil {
+	// Initialize kypello server config.
+	if err := newTestConfig(globalKypelloDefaultRegion, objLayer); err != nil {
 		cancel()
 		return nil, err
 	}
@@ -198,18 +198,16 @@ func testServicesCmdHandler(cmd cmdType, t *testing.T) {
 	// Initialize admin peers to make admin RPC calls. Note: In a
 	// single node setup, this degenerates to a simple function
 	// call under the hood.
-	globalMinioAddr = "127.0.0.1:9000"
+	globalKypelloAddr = "127.0.0.1:9000"
 
 	var wg sync.WaitGroup
 
 	// Setting up a go routine to simulate ServerRouter's
 	// handleServiceSignals for stop and restart commands.
 	if cmd == restartCmd {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			testServiceSignalReceiver(cmd, t)
-		}()
+		})
 	}
 	credentials := globalActiveCred
 
@@ -274,7 +272,7 @@ func TestAdminServerInfo(t *testing.T) {
 	defer adminTestBed.TearDown()
 
 	// Initialize admin peers to make admin RPC calls.
-	globalMinioAddr = "127.0.0.1:9000"
+	globalKypelloAddr = "127.0.0.1:9000"
 
 	// Prepare query params for set-config mgmt REST API.
 	queryVal := url.Values{}
@@ -297,8 +295,8 @@ func TestAdminServerInfo(t *testing.T) {
 		t.Fatalf("Failed to decode set config result json %v", err)
 	}
 
-	if results.Region != globalMinioDefaultRegion {
-		t.Errorf("Expected %s, got %s", globalMinioDefaultRegion, results.Region)
+	if results.Region != globalKypelloDefaultRegion {
+		t.Errorf("Expected %s, got %s", globalKypelloDefaultRegion, results.Region)
 	}
 }
 

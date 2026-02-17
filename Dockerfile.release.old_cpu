@@ -11,11 +11,11 @@ RUN apk add -U --no-cache ca-certificates && \
     apk add -U --no-cache curl && \
     go install aead.dev/minisign/cmd/minisign@v0.2.1
 
-# Download minio binary and signature files
-RUN curl -s -q https://dl.min.io/server/minio/release/linux-${TARGETARCH}/archive/minio.${RELEASE} -o /go/bin/minio && \
-    curl -s -q https://dl.min.io/server/minio/release/linux-${TARGETARCH}/archive/minio.${RELEASE}.minisig -o /go/bin/minio.minisig && \
-    curl -s -q https://dl.min.io/server/minio/release/linux-${TARGETARCH}/archive/minio.${RELEASE}.sha256sum -o /go/bin/minio.sha256sum && \
-    chmod +x /go/bin/minio
+# Download kypello binary and signature files
+RUN curl -s -q https://dl.min.io/server/kypello/release/linux-${TARGETARCH}/archive/kypello.${RELEASE} -o /go/bin/kypello && \
+    curl -s -q https://dl.min.io/server/kypello/release/linux-${TARGETARCH}/archive/kypello.${RELEASE}.minisig -o /go/bin/kypello.minisig && \
+    curl -s -q https://dl.min.io/server/kypello/release/linux-${TARGETARCH}/archive/kypello.${RELEASE}.sha256sum -o /go/bin/kypello.sha256sum && \
+    chmod +x /go/bin/kypello
 
 # Download mc binary and signature files
 RUN curl -s -q https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc -o /go/bin/mc && \
@@ -29,7 +29,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
     fi
 
 # Verify binary signature using public key "RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGavRUN"
-RUN minisign -Vqm /go/bin/minio -x /go/bin/minio.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav && \
+RUN minisign -Vqm /go/bin/kypello -x /go/bin/kypello.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav && \
     minisign -Vqm /go/bin/mc -x /go/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav
 
 FROM registry.access.redhat.com/ubi8/ubi-micro:latest
@@ -37,8 +37,8 @@ FROM registry.access.redhat.com/ubi8/ubi-micro:latest
 ARG RELEASE
 
 LABEL name="MinIO" \
-      vendor="MinIO Inc <dev@min.io>" \
-      maintainer="MinIO Inc <dev@min.io>" \
+      vendor="KypelloIO <dev@kypello.io>" \
+      maintainer="KypelloIO <dev@kypello.io>" \
       version="${RELEASE}" \
       release="${RELEASE}" \
       summary="MinIO is a High Performance Object Storage, API compatible with Amazon S3 cloud storage service." \
@@ -56,7 +56,7 @@ ENV MINIO_ACCESS_KEY_FILE=access_key \
 RUN chmod -R 777 /usr/bin
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=build /go/bin/minio* /usr/bin/
+COPY --from=build /go/bin/kypello* /usr/bin/
 COPY --from=build /go/bin/mc* /usr/bin/
 COPY --from=build /go/bin/cur* /usr/bin/
 
@@ -68,4 +68,4 @@ EXPOSE 9000
 VOLUME ["/data"]
 
 ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
-CMD ["minio"]
+CMD ["kypello"]

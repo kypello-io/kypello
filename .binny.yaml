@@ -1,0 +1,15 @@
+tools:
+  - name: golangci-lint
+    version:
+      want: v2.9.0
+      constraint: < v3
+    method: github-release
+    with:
+      repo: golangci/golangci-lint
+
+  - name: typos
+    version:
+      want: v1.43.4
+    method: github-release
+    with:
+      repo: crate-ci/typos

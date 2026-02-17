@@ -31,11 +31,11 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
 	"github.com/minio/pkg/v3/randreader"
 )
 
@@ -323,14 +323,12 @@ func netperf(ctx context.Context, duration time.Duration) madmin.NetperfNodeResu
 		}
 		go func(index int) {
 			for i := 0; i < connectionsPerPeer; i++ {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
+				wg.Go(func() {
 					err := globalNotificationSys.peerClients[index].DevNull(ctx, r)
 					if err != nil {
 						errStr = fmt.Sprintf("error with %s: %s", globalNotificationSys.peerClients[index].String(), err.Error())
 					}
-				}()
+				})
 			}
 		}(index)
 	}

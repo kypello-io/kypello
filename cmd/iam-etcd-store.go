@@ -27,9 +27,9 @@ import (
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/kms"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/kms"
 	"github.com/puzpuzpuz/xsync/v3"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	etcd "go.etcd.io/etcd/client/v3"
@@ -105,7 +105,7 @@ func (ies *IAMEtcdStore) saveIAMConfig(ctx context.Context, item any, itemPath s
 	}
 	if GlobalKMS != nil {
 		data, err = config.EncryptBytes(GlobalKMS, data, kms.Context{
-			minioMetaBucket: path.Join(minioMetaBucket, itemPath),
+			kypelloMetaBucket: path.Join(kypelloMetaBucket, itemPath),
 		})
 		if err != nil {
 			return err

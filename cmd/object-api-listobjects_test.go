@@ -28,7 +28,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/minio/minio/internal/bucket/lifecycle"
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
 )
 
 func TestListObjectsVersionedFolders(t *testing.T) {
@@ -1888,7 +1888,7 @@ func initFSObjectsB(disk string, t *testing.B) (obj ObjectLayer) {
 		t.Fatal(err)
 	}
 
-	newTestConfig(globalMinioDefaultRegion, obj)
+	newTestConfig(globalKypelloDefaultRegion, obj)
 
 	initAllSubsystems(GlobalContext)
 	return obj

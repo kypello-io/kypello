@@ -30,11 +30,11 @@ import (
 	"unicode/utf8"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/kypello-io/kypello/internal/config"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/kms"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/config"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/kms"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/sync/errgroup"
 	"github.com/puzpuzpuz/xsync/v3"
 )
@@ -89,7 +89,7 @@ func (iamOS *IAMObjectStore) saveIAMConfig(ctx context.Context, item any, objPat
 	}
 	if GlobalKMS != nil {
 		data, err = config.EncryptBytes(GlobalKMS, data, kms.Context{
-			minioMetaBucket: path.Join(minioMetaBucket, objPath),
+			kypelloMetaBucket: path.Join(kypelloMetaBucket, objPath),
 		})
 		if err != nil {
 			return err
@@ -109,13 +109,13 @@ func decryptData(data []byte, objPath string) ([]byte, error) {
 	}
 	if GlobalKMS != nil {
 		pdata, err = config.DecryptBytes(GlobalKMS, data, kms.Context{
-			minioMetaBucket: path.Join(minioMetaBucket, objPath),
+			kypelloMetaBucket: path.Join(kypelloMetaBucket, objPath),
 		})
 		if err == nil {
 			return pdata, nil
 		}
 		pdata, err = config.DecryptBytes(GlobalKMS, data, kms.Context{
-			minioMetaBucket: objPath,
+			kypelloMetaBucket: objPath,
 		})
 		if err == nil {
 			return pdata, nil
@@ -872,7 +872,7 @@ func (iamOS *IAMObjectStore) deleteGroupInfo(ctx context.Context, name string) e
 	return err
 }
 
-// Lists objects in the minioMetaBucket at the given path prefix. All returned
+// Lists objects in the kypelloMetaBucket at the given path prefix. All returned
 // items have the pathPrefix removed from their names.
 func listIAMConfigItems(ctx context.Context, objAPI ObjectLayer, pathPrefix string) <-chan itemOrErr[string] {
 	ch := make(chan itemOrErr[string])
@@ -883,7 +883,7 @@ func listIAMConfigItems(ctx context.Context, objAPI ObjectLayer, pathPrefix stri
 		// Allocate new results channel to receive ObjectInfo.
 		objInfoCh := make(chan itemOrErr[ObjectInfo])
 
-		if err := objAPI.Walk(ctx, minioMetaBucket, pathPrefix, objInfoCh, WalkOptions{}); err != nil {
+		if err := objAPI.Walk(ctx, kypelloMetaBucket, pathPrefix, objInfoCh, WalkOptions{}); err != nil {
 			select {
 			case ch <- itemOrErr[string]{Err: err}:
 			case <-ctx.Done():

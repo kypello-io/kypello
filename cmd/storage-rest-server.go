@@ -34,17 +34,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/minio/minio/internal/bpool"
-	"github.com/minio/minio/internal/grid"
+	"github.com/kypello-io/kypello/internal/bpool"
+	"github.com/kypello-io/kypello/internal/grid"
 	"github.com/tinylib/msgp/msgp"
 
 	jwtreq "github.com/golang-jwt/jwt/v4/request"
+	"github.com/kypello-io/kypello/internal/config"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	xjwt "github.com/kypello-io/kypello/internal/jwt"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/config"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	xjwt "github.com/minio/minio/internal/jwt"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/mux"
 	xnet "github.com/minio/pkg/v3/net"
 )
@@ -255,15 +255,13 @@ func (s *storageRESTServer) NSScannerHandler(ctx context.Context, params *nsScan
 	// Collect updates, stream them before the full cache is sent.
 	updates := make(chan dataUsageEntry, 1)
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for update := range updates {
 			resp := storageNSScannerRPC.NewResponse()
 			resp.Update = &update
 			out <- resp
 		}
-	}()
+	})
 	ui, err := s.getStorage().NSScanner(ctx, *params.Cache, updates, madmin.HealScanMode(params.ScanMode), nil)
 	wg.Wait()
 	if err != nil {
@@ -1308,9 +1306,7 @@ func (s *storageRESTServer) ReadMultiple(w http.ResponseWriter, r *http.Request)
 	mw := msgp.NewWriter(rw)
 	responses := make(chan ReadMultipleResp, len(req.Files))
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		for resp := range responses {
 			err := resp.EncodeMsg(mw)
 			if err != nil {
@@ -1319,7 +1315,7 @@ func (s *storageRESTServer) ReadMultiple(w http.ResponseWriter, r *http.Request)
 			}
 			mw.Flush()
 		}
-	}()
+	})
 	err = s.getStorage().ReadMultiple(r.Context(), req, responses)
 	wg.Wait()
 	rw.CloseWithError(err)

@@ -38,7 +38,7 @@ var fmtGenFlags = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:   "address",
-		Value:  ":" + GlobalMinioDefaultPort,
+		Value:  ":" + GlobalKypelloDefaultPort,
 		Usage:  "bind to a specific ADDRESS:PORT, ADDRESS can be an IP or hostname",
 		EnvVar: "MINIO_ADDRESS",
 	},
@@ -82,7 +82,7 @@ func fmtGenMain(ctxt *cli.Context) {
 		log.Fatalln(err)
 	}
 	handleCommonArgs(globalServerCtxt)
-	pools, _, err := createServerEndpoints(globalMinioAddr, globalServerCtxt.Layout.pools, globalServerCtxt.Layout.legacy)
+	pools, _, err := createServerEndpoints(globalKypelloAddr, globalServerCtxt.Layout.pools, globalServerCtxt.Layout.legacy)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -111,7 +111,7 @@ func fmtGenMain(ctxt *cli.Context) {
 					//nolint:gocritic
 					log.Fatalf("failed to marshal format.json for %s: %v", drive.String(), err)
 				}
-				fmtJSON := filepath.Join(drive.Host, drive.Path, minioMetaBucket, "format.json")
+				fmtJSON := filepath.Join(drive.Host, drive.Path, kypelloMetaBucket, "format.json")
 				embedFileInZip(fmtZipW, fmtJSON, fmtBytes, 0o600)
 			}
 		}

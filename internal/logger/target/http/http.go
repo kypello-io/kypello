@@ -33,11 +33,11 @@ import (
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	types "github.com/minio/minio/internal/logger/target/loggertypes"
-	"github.com/minio/minio/internal/once"
-	"github.com/minio/minio/internal/store"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	types "github.com/kypello-io/kypello/internal/logger/target/loggertypes"
+	"github.com/kypello-io/kypello/internal/once"
+	"github.com/kypello-io/kypello/internal/store"
 	xnet "github.com/minio/pkg/v3/net"
 	"github.com/valyala/bytebufferpool"
 )
@@ -247,8 +247,8 @@ func (h *Target) send(ctx context.Context, payload []byte, payloadCount int, pay
 		req.Header.Set(xhttp.ContentType, payloadType)
 	}
 	req.Header.Set(xhttp.WebhookEventPayloadCount, strconv.Itoa(payloadCount))
-	req.Header.Set(xhttp.MinIOVersion, xhttp.GlobalMinIOVersion)
-	req.Header.Set(xhttp.MinioDeploymentID, xhttp.GlobalDeploymentID)
+	req.Header.Set(xhttp.KypelloVersion, xhttp.GlobalMinIOVersion)
+	req.Header.Set(xhttp.KypelloDeploymentID, xhttp.GlobalDeploymentID)
 
 	// Set user-agent to indicate MinIO release
 	// version to the configured log endpoint

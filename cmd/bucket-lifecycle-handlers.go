@@ -23,9 +23,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/minio/minio/internal/bucket/lifecycle"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/mux"
 	"github.com/minio/pkg/v3/policy"
 )
@@ -188,7 +188,7 @@ func (api objectAPIHandlers) GetBucketLifecycleHandler(w http.ResponseWriter, r 
 	}
 
 	if withUpdatedAt {
-		w.Header().Set(xhttp.MinIOLifecycleCfgUpdatedAt, updatedAt.Format(iso8601Format))
+		w.Header().Set(xhttp.KypelloLifecycleCfgUpdatedAt, updatedAt.Format(iso8601Format))
 	}
 	// Write lifecycle configuration to client.
 	writeSuccessResponseXML(w, configData)

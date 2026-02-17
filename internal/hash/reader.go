@@ -27,9 +27,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/minio/minio/internal/etag"
-	"github.com/minio/minio/internal/hash/sha256"
-	"github.com/minio/minio/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/etag"
+	"github.com/kypello-io/kypello/internal/hash/sha256"
+	"github.com/kypello-io/kypello/internal/ioutil"
 )
 
 // A Reader wraps an io.Reader and computes the MD5 checksum

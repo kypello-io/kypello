@@ -22,7 +22,7 @@ package cmd
 const (
 	storageRESTVersion       = "v63" // Introduce RenamePart and ReadParts API
 	storageRESTVersionPrefix = SlashSeparator + storageRESTVersion
-	storageRESTPrefix        = minioReservedBucketPath + "/storage"
+	storageRESTPrefix        = kypelloReservedBucketPath + "/storage"
 )
 
 const (

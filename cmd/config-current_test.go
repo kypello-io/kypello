@@ -22,7 +22,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/minio/minio/internal/config"
+	"github.com/kypello-io/kypello/internal/config"
 )
 
 func TestServerConfig(t *testing.T) {
@@ -35,11 +35,11 @@ func TestServerConfig(t *testing.T) {
 	}
 	defer os.RemoveAll(fsDir)
 
-	if err = newTestConfig(globalMinioDefaultRegion, objLayer); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, objLayer); err != nil {
 		t.Fatalf("Init Test config failed")
 	}
 
-	if globalSite.Region() != globalMinioDefaultRegion {
+	if globalSite.Region() != globalKypelloDefaultRegion {
 		t.Errorf("Expecting region `us-east-1` found %s", globalSite.Region())
 	}
 

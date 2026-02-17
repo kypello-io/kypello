@@ -28,8 +28,8 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
 )
 
 var printEndpointError = func() func(Endpoint, error, bool) {
@@ -73,28 +73,28 @@ var printEndpointError = func() func(Endpoint, error, bool) {
 // Cleans up tmp directory of the local disk.
 func bgFormatErasureCleanupTmp(diskPath string) {
 	// Need to move temporary objects left behind from previous run of minio
-	// server to a unique directory under `minioMetaTmpBucket-old` to clean
-	// up `minioMetaTmpBucket` for the current run.
+	// server to a unique directory under `kypelloMetaTmpBucket-old` to clean
+	// up `kypelloMetaTmpBucket` for the current run.
 	//
-	// /disk1/.minio.sys/tmp-old/
+	// /disk1/.kypello.sys/tmp-old/
 	//  |__ 33a58b40-aecc-4c9f-a22f-ff17bfa33b62
 	//  |__ e870a2c1-d09c-450c-a69c-6eaa54a89b3e
 	//
 	// In this example, `33a58b40-aecc-4c9f-a22f-ff17bfa33b62` directory contains
-	// temporary objects from one of the previous runs of minio server.
+	// temporary objects from one of the previous runs of kypello server.
 	tmpID := mustGetUUID()
-	tmpOld := pathJoin(diskPath, minioMetaTmpBucket+"-old", tmpID)
-	if err := renameAll(pathJoin(diskPath, minioMetaTmpBucket),
+	tmpOld := pathJoin(diskPath, kypelloMetaTmpBucket+"-old", tmpID)
+	if err := renameAll(pathJoin(diskPath, kypelloMetaTmpBucket),
 		tmpOld, diskPath); err != nil && !errors.Is(err, errFileNotFound) {
 		storageLogIf(GlobalContext, fmt.Errorf("unable to rename (%s -> %s) %w, drive may be faulty, please investigate",
-			pathJoin(diskPath, minioMetaTmpBucket),
+			pathJoin(diskPath, kypelloMetaTmpBucket),
 			tmpOld,
 			osErrToFileErr(err)))
 	}
 
-	if err := mkdirAll(pathJoin(diskPath, minioMetaTmpDeletedBucket), 0o777, diskPath); err != nil {
+	if err := mkdirAll(pathJoin(diskPath, kypelloMetaTmpDeletedBucket), 0o777, diskPath); err != nil {
 		storageLogIf(GlobalContext, fmt.Errorf("unable to create (%s) %w, drive may be faulty, please investigate",
-			pathJoin(diskPath, minioMetaTmpBucket),
+			pathJoin(diskPath, kypelloMetaTmpBucket),
 			err))
 	}
 
@@ -105,7 +105,7 @@ func bgFormatErasureCleanupTmp(diskPath string) {
 	}
 
 	// Remove the entire folder in case there are leftovers that didn't get cleaned up before restart.
-	go removeAll(pathJoin(diskPath, minioMetaTmpBucket+"-old"))
+	go removeAll(pathJoin(diskPath, kypelloMetaTmpBucket+"-old"))
 
 	// Renames and schedules for purging all bucket metacache.
 	go renameAllBucketMetacache(diskPath)
@@ -140,7 +140,7 @@ func isServerResolvable(endpoint Endpoint, timeout time.Duration) error {
 		return err
 	}
 	// Indicate that the liveness check for a peer call
-	req.Header.Set(xhttp.MinIOPeerCall, "true")
+	req.Header.Set(xhttp.KypelloPeerCall, "true")
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -263,7 +263,7 @@ func waitForFormatErasure(firstDisk bool, endpoints Endpoints, poolCount, setCou
 	defer func() {
 		if err == nil && format != nil {
 			// Assign globalDeploymentID() on first run for the
-			// minio server managing the first disk
+			// kypello server managing the first disk
 			globalDeploymentIDPtr.Store(&format.ID)
 
 			// Set the deployment ID here to avoid races.

@@ -25,36 +25,36 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/bpool"
+	"github.com/kypello-io/kypello/internal/bucket/bandwidth"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/config/browser"
+	"github.com/kypello-io/kypello/internal/grid"
+	"github.com/kypello-io/kypello/internal/handlers"
+	"github.com/kypello-io/kypello/internal/kms"
 	consoleapi "github.com/minio/console/api"
 	"github.com/minio/dnscache"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/bpool"
-	"github.com/minio/minio/internal/bucket/bandwidth"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/config/browser"
-	"github.com/minio/minio/internal/grid"
-	"github.com/minio/minio/internal/handlers"
-	"github.com/minio/minio/internal/kms"
 	"go.uber.org/atomic"
 
 	"github.com/dustin/go-humanize"
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/config/callhome"
-	"github.com/minio/minio/internal/config/compress"
-	"github.com/minio/minio/internal/config/dns"
-	"github.com/minio/minio/internal/config/drive"
-	idplugin "github.com/minio/minio/internal/config/identity/plugin"
-	polplugin "github.com/minio/minio/internal/config/policy/plugin"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/config/subnet"
-	xhttp "github.com/minio/minio/internal/http"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/config/callhome"
+	"github.com/kypello-io/kypello/internal/config/compress"
+	"github.com/kypello-io/kypello/internal/config/dns"
+	"github.com/kypello-io/kypello/internal/config/drive"
+	idplugin "github.com/kypello-io/kypello/internal/config/identity/plugin"
+	polplugin "github.com/kypello-io/kypello/internal/config/policy/plugin"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/config/subnet"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 	etcd "go.etcd.io/etcd/client/v3"
 
-	levent "github.com/minio/minio/internal/config/lambda/event"
-	"github.com/minio/minio/internal/event"
-	"github.com/minio/minio/internal/pubsub"
+	levent "github.com/kypello-io/kypello/internal/config/lambda/event"
+	"github.com/kypello-io/kypello/internal/event"
+	"github.com/kypello-io/kypello/internal/pubsub"
 	"github.com/minio/pkg/v3/certs"
 	"github.com/minio/pkg/v3/env"
 	xnet "github.com/minio/pkg/v3/net"
@@ -62,10 +62,10 @@ import (
 
 // minio configuration related constants.
 const (
-	GlobalMinioDefaultPort = "9000"
+	GlobalKypelloDefaultPort = "9000"
 
-	globalMinioDefaultRegion = ""
-	// This is a sha256 output of ``arn:aws:iam::minio:user/admin``,
+	globalKypelloDefaultRegion = ""
+	// This is a sha256 output of ``arn:aws:iam::kypello:user/admin``,
 	// this is kept in present form to be compatible with S3 owner ID
 	// requirements -
 	//
@@ -74,16 +74,16 @@ const (
 	//    It is 64-character obfuscated version of the account ID.
 	// ```
 	// http://docs.aws.amazon.com/AmazonS3/latest/dev/example-walkthroughs-managing-access-example4.html
-	globalMinioDefaultOwnerID      = "02d6176db174dc93cb1b899f7c6078f08654445fe8cf1b6ce98d8855f66bdbf4"
-	globalMinioDefaultStorageClass = "STANDARD"
-	globalWindowsOSName            = "windows"
-	globalMacOSName                = "darwin"
-	globalMinioModeFS              = "mode-server-fs"
-	globalMinioModeErasureSD       = "mode-server-xl-single"
-	globalMinioModeErasure         = "mode-server-xl"
-	globalMinioModeDistErasure     = "mode-server-distributed-xl"
-	globalDirSuffix                = "__XLDIR__"
-	globalDirSuffixWithSlash       = globalDirSuffix + slashSeparator
+	globalKypelloDefaultOwnerID      = "11ad789f03219fddaef25b1f5612d0211bd8d06e0fce77e13f19c136d4136b70"
+	globalKypelloDefaultStorageClass = "STANDARD"
+	globalWindowsOSName              = "windows"
+	globalMacOSName                  = "darwin"
+	globalKypelloModeFS              = "mode-server-fs"
+	globalKypelloModeErasureSD       = "mode-server-xl-single"
+	globalKypelloModeErasure         = "mode-server-xl"
+	globalKypelloModeDistErasure     = "mode-server-distributed-xl"
+	globalDirSuffix                  = "__XLDIR__"
+	globalDirSuffixWithSlash         = globalDirSuffix + slashSeparator
 
 	// Add new global values here.
 )
@@ -176,13 +176,13 @@ var (
 	// Global user opts context
 	globalServerCtxt serverCtxt
 
-	// Indicates if the running minio server is distributed setup.
+	// Indicates if the running kypello server is distributed setup.
 	globalIsDistErasure = false
 
-	// Indicates if the running minio server is an erasure-code backend.
+	// Indicates if the running kypello server is an erasure-code backend.
 	globalIsErasure = false
 
-	// Indicates if the running minio server is in single drive XL mode.
+	// Indicates if the running kypello server is in single drive XL mode.
 	globalIsErasureSD = false
 
 	// Indicates if server code should go through testing path.
@@ -208,20 +208,20 @@ var (
 	globalSite config.Site
 
 	// MinIO local server address (in `host:port` format)
-	globalMinioAddr = ""
+	globalKypelloAddr = ""
 
 	// MinIO default port, can be changed through command line.
-	globalMinioPort        = GlobalMinioDefaultPort
-	globalMinioConsolePort = "13333"
+	globalKypelloPort        = GlobalKypelloDefaultPort
+	globalKypelloConsolePort = "13333"
 
 	// Holds the host that was passed using --address
-	globalMinioHost = ""
+	globalKypelloHost = ""
 	// Holds the host that was passed using --console-address
-	globalMinioConsoleHost = ""
+	globalKypelloConsoleHost = ""
 
 	// Holds the possible host endpoint.
-	globalMinioEndpoint    = ""
-	globalMinioEndpointURL *xnet.URL
+	globalKypelloEndpoint    = ""
+	globalKypelloEndpointURL *xnet.URL
 
 	// globalConfigSys server config system.
 	globalConfigSys *ConfigSys

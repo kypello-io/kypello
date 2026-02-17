@@ -1,4 +1,4 @@
-# MinIO Pull Request Guidelines
+# Kypello Pull Request Guidelines
 
 These guidelines ensure high-quality commits in MinIO’s GitHub repositories, maintaining 
 a clear, valuable commit history for our open-source projects. They apply to all contributors, 
@@ -86,7 +86,7 @@ Reviewers ensure MinIO’s commit history remains a clear, reliable record. Resp
 
 ## Resources
 
-- [MinIO Coding Standards](https://github.com/minio/minio/blob/master/CONTRIBUTING.md)
+- [MinIO Coding Standards](https://github.com/kypello-io/kypello/blob/master/CONTRIBUTING.md)
 - [Effective Commit Messages](https://mislav.net/2014/02/hidden-documentation/)
 - [GitHub PR Tips](https://github.com/blog/1943-how-to-write-the-perfect-pull-request)
 

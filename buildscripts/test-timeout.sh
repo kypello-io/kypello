@@ -5,15 +5,15 @@ if [ -n "$TEST_DEBUG" ]; then
 fi
 
 WORK_DIR="$PWD/.verify-$RANDOM"
-MINIO_CONFIG_DIR="$WORK_DIR/.minio"
-MINIO=("$PWD/minio" --config-dir "$MINIO_CONFIG_DIR" server)
+MINIO_CONFIG_DIR="$WORK_DIR/.kypello"
+MINIO=("$PWD/kypello" --config-dir "$MINIO_CONFIG_DIR" server)
 
-if [ ! -x "$PWD/minio" ]; then
+if [ ! -x "$PWD/kypello" ]; then
 	echo "minio executable binary not found in current directory"
 	exit 1
 fi
 
-if [ ! -x "$PWD/minio" ]; then
+if [ ! -x "$PWD/kypello" ]; then
 	echo "minio executable binary not found in current directory"
 	exit 1
 fi
@@ -31,8 +31,8 @@ catch() {
 	fi
 
 	echo "Cleaning up instances of MinIO"
-	pkill minio || true
-	pkill -9 minio || true
+	pkill kypello || true
+	pkill -9 kypello || true
 	purge "$WORK_DIR"
 	if [ $# -ne 0 ]; then
 		exit $#
@@ -73,9 +73,9 @@ function send_put_object_request() {
 function test_minio_with_timeout() {
 	start_port=$1
 
-	export MINIO_ROOT_USER=minio
-	export MINIO_ROOT_PASSWORD=minio123
-	export MC_HOST_minio="http://minio:minio123@127.0.0.1:${start_port}/"
+	export MINIO_ROOT_USER=kypello
+	export MINIO_ROOT_PASSWORD=kypello123
+	export MC_HOST_minio="http://kypello:kypello123@127.0.0.1:${start_port}/"
 	export MINIO_CI_CD=1
 
 	mkdir ${WORK_DIR}

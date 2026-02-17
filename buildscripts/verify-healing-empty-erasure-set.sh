@@ -4,18 +4,18 @@
 set -E
 set -o pipefail
 
-if [ ! -x "$PWD/minio" ]; then
+if [ ! -x "$PWD/kypello" ]; then
 	echo "minio executable binary not found in current directory"
 	exit 1
 fi
 
 WORK_DIR="$PWD/.verify-$RANDOM"
-MINIO_CONFIG_DIR="$WORK_DIR/.minio"
-MINIO=("$PWD/minio" --config-dir "$MINIO_CONFIG_DIR" server)
+MINIO_CONFIG_DIR="$WORK_DIR/.kypello"
+MINIO=("$PWD/kypello" --config-dir "$MINIO_CONFIG_DIR" server)
 
 function start_minio_3_node() {
-	export MINIO_ROOT_USER=minio
-	export MINIO_ROOT_PASSWORD=minio123
+	export MINIO_ROOT_USER=kypello
+	export MINIO_ROOT_PASSWORD=kypello123
 	export MINIO_ERASURE_SET_DRIVE_COUNT=6
 	export MINIO_CI_CD=1
 
@@ -37,14 +37,14 @@ function start_minio_3_node() {
 	pid3=$!
 	disown $pid3
 
-	export MC_HOST_myminio="http://minio:minio123@127.0.0.1:$((start_port + 1))"
+	export MC_HOST_mykypello="http://kypello:kypello123@127.0.0.1:$((start_port + 1))"
 
-	timeout 15m /tmp/mc ready myminio || fail
+	timeout 15m /tmp/mc ready mykypello || fail
 
 	# Wait for all drives to be online and formatted
-	while [ $(/tmp/mc admin info --json myminio | jq '.info.servers[].drives[].state | select(. != "ok")' | wc -l) -gt 0 ]; do sleep 1; done
+	while [ $(/tmp/mc admin info --json mykypello | jq '.info.servers[].drives[].state | select(. != "ok")' | wc -l) -gt 0 ]; do sleep 1; done
 	# Wait for all drives to be healed
-	while [ $(/tmp/mc admin info --json myminio | jq '.info.servers[].drives[].healing | select(. != null) | select(. == true)' | wc -l) -gt 0 ]; do sleep 1; done
+	while [ $(/tmp/mc admin info --json mykypello | jq '.info.servers[].drives[].healing | select(. != null) | select(. == true)' | wc -l) -gt 0 ]; do sleep 1; done
 
 	# Wait for Status: in MinIO output
 	while true; do
@@ -77,15 +77,15 @@ function start_minio_3_node() {
 		echo "minio-server-3 is not running." && fail
 	fi
 
-	if ! pkill minio; then
+	if ! pkill kypello; then
 		fail
 	fi
 
 	sleep 1
-	if pgrep minio; then
+	if pgrep kypello; then
 		# forcibly killing, to proceed further properly.
-		if ! pkill -9 minio; then
-			echo "no minio process running anymore, proceed."
+		if ! pkill -9 kypello; then
+			echo "no kypello process running anymore, proceed."
 		fi
 	fi
 }
@@ -116,7 +116,7 @@ function __init__() {
 	mkdir -p "$MINIO_CONFIG_DIR"
 
 	## version is purposefully set to '3' for minio to migrate configuration file
-	echo '{"version": "3", "credential": {"accessKey": "minio", "secretKey": "minio123"}, "region": "us-east-1"}' >"$MINIO_CONFIG_DIR/config.json"
+	echo '{"version": "3", "credential": {"accessKey": "kypello", "secretKey": "kypello123"}, "region": "us-east-1"}' >"$MINIO_CONFIG_DIR/config.json"
 
 	if [ ! -f /tmp/mc ]; then
 		wget --quiet -O /tmp/mc https://dl.minio.io/client/mc/release/linux-amd64/mc &&

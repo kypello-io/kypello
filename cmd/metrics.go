@@ -21,9 +21,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/mcontext"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/mcontext"
 	"github.com/minio/pkg/v3/policy"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/expfmt"
@@ -48,7 +48,7 @@ var (
 	)
 	minioVersionInfo = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Namespace: "minio",
+			Namespace: "kypello",
 			Name:      "version_info",
 			Help:      "Version of current MinIO server instance",
 		},
@@ -66,7 +66,7 @@ const (
 	cacheNamespace       = "cache"
 	s3Namespace          = "s3"
 	bucketNamespace      = "bucket"
-	minioNamespace       = "minio"
+	minioNamespace       = "kypello"
 	diskNamespace        = "disk"
 	interNodeNamespace   = "internode"
 )
@@ -130,7 +130,7 @@ func nodeHealthMetricsPrometheus(ch chan<- prometheus.Metric) {
 	)
 }
 
-// collects healing specific metrics for MinIO instance in Prometheus specific format
+// collects healing specific metrics for Kypello instance in Prometheus specific format
 // and sends to given channel
 func healingMetricsPrometheus(ch chan<- prometheus.Metric) {
 	bgSeq, exists := globalBackgroundHealState.getHealSequenceByToken(bgHealingUUID)

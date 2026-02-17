@@ -31,8 +31,8 @@ docker-compose -f docker-compose-site2.yaml up -d
 
 sleep 30s
 
-./mc alias set site1 http://site1-nginx:9001 minioadmin minioadmin --api s3v4
-./mc alias set site2 http://site2-nginx:9002 minioadmin minioadmin --api s3v4
+./mc alias set site1 http://site1-nginx:9001 kypelloadmin kypelloadmin --api s3v4
+./mc alias set site2 http://site2-nginx:9002 kypelloadmin kypelloadmin --api s3v4
 
 ./mc ready site1/
 ./mc ready site2/
@@ -45,8 +45,8 @@ sleep 5
 
 ./s3-check-md5 -h
 
-failed_count_site1=$(./s3-check-md5 -versions -access-key minioadmin -secret-key minioadmin -endpoint http://site1-nginx:9001 -bucket testbucket 2>&1 | grep FAILED | wc -l)
-failed_count_site2=$(./s3-check-md5 -versions -access-key minioadmin -secret-key minioadmin -endpoint http://site2-nginx:9002 -bucket testbucket 2>&1 | grep FAILED | wc -l)
+failed_count_site1=$(./s3-check-md5 -versions -access-key kypelloadmin -secret-key kypelloadmin -endpoint http://site1-nginx:9001 -bucket testbucket 2>&1 | grep FAILED | wc -l)
+failed_count_site2=$(./s3-check-md5 -versions -access-key kypelloadmin -secret-key kypelloadmin -endpoint http://site2-nginx:9002 -bucket testbucket 2>&1 | grep FAILED | wc -l)
 
 if [ $failed_count_site1 -ne 0 ]; then
 	echo "failed with multipart on site1 uploads"
@@ -62,8 +62,8 @@ fi
 
 sleep 5
 
-failed_count_site1=$(./s3-check-md5 -versions -access-key minioadmin -secret-key minioadmin -endpoint http://site1-nginx:9001 -bucket testbucket 2>&1 | grep FAILED | wc -l)
-failed_count_site2=$(./s3-check-md5 -versions -access-key minioadmin -secret-key minioadmin -endpoint http://site2-nginx:9002 -bucket testbucket 2>&1 | grep FAILED | wc -l)
+failed_count_site1=$(./s3-check-md5 -versions -access-key kypelloadmin -secret-key kypelloadmin -endpoint http://site1-nginx:9001 -bucket testbucket 2>&1 | grep FAILED | wc -l)
+failed_count_site2=$(./s3-check-md5 -versions -access-key kypelloadmin -secret-key kypelloadmin -endpoint http://site2-nginx:9002 -bucket testbucket 2>&1 | grep FAILED | wc -l)
 
 ## we do not need to fail here, since we are going to test
 ## upgrading to master, healing and being able to recover
@@ -91,8 +91,8 @@ for i in $(seq 1 10); do
 	./mc admin heal -r --remove --json site2/ 2>&1 >/dev/null
 done
 
-failed_count_site1=$(./s3-check-md5 -versions -access-key minioadmin -secret-key minioadmin -endpoint http://site1-nginx:9001 -bucket testbucket 2>&1 | grep FAILED | wc -l)
-failed_count_site2=$(./s3-check-md5 -versions -access-key minioadmin -secret-key minioadmin -endpoint http://site2-nginx:9002 -bucket testbucket 2>&1 | grep FAILED | wc -l)
+failed_count_site1=$(./s3-check-md5 -versions -access-key kypelloadmin -secret-key kypelloadmin -endpoint http://site1-nginx:9001 -bucket testbucket 2>&1 | grep FAILED | wc -l)
+failed_count_site2=$(./s3-check-md5 -versions -access-key kypelloadmin -secret-key kypelloadmin -endpoint http://site2-nginx:9002 -bucket testbucket 2>&1 | grep FAILED | wc -l)
 
 if [ $failed_count_site1 -ne 0 ]; then
 	echo "failed with multipart on site1 uploads"

@@ -25,9 +25,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/logger"
 	xnet "github.com/minio/pkg/v3/net"
 )
 
@@ -176,36 +176,36 @@ func getConsoleEndpoints() (consoleEndpoints []string) {
 		return []string{globalBrowserRedirectURL.String()}
 	}
 	var ipList []string
-	if globalMinioConsoleHost == "" {
+	if globalKypelloConsoleHost == "" {
 		ipList = sortIPs(localIP4.ToSlice())
 		ipList = append(ipList, localIP6.ToSlice()...)
 	} else {
-		ipList = []string{globalMinioConsoleHost}
+		ipList = []string{globalKypelloConsoleHost}
 	}
 
 	consoleEndpoints = make([]string, 0, len(ipList))
 	for _, ip := range ipList {
-		consoleEndpoints = append(consoleEndpoints, getURLScheme(globalIsTLS)+"://"+net.JoinHostPort(ip, globalMinioConsolePort))
+		consoleEndpoints = append(consoleEndpoints, getURLScheme(globalIsTLS)+"://"+net.JoinHostPort(ip, globalKypelloConsolePort))
 	}
 
 	return consoleEndpoints
 }
 
 func getAPIEndpoints() (apiEndpoints []string) {
-	if globalMinioEndpoint != "" {
-		return []string{globalMinioEndpoint}
+	if globalKypelloEndpoint != "" {
+		return []string{globalKypelloEndpoint}
 	}
 	var ipList []string
-	if globalMinioHost == "" {
+	if globalKypelloHost == "" {
 		ipList = sortIPs(localIP4.ToSlice())
 		ipList = append(ipList, localIP6.ToSlice()...)
 	} else {
-		ipList = []string{globalMinioHost}
+		ipList = []string{globalKypelloHost}
 	}
 
 	apiEndpoints = make([]string, 0, len(ipList))
 	for _, ip := range ipList {
-		apiEndpoints = append(apiEndpoints, getURLScheme(globalIsTLS)+"://"+net.JoinHostPort(ip, globalMinioPort))
+		apiEndpoints = append(apiEndpoints, getURLScheme(globalIsTLS)+"://"+net.JoinHostPort(ip, globalKypelloPort))
 	}
 
 	return apiEndpoints

@@ -30,9 +30,7 @@ func (er erasureObjects) getOnlineDisks() (newDisks []StorageAPI) {
 	var mu sync.Mutex
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for _, i := range r.Perm(len(disks)) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			if disks[i] == nil {
 				return
 			}
@@ -50,7 +48,7 @@ func (er erasureObjects) getOnlineDisks() (newDisks []StorageAPI) {
 			mu.Lock()
 			newDisks = append(newDisks, disks[i])
 			mu.Unlock()
-		}()
+		})
 	}
 	wg.Wait()
 	return newDisks

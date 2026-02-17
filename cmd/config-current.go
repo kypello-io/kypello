@@ -25,33 +25,33 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/minio/minio/internal/config/browser"
+	"github.com/kypello-io/kypello/internal/config/browser"
 
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/config/api"
+	"github.com/kypello-io/kypello/internal/config/batch"
+	"github.com/kypello-io/kypello/internal/config/callhome"
+	"github.com/kypello-io/kypello/internal/config/compress"
+	"github.com/kypello-io/kypello/internal/config/dns"
+	"github.com/kypello-io/kypello/internal/config/drive"
+	"github.com/kypello-io/kypello/internal/config/etcd"
+	"github.com/kypello-io/kypello/internal/config/heal"
+	xldap "github.com/kypello-io/kypello/internal/config/identity/ldap"
+	"github.com/kypello-io/kypello/internal/config/identity/openid"
+	idplugin "github.com/kypello-io/kypello/internal/config/identity/plugin"
+	xtls "github.com/kypello-io/kypello/internal/config/identity/tls"
+	"github.com/kypello-io/kypello/internal/config/ilm"
+	"github.com/kypello-io/kypello/internal/config/lambda"
+	"github.com/kypello-io/kypello/internal/config/notify"
+	"github.com/kypello-io/kypello/internal/config/policy/opa"
+	polplugin "github.com/kypello-io/kypello/internal/config/policy/plugin"
+	"github.com/kypello-io/kypello/internal/config/scanner"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/config/subnet"
+	"github.com/kypello-io/kypello/internal/crypto"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/config/api"
-	"github.com/minio/minio/internal/config/batch"
-	"github.com/minio/minio/internal/config/callhome"
-	"github.com/minio/minio/internal/config/compress"
-	"github.com/minio/minio/internal/config/dns"
-	"github.com/minio/minio/internal/config/drive"
-	"github.com/minio/minio/internal/config/etcd"
-	"github.com/minio/minio/internal/config/heal"
-	xldap "github.com/minio/minio/internal/config/identity/ldap"
-	"github.com/minio/minio/internal/config/identity/openid"
-	idplugin "github.com/minio/minio/internal/config/identity/plugin"
-	xtls "github.com/minio/minio/internal/config/identity/tls"
-	"github.com/minio/minio/internal/config/ilm"
-	"github.com/minio/minio/internal/config/lambda"
-	"github.com/minio/minio/internal/config/notify"
-	"github.com/minio/minio/internal/config/policy/opa"
-	polplugin "github.com/minio/minio/internal/config/policy/plugin"
-	"github.com/minio/minio/internal/config/scanner"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/config/subnet"
-	"github.com/minio/minio/internal/crypto"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/env"
 )
 
@@ -500,7 +500,7 @@ func lookupConfigs(s config.Config, objAPI ObjectLayer) {
 				globalDNSConfig, err = dns.NewCoreDNS(etcdCfg.Config,
 					dns.DomainNames(globalDomainNames),
 					dns.DomainIPs(globalDomainIPs),
-					dns.DomainPort(globalMinioPort),
+					dns.DomainPort(globalKypelloPort),
 					dns.CoreDNSPath(etcdCfg.CoreDNSPath),
 				)
 				if err != nil {

@@ -29,12 +29,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/minio/minio/internal/amztime"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/handlers"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/amztime"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/handlers"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/pkg/v3/policy"
 	xxml "github.com/minio/xxml"
 )
@@ -489,8 +489,8 @@ func generateListBucketsResponse(buckets []BucketInfo) ListBucketsResponse {
 	listbuckets := make([]Bucket, 0, len(buckets))
 	data := ListBucketsResponse{}
 	owner := Owner{
-		ID:          globalMinioDefaultOwnerID,
-		DisplayName: "minio",
+		ID:          globalKypelloDefaultOwnerID,
+		DisplayName: "kypello",
 	}
 
 	for _, bucket := range buckets {
@@ -551,8 +551,8 @@ func generateListVersionsResponse(ctx context.Context, bucket, prefix, marker, v
 	versions := make([]ObjectVersion, 0, len(resp.Objects))
 
 	owner := &Owner{
-		ID:          globalMinioDefaultOwnerID,
-		DisplayName: "minio",
+		ID:          globalKypelloDefaultOwnerID,
+		DisplayName: "kypello",
 	}
 	data := ListVersionsResponse{}
 	var lastObjMetaName string
@@ -578,7 +578,7 @@ func generateListVersionsResponse(ctx context.Context, bucket, prefix, marker, v
 		if object.StorageClass != "" {
 			content.StorageClass = filterStorageClass(ctx, object.StorageClass)
 		} else {
-			content.StorageClass = globalMinioDefaultStorageClass
+			content.StorageClass = globalKypelloDefaultStorageClass
 		}
 		if tagErr == ErrNone {
 			content.UserTags = object.UserTags
@@ -638,8 +638,8 @@ func generateListVersionsResponse(ctx context.Context, bucket, prefix, marker, v
 func generateListObjectsV1Response(ctx context.Context, bucket, prefix, marker, delimiter, encodingType string, maxKeys int, resp ListObjectsInfo) ListObjectsResponse {
 	contents := make([]Object, 0, len(resp.Objects))
 	owner := &Owner{
-		ID:          globalMinioDefaultOwnerID,
-		DisplayName: "minio",
+		ID:          globalKypelloDefaultOwnerID,
+		DisplayName: "kypello",
 	}
 	data := ListObjectsResponse{}
 
@@ -657,7 +657,7 @@ func generateListObjectsV1Response(ctx context.Context, bucket, prefix, marker, 
 		if object.StorageClass != "" {
 			content.StorageClass = filterStorageClass(ctx, object.StorageClass)
 		} else {
-			content.StorageClass = globalMinioDefaultStorageClass
+			content.StorageClass = globalKypelloDefaultStorageClass
 		}
 		content.Owner = owner
 		contents = append(contents, content)
@@ -689,8 +689,8 @@ func generateListObjectsV2Response(ctx context.Context, bucket, prefix, token, n
 	var owner *Owner
 	if fetchOwner {
 		owner = &Owner{
-			ID:          globalMinioDefaultOwnerID,
-			DisplayName: "minio",
+			ID:          globalKypelloDefaultOwnerID,
+			DisplayName: "kypello",
 		}
 	}
 
@@ -710,7 +710,7 @@ func generateListObjectsV2Response(ctx context.Context, bucket, prefix, token, n
 		if object.StorageClass != "" {
 			content.StorageClass = filterStorageClass(ctx, object.StorageClass)
 		} else {
-			content.StorageClass = globalMinioDefaultStorageClass
+			content.StorageClass = globalKypelloDefaultStorageClass
 		}
 		content.Owner = owner
 		if metadata != nil {
@@ -812,16 +812,16 @@ func generateListPartsResponse(partsInfo ListPartsInfo, encodingType string) Lis
 	listPartsResponse.Bucket = partsInfo.Bucket
 	listPartsResponse.Key = s3EncodeName(partsInfo.Object, encodingType)
 	listPartsResponse.UploadID = partsInfo.UploadID
-	listPartsResponse.StorageClass = globalMinioDefaultStorageClass
+	listPartsResponse.StorageClass = globalKypelloDefaultStorageClass
 
 	// Dumb values not meaningful
 	listPartsResponse.Initiator = Initiator{
-		ID:          globalMinioDefaultOwnerID,
-		DisplayName: globalMinioDefaultOwnerID,
+		ID:          globalKypelloDefaultOwnerID,
+		DisplayName: globalKypelloDefaultOwnerID,
 	}
 	listPartsResponse.Owner = Owner{
-		ID:          globalMinioDefaultOwnerID,
-		DisplayName: globalMinioDefaultOwnerID,
+		ID:          globalKypelloDefaultOwnerID,
+		DisplayName: globalKypelloDefaultOwnerID,
 	}
 
 	listPartsResponse.MaxParts = partsInfo.MaxParts

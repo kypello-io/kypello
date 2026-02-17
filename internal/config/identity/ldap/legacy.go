@@ -18,7 +18,7 @@
 package ldap
 
 import (
-	"github.com/minio/minio/internal/config"
+	"github.com/kypello-io/kypello/internal/config"
 )
 
 // LegacyConfig contains AD/LDAP server connectivity information from old config
@@ -26,7 +26,7 @@ import (
 type LegacyConfig struct {
 	Enabled bool `json:"enabled"`
 
-	// E.g. "ldap.minio.io:636"
+	// E.g. "ldap.kypello.io:636"
 	ServerAddr string `json:"serverAddr"`
 
 	// User DN search parameters

@@ -27,7 +27,7 @@ import (
 	"net/http"
 	"time"
 
-	xhttp "github.com/minio/minio/internal/http"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 )
 
 const (
@@ -68,7 +68,7 @@ func (c Config) submitPost(r *http.Request) (string, error) {
 	configLock.RLock()
 	r.Header.Set(xhttp.SubnetAPIKey, c.APIKey)
 	configLock.RUnlock()
-	r.Header.Set(xhttp.MinioDeploymentID, xhttp.GlobalDeploymentID)
+	r.Header.Set(xhttp.KypelloDeploymentID, xhttp.GlobalDeploymentID)
 
 	client := &http.Client{
 		Timeout:   10 * time.Second,

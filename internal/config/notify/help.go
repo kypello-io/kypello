@@ -18,8 +18,8 @@
 package notify
 
 import (
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/event/target"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/event/target"
 )
 
 const (
@@ -356,7 +356,7 @@ var (
 	HelpPostgres = config.HelpKVS{
 		config.HelpKV{
 			Key:         target.PostgresConnectionString,
-			Description: `Postgres server connection-string e.g. "host=localhost port=5432 dbname=minio_events user=postgres password=password sslmode=disable"`,
+			Description: `Postgres server connection-string e.g. "host=localhost port=5432 dbname=kypello_events user=postgres password=password sslmode=disable"`,
 			Type:        "string",
 			Sensitive:   true,
 		},
@@ -531,30 +531,6 @@ var (
 			Description: queueLimitComment,
 			Optional:    true,
 			Type:        "number",
-		},
-		config.HelpKV{
-			Key:         target.NATSStreaming,
-			Description: "[DEPRECATED] set to 'on', to use streaming NATS server",
-			Optional:    true,
-			Type:        "on|off",
-		},
-		config.HelpKV{
-			Key:         target.NATSStreamingAsync,
-			Description: "[DEPRECATED] set to 'on', to enable asynchronous publish",
-			Optional:    true,
-			Type:        "on|off",
-		},
-		config.HelpKV{
-			Key:         target.NATSStreamingMaxPubAcksInFlight,
-			Description: "[DEPRECATED] number of messages to publish without waiting for ACKs",
-			Optional:    true,
-			Type:        "number",
-		},
-		config.HelpKV{
-			Key:         target.NATSStreamingClusterID,
-			Description: "[DEPRECATED] unique ID for NATS streaming cluster",
-			Optional:    true,
-			Type:        "string",
 		},
 		config.HelpKV{
 			Key:         config.Comment,

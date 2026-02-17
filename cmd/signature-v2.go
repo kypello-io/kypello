@@ -29,9 +29,9 @@ import (
 	"strconv"
 	"strings"
 
-	xhttp "github.com/minio/minio/internal/http"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 
-	"github.com/minio/minio/internal/auth"
+	"github.com/kypello-io/kypello/internal/auth"
 )
 
 // Whitelist resource list that will be used in query string for signature-V2 calculation.
@@ -347,13 +347,7 @@ func canonicalizedResourceV2(encodedResource, encodedQuery string) string {
 	queries := strings.Split(encodedQuery, "&")
 	keyval := make(map[string]string)
 	for _, query := range queries {
-		key := query
-		val := ""
-		index := strings.Index(query, "=")
-		if index != -1 {
-			key = query[:index]
-			val = query[index+1:]
-		}
+		key, val, _ := strings.Cut(query, "=")
 		keyval[key] = val
 	}
 

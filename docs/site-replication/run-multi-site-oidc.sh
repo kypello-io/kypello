@@ -16,8 +16,8 @@ exit_1() {
 
 cleanup() {
 	echo "Cleaning up instances of MinIO"
-	pkill minio
-	pkill -9 minio
+	pkill kypello
+	pkill -9 kypello
 	rm -rf /tmp/minio{1,2,3}
 }
 
@@ -30,11 +30,11 @@ unset MINIO_KMS_KES_KEY_NAME
 
 export MINIO_CI_CD=1
 export MINIO_BROWSER=off
-export MINIO_ROOT_USER="minio"
-export MINIO_ROOT_PASSWORD="minio123"
+export MINIO_ROOT_USER="kypello"
+export MINIO_ROOT_PASSWORD="kypello123"
 export MINIO_KMS_AUTO_ENCRYPTION=off
 export MINIO_PROMETHEUS_AUTH_TYPE=public
-export MINIO_KMS_SECRET_KEY=my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
+export MINIO_KMS_SECRET_KEY=my-kypello-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
 export MINIO_IDENTITY_OPENID_CONFIG_URL="http://localhost:5556/dex/.well-known/openid-configuration"
 export MINIO_IDENTITY_OPENID_CLIENT_ID="minio-client-app"
 export MINIO_IDENTITY_OPENID_CLIENT_SECRET="minio-client-app-secret"
@@ -42,14 +42,14 @@ export MINIO_IDENTITY_OPENID_CLAIM_NAME="groups"
 export MINIO_IDENTITY_OPENID_SCOPES="openid,groups"
 
 export MINIO_IDENTITY_OPENID_REDIRECT_URI="http://127.0.0.1:10000/oauth_callback"
-minio server --address ":9001" --console-address ":10000" /tmp/minio1/{1...4} >/tmp/minio1_1.log 2>&1 &
+kypello server --address ":9001" --console-address ":10000" /tmp/minio1/{1...4} >/tmp/minio1_1.log 2>&1 &
 site1_pid=$!
 export MINIO_IDENTITY_OPENID_REDIRECT_URI="http://127.0.0.1:11000/oauth_callback"
-minio server --address ":9002" --console-address ":11000" /tmp/minio2/{1...4} >/tmp/minio2_1.log 2>&1 &
+kypello server --address ":9002" --console-address ":11000" /tmp/minio2/{1...4} >/tmp/minio2_1.log 2>&1 &
 site2_pid=$!
 
 export MINIO_IDENTITY_OPENID_REDIRECT_URI="http://127.0.0.1:12000/oauth_callback"
-minio server --address ":9003" --console-address ":12000" /tmp/minio3/{1...4} >/tmp/minio3_1.log 2>&1 &
+kypello server --address ":9003" --console-address ":12000" /tmp/minio3/{1...4} >/tmp/minio3_1.log 2>&1 &
 site3_pid=$!
 
 if [ ! -f ./mc ]; then
@@ -57,9 +57,9 @@ if [ ! -f ./mc ]; then
 		chmod +x mc
 fi
 
-export MC_HOST_minio1=http://minio:minio123@localhost:9001
-export MC_HOST_minio2=http://minio:minio123@localhost:9002
-export MC_HOST_minio3=http://minio:minio123@localhost:9003
+export MC_HOST_minio1=http://kypello:kypello123@localhost:9001
+export MC_HOST_minio2=http://kypello:kypello123@localhost:9002
+export MC_HOST_minio3=http://kypello:kypello123@localhost:9003
 
 ./mc ready minio1
 ./mc ready minio2
@@ -292,7 +292,7 @@ kill -9 ${site1_pid}
 ./mc rb minio2/bucket2
 
 # Restart minio1 instance
-minio server --address ":9001" --console-address ":10000" /tmp/minio1/{1...4} >/tmp/minio1_1.log 2>&1 &
+kypello server --address ":9001" --console-address ":10000" /tmp/minio1/{1...4} >/tmp/minio1_1.log 2>&1 &
 sleep 200
 
 # Test whether most recent tag update on minio2 is replicated to minio1

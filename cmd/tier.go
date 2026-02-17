@@ -32,10 +32,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/hash"
+	"github.com/kypello-io/kypello/internal/kms"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/hash"
-	"github.com/minio/minio/internal/kms"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -81,9 +81,9 @@ const (
 )
 
 // tierConfigPath refers to remote tier config object name
-var tierConfigPath = path.Join(minioConfigPrefix, tierConfigFile)
+var tierConfigPath = path.Join(kypelloConfigPrefix, tierConfigFile)
 
-const tierCfgRefreshAtHdr = "X-MinIO-TierCfg-RefreshedAt"
+const tierCfgRefreshAtHdr = "X-Minio-TierCfg-RefreshedAt"
 
 // TierConfigMgr holds the collection of remote tiers configured in this deployment.
 type TierConfigMgr struct {
@@ -441,11 +441,11 @@ func (config *TierConfigMgr) configReader(ctx context.Context) (*PutObjReader, *
 
 	// Note: Local variables with names ek, oek, etc are named inline with
 	// acronyms defined here -
-	// https://github.com/minio/minio/blob/master/docs/security/README.md#acronyms
+	// https://github.com/kypello-io/kypello/blob/master/docs/security/README.md#acronyms
 
 	// Encrypt json encoded tier configurations
 	metadata := make(map[string]string)
-	encBr, oek, err := newEncryptReader(context.Background(), hr, crypto.S3, "", nil, minioMetaBucket, tierConfigPath, metadata, kms.Context{})
+	encBr, oek, err := newEncryptReader(context.Background(), hr, crypto.S3, "", nil, kypelloMetaBucket, tierConfigPath, metadata, kms.Context{})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -512,7 +512,7 @@ func (config *TierConfigMgr) Save(ctx context.Context, objAPI ObjectLayer) error
 		return err
 	}
 
-	_, err = objAPI.PutObject(ctx, minioMetaBucket, tierConfigPath, pr, *opts)
+	_, err = objAPI.PutObject(ctx, kypelloMetaBucket, tierConfigPath, pr, *opts)
 	return err
 }
 

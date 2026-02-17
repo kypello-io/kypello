@@ -21,19 +21,19 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/kypello-io/kypello/internal/auth"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/auth"
 )
 
 func TestDecryptData(t *testing.T) {
 	cred1 := auth.Credentials{
-		AccessKey: "minio",
-		SecretKey: "minio123",
+		AccessKey: "kypello",
+		SecretKey: "kypello123",
 	}
 
 	cred2 := auth.Credentials{
-		AccessKey: "minio",
-		SecretKey: "minio1234",
+		AccessKey: "kypello",
+		SecretKey: "kypello1234",
 	}
 
 	data := []byte(`config data`)

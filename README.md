@@ -1,174 +1,101 @@
-# Maintenance Mode
+# Kypello Object Storage
 
-**This project is currently under maintenance and is not accepting new changes.**
 
-- The codebase is in a maintenance-only state
-- No new features, enhancements, or pull requests will be accepted
-- Critical security fixes may be evaluated on a case-by-case basis
-- Existing issues and pull requests will not be actively reviewed
-- Community support continues on a best-effort basis through [Slack](https://slack.min.io)
+### The Open Source, S3-Compatible Object Store.
+**High Performance. Enterprise Identity. Fully AGPLv3.**
 
-For enterprise support and actively maintained versions, please see [MinIO AIStor](https://www.min.io/product/aistor).
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://github.com/kypello-io/kypello/blob/master/LICENSE)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/kypello-io/kypello)](https://github.com/kypello-io/kypello)
+
 
 ---
 
-# MinIO Quickstart Guide
+**Kypello** is a high-performance, S3-compatible object storage server. It is a community-maintained fork of MinIO designed to preserve critical enterprise functionality—specifically **OpenID Connect (OIDC)**, **SSO**, and the **comprehensive Admin UI**—within the open-source ecosystem.
 
-[![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Docker Pulls](https://img.shields.io/docker/pulls/minio/minio.svg?maxAge=604800)](https://hub.docker.com/r/minio/minio/) [![license](https://img.shields.io/badge/license-AGPL%20V3-blue)](https://github.com/minio/minio/blob/master/LICENSE)
+Designed for speed and scalability, Kypello powers AI/ML, analytics, and data-intensive workloads while keeping identity management free and open.
 
-[![MinIO](https://raw.githubusercontent.com/minio/minio/master/.github/logo.svg?sanitize=true)](https://min.io)
+### 🚀 Key Features
 
-MinIO is a high-performance, S3-compatible object storage solution released under the GNU AGPL v3.0 license.
-Designed for speed and scalability, it powers AI/ML, analytics, and data-intensive workloads with industry-leading performance.
+*   **S3 API Compatible:** Seamless integration with existing S3 tools and SDKs.
+*   **Restored OIDC/SSO:** Built-in support for Keycloak, Okta, Active Directory, and Google Workspace (features removed from upstream MinIO).
+*   **Full Admin UI:** A fully functional web console for managing buckets, users, and groups.
+*   **High Performance:** Optimized for large-scale data pipelines and bare metal.
 
-- S3 API Compatible – Seamless integration with existing S3 tools
-- Built for AI & Analytics – Optimized for large-scale data pipelines
-- High Performance – Ideal for demanding storage workloads.
+### ⚠️ Legal & Fork Disclaimer
 
-This README provides instructions for building MinIO from source and deploying onto baremetal hardware.
-Use the [MinIO Documentation](https://github.com/minio/docs) project to build and host a local copy of the documentation.
+**Kypello is a fork.**
+This project is based on the open-source code from MinIO Inc. but is **not affiliated with, endorsed by, or sponsored by MinIO Inc.**
 
-## MinIO is Open Source Software
+*   All original code is retained under the GNU AGPLv3 license.
+*   "MinIO" is a registered trademark of MinIO, Inc.
+*   Kypello respects upstream intellectual property; all branding in this fork has been updated to reflect the new project name.
 
-We designed MinIO as Open Source software for the Open Source software community. We encourage the community to remix, redesign, and reshare MinIO under the terms of the AGPLv3 license.
+---
 
-All usage of MinIO in your application stack requires validation against AGPLv3 obligations, which include but are not limited to the release of modified code to the community from which you have benefited. Any commercial/proprietary usage of the AGPLv3 software, including repackaging or reselling services/features, is done at your own risk.
+## Quickstart
 
-The AGPLv3 provides no obligation by any party to support, maintain, or warranty the original or any modified work.
-All support is provided on a best-effort basis through Github and our [Slack](https//slack.min.io) channel, and any member of the community is welcome to contribute and assist others in their usage of the software.
+### Option 1: Install from Source (Recommended)
 
-MinIO [AIStor](https://www.min.io/product/aistor) includes enterprise-grade support and licensing for workloads which require commercial or proprietary usage and production-level SLA/SLO-backed support. For more information, [reach out for a quote](https://min.io/pricing).
+Kypello is written in Go. Ensure you have [Go 1.25+](https://golang.org/dl/) installed.
 
-## Source-Only Distribution
-
-**Important:** The MinIO community edition is now distributed as source code only. We will no longer provide pre-compiled binary releases for the community version.
-
-### Installing Latest MinIO Community Edition
-
-To use MinIO community edition, you have two options:
-
-1. **Install from source** using `go install github.com/minio/minio@latest` (recommended)
-2. **Build a Docker image** from the provided Dockerfile
-
-See the sections below for detailed instructions on each method.
-
-### Legacy Binary Releases
-
-Historical pre-compiled binary releases remain available for reference but are no longer maintained:
-- GitHub Releases: https://github.com/minio/minio/releases
-- Direct downloads: https://dl.min.io/server/minio/release/
-
-**These legacy binaries will not receive updates.** We strongly recommend using source builds for access to the latest features, bug fixes, and security updates.
-
-## Install from Source
-
-Use the following commands to compile and run a standalone MinIO server from source.
-If you do not have a working Golang environment, please follow [How to install Golang](https://golang.org/doc/install). Minimum version required is [go1.24](https://golang.org/dl/#stable)
-
-```sh
-go install github.com/minio/minio@latest
+```bash
+# Install the server binary (automatically embeds the Kypello UI)
+go install github.com/kypello-io/kypello@latest
 ```
 
-You can alternatively run `go build` and use the `GOOS` and `GOARCH` environment variables to control the OS and architecture target.
-For example:
-
-```
-env GOOS=linux GOARCh=arm64 go build
-```
-
-Start MinIO by running `minio server PATH` where `PATH` is any empty folder on your local filesystem.
-
-The MinIO deployment starts using default root credentials `minioadmin:minioadmin`.
-You can test the deployment using the MinIO Console, an embedded web-based object browser built into MinIO Server.
-Point a web browser running on the host machine to <http://127.0.0.1:9000> and log in with the root credentials.
-You can use the Browser to create buckets, upload objects, and browse the contents of the MinIO server.
-
-You can also connect using any S3-compatible tool, such as the MinIO Client `mc` commandline tool:
-
-```sh
-mc alias set local http://localhost:9000 minioadmin minioadmin
-mc admin info local
+Start the server:
+```bash
+# Run Kypello on a local folder
+~/go/bin/kypello server ./data
 ```
 
-See [Test using MinIO Client `mc`](#test-using-minio-client-mc) for more information on using the `mc` commandline tool.
-For application developers, see <https://docs.min.io/enterprise/aistor-object-store/developers/sdk/> to view MinIO SDKs for supported languages.
+### Option 2: Build with Docker
 
-> [!NOTE]
-> Production environments using compiled-from-source MinIO binaries do so at their own risk.
-> The AGPLv3 license provides no warranties nor liabilites for any such usage.
+You can build a Kypello container image directly from this repository.
 
-## Build Docker Image
+```bash
+# Build the image
+docker build -t kypello/server .
 
-You can use the `docker build .` command to build a Docker image on your local host machine.
-You must first [build MinIO](#install-from-source) and ensure the `minio` binary exists in the project root.
-
-The following command builds the Docker image using the default `Dockerfile` in the root project directory with the repository and image tag `myminio:minio`
-
-```sh
-docker build -t myminio:minio .
+# Run the container
+docker run -p 9000:9000 -p 9001:9001 \
+  -e "KYPELLO_ROOT_USER=admin" \
+  -e "KYPELLO_ROOT_PASSWORD=password" \
+  kypello/server server /data --console-address ":9001"
 ```
 
-Use `docker image ls` to confirm the image exists in your local repository.
-You can run the server using standard Docker invocation:
+## Accessing the Console
 
-```sh
-docker run -p 9000:9000 -p 9001:9001 myminio:minio server /tmp/minio --console-address :9001
+Once Kypello is running, open your browser to `http://localhost:9001`.
+You will see the **Kypello Console**, where you can log in with your root credentials or configure OIDC for external identity providers.
+
+## Connecting with Clients
+
+Kypello is fully compatible with the AWS S3 SDKs and the MinIO Client (`mc`).
+
+```bash
+# Example using mc (MinIO Client)
+mc alias set mykypello http://localhost:9000 admin password
+mc admin info mykypello
 ```
 
-Complete documentation for building Docker containers, managing custom images, or loading images into orchestration platforms is out of scope for this documentation.
-You can modify the `Dockerfile` and `dockerscripts/docker-entrypoint.sh` as-needed to reflect your specific image requirements.
+## Documentation
 
-See the [MinIO Container](https://docs.min.io/community/minio-object-store/operations/deployments/baremetal-deploy-minio-as-a-container.html#deploy-minio-container) documentation for more guidance on running MinIO within a Container image.
+*   **Core Logic:** Since Kypello is API-compatible with MinIO, you can refer to the [upstream documentation](https://min.io/docs) for standard S3 operations and erasure coding concepts.
+*   **Identity & UI:** For OIDC configuration, refer to the [Kypello Wiki](https://github.com/kypello-io/kypello/wiki) (Coming Soon).
 
-## Install using Helm Charts
+## License & Compliance
 
-There are two paths for installing MinIO onto Kubernetes infrastructure:
+Kypello is strictly **Open Source Software** licensed under the **GNU AGPLv3**.
 
-- Use the [MinIO Operator](https://github.com/minio/operator)
-- Use the community-maintained [Helm charts](https://github.com/minio/minio/tree/master/helm/minio)
+*   [License Text](https://github.com/kypello-io/kypello/blob/master/LICENSE)
+*   [Compliance Guide](https://github.com/kypello-io/kypello/blob/master/COMPLIANCE.md)
 
-See the [MinIO Documentation](https://docs.min.io/community/minio-object-store/operations/deployments/kubernetes.html) for guidance on deploying using the Operator.
-The Community Helm chart has instructions in the folder-level README.
+**Note:** Unlike the upstream project, Kypello does not offer a commercial license exception. All usage must comply with the AGPLv3.
 
-## Test MinIO Connectivity
+## Security
 
-### Test using MinIO Console
+*   **Core Vulnerabilities:** Security issues affecting the underlying S3/Storage layer should be reported to the upstream MinIO team (`security@min.io`) so they can be fixed at the source.
+*   **Kypello Vulnerabilities:** Issues specific to the Kypello UI, OIDC integration, or build process should be reported via our [GitHub Security Tab](https://github.com/kypello-io/kypello/security).
 
-MinIO Server comes with an embedded web based object browser.
-Point your web browser to <http://127.0.0.1:9000> to ensure your server has started successfully.
-
-> [!NOTE]
-> MinIO runs console on random port by default, if you wish to choose a specific port use `--console-address` to pick a specific interface and port.
-
-### Test using MinIO Client `mc`
-
-`mc` provides a modern alternative to UNIX commands like ls, cat, cp, mirror, diff etc. It supports filesystems and Amazon S3 compatible cloud storage services.
-
-The following commands set a local alias, validate the server information, create a bucket, copy data to that bucket, and list the contents of the bucket.
-
-```sh
-mc alias set local http://localhost:9000 minioadmin minioadmin
-mc admin info
-mc mb data
-mc cp ~/Downloads/mydata data/
-mc ls data/
-```
-
-Follow the MinIO Client [Quickstart Guide](https://docs.min.io/community/minio-object-store/reference/minio-mc.html#quickstart) for further instructions.
-
-## Explore Further
-
-- [The MinIO documentation website](https://docs.min.io/community/minio-object-store/index.html)
-- [MinIO Erasure Code Overview](https://docs.min.io/community/minio-object-store/operations/concepts/erasure-coding.html)
-- [Use `mc` with MinIO Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html)
-- [Use `minio-go` SDK with MinIO Server](https://docs.min.io/enterprise/aistor-object-store/developers/sdk/go/)
-
-## Contribute to MinIO Project
-
-Please follow MinIO [Contributor's Guide](https://github.com/minio/minio/blob/master/CONTRIBUTING.md) for guidance on making new contributions to the repository.
-
-## License
-
-- MinIO source is licensed under the [GNU AGPLv3](https://github.com/minio/minio/blob/master/LICENSE).
-- MinIO [documentation](https://github.com/minio/minio/tree/master/docs) is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-- [License Compliance](https://github.com/minio/minio/blob/master/COMPLIANCE.md)
+See [SECURITY.md](SECURITY.md) for details.

@@ -27,7 +27,7 @@
       "includeVars": true,
       "keepTime": true,
       "tags": [
-        "minio"
+        "kypello"
       ],
       "type": "dashboards"
     }
@@ -853,7 +853,7 @@
   "refresh": "",
   "schemaVersion": 39,
   "tags": [
-    "minio"
+    "kypello"
   ],
   "templating": {
     "list": [
