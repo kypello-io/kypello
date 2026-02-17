@@ -57,7 +57,7 @@ func TestPrintServerCommonMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(fsDir)
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -75,12 +75,12 @@ func TestPrintCLIAccessMsg(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(fsDir)
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatal(err)
 	}
 
 	apiEndpoints := []string{"http://127.0.0.1:9000"}
-	printCLIAccessMsg(apiEndpoints[0], "myminio")
+	printCLIAccessMsg(apiEndpoints[0], "mykypello")
 }
 
 // Test print startup message.
@@ -93,7 +93,7 @@ func TestPrintStartupMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(fsDir)
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatal(err)
 	}
 

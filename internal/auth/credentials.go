@@ -30,7 +30,7 @@ import (
 	"time"
 
 	jwtgo "github.com/golang-jwt/jwt/v4"
-	"github.com/minio/minio/internal/jwt"
+	"github.com/kypello-io/kypello/internal/jwt"
 )
 
 const (
@@ -87,8 +87,8 @@ func IsSecretKeyValid(secretKey string) bool {
 
 // Default access and secret keys.
 const (
-	DefaultAccessKey = "minioadmin"
-	DefaultSecretKey = "minioadmin"
+	DefaultAccessKey = "kypelloadmin"
+	DefaultSecretKey = "kypelloadmin"
 )
 
 // Default access credentials
@@ -186,8 +186,8 @@ func (cred Credentials) Equal(ccred Credentials) bool {
 	if !ccred.IsValid() {
 		return false
 	}
-	return (cred.AccessKey == ccred.AccessKey && subtle.ConstantTimeCompare([]byte(cred.SecretKey), []byte(ccred.SecretKey)) == 1 &&
-		subtle.ConstantTimeCompare([]byte(cred.SessionToken), []byte(ccred.SessionToken)) == 1)
+	return cred.AccessKey == ccred.AccessKey && subtle.ConstantTimeCompare([]byte(cred.SecretKey), []byte(ccred.SecretKey)) == 1 &&
+		subtle.ConstantTimeCompare([]byte(cred.SessionToken), []byte(ccred.SessionToken)) == 1
 }
 
 var timeSentinel = time.Unix(0, 0).UTC()

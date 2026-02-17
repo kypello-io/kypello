@@ -24,9 +24,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/disk"
+	"github.com/kypello-io/kypello/internal/net"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/disk"
-	"github.com/minio/minio/internal/net"
 	c "github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/load"
 )
@@ -43,7 +43,7 @@ func collectLocalMetrics(types madmin.MetricType, opts collectMetricsOpts) (m ma
 		return m
 	}
 
-	byHostName := globalMinioAddr
+	byHostName := globalKypelloAddr
 	if len(opts.hosts) > 0 {
 		server := getLocalServerProperty(globalEndpoints, &http.Request{
 			Host: globalLocalNodeName,

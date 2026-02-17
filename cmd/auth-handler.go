@@ -33,14 +33,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/minio/minio/internal/auth"
-	objectlock "github.com/minio/minio/internal/bucket/object/lock"
-	"github.com/minio/minio/internal/etag"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
-	xjwt "github.com/minio/minio/internal/jwt"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/mcontext"
+	"github.com/kypello-io/kypello/internal/auth"
+	objectlock "github.com/kypello-io/kypello/internal/bucket/object/lock"
+	"github.com/kypello-io/kypello/internal/etag"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xjwt "github.com/kypello-io/kypello/internal/jwt"
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/mcontext"
 	"github.com/minio/pkg/v3/policy"
 )
 

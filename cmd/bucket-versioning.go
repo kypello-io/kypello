@@ -20,8 +20,8 @@ package cmd
 import (
 	"strings"
 
-	"github.com/minio/minio/internal/bucket/versioning"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/bucket/versioning"
+	"github.com/kypello-io/kypello/internal/logger"
 )
 
 // BucketVersioningSys - policy subsystem.
@@ -69,7 +69,7 @@ func (sys *BucketVersioningSys) PrefixSuspended(bucket, prefix string) bool {
 
 // Get returns stored bucket policy
 func (sys *BucketVersioningSys) Get(bucket string) (*versioning.Versioning, error) {
-	if bucket == minioMetaBucket || strings.HasPrefix(bucket, minioMetaBucket) {
+	if bucket == kypelloMetaBucket || strings.HasPrefix(bucket, kypelloMetaBucket) {
 		return &versioning.Versioning{XMLNS: "http://s3.amazonaws.com/doc/2006-03-01/"}, nil
 	}
 

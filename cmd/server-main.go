@@ -38,24 +38,24 @@ import (
 
 	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/dustin/go-humanize"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/bucket/bandwidth"
+	"github.com/kypello-io/kypello/internal/color"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/config/api"
+	"github.com/kypello-io/kypello/internal/handlers"
+	"github.com/kypello-io/kypello/internal/hash/sha256"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/cli"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/minio/minio-go/v7/pkg/set"
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/bucket/bandwidth"
-	"github.com/minio/minio/internal/color"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/config/api"
-	"github.com/minio/minio/internal/handlers"
-	"github.com/minio/minio/internal/hash/sha256"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/certs"
 	"github.com/minio/pkg/v3/env"
-	"gopkg.in/yaml.v2"
+	"go.yaml.in/yaml/v3"
 )
 
 // ServerFlags - server command specific flags
@@ -67,7 +67,7 @@ var ServerFlags = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:   "address",
-		Value:  ":" + GlobalMinioDefaultPort,
+		Value:  ":" + GlobalKypelloDefaultPort,
 		Usage:  "bind to a specific ADDRESS:PORT, ADDRESS can be an IP or hostname",
 		EnvVar: "MINIO_ADDRESS",
 	},
@@ -373,7 +373,7 @@ func mergeServerCtxtFromConfigFile(configFile string, ctxt *serverCtxt) error {
 func serverHandleCmdArgs(ctxt serverCtxt) {
 	handleCommonArgs(ctxt)
 
-	logger.FatalIf(CheckLocalServerAddr(globalMinioAddr), "Unable to validate passed arguments")
+	logger.FatalIf(CheckLocalServerAddr(globalKypelloAddr), "Unable to validate passed arguments")
 
 	var err error
 	var setupType SetupType
@@ -394,7 +394,7 @@ func serverHandleCmdArgs(ctxt serverCtxt) {
 	// Register root CAs for remote ENVs
 	env.RegisterGlobalCAs(globalRootCAs)
 
-	globalEndpoints, setupType, err = createServerEndpoints(globalMinioAddr, ctxt.Layout.pools, ctxt.Layout.legacy)
+	globalEndpoints, setupType, err = createServerEndpoints(globalKypelloAddr, ctxt.Layout.pools, ctxt.Layout.legacy)
 	logger.FatalIf(err, "Invalid command line arguments")
 	globalNodes = globalEndpoints.GetNodes()
 
@@ -408,7 +408,7 @@ func serverHandleCmdArgs(ctxt serverCtxt) {
 		logger.FatalIf(errInvalidArgument, "Invalid --address=\"%s\", port '0' is not allowed in a distributed erasure coded setup", ctxt.Addr)
 	}
 
-	globalLocalNodeName = GetLocalPeer(globalEndpoints, globalMinioHost, globalMinioPort)
+	globalLocalNodeName = GetLocalPeer(globalEndpoints, globalKypelloHost, globalKypelloPort)
 	nodeNameSum := sha256.Sum256([]byte(globalLocalNodeName))
 	globalLocalNodeNameHex = hex.EncodeToString(nodeNameSum[:])
 
@@ -444,7 +444,7 @@ func serverHandleCmdArgs(ctxt serverCtxt) {
 	// to IPv6 address ie minio will start listening on IPv6 address whereas another
 	// (non-)minio process is listening on IPv4 of given port.
 	// To avoid this error situation we check for port availability.
-	logger.FatalIf(xhttp.CheckPortAvailability(globalMinioHost, globalMinioPort, globalTCPOptions), "Unable to start the server")
+	logger.FatalIf(xhttp.CheckPortAvailability(globalKypelloHost, globalKypelloPort, globalTCPOptions), "Unable to start the server")
 }
 
 func initAllSubsystems(ctx context.Context) {
@@ -687,9 +687,9 @@ func getServerListenAddrs() []string {
 	addrs := set.NewStringSet()
 	// Listen on local interface to receive requests from Console
 	for _, ip := range localLoopbacks.ToSlice() {
-		addrs.Add(net.JoinHostPort(ip, globalMinioPort))
+		addrs.Add(net.JoinHostPort(ip, globalKypelloPort))
 	}
-	host, _ := mustSplitHostPort(globalMinioAddr)
+	host, _ := mustSplitHostPort(globalKypelloAddr)
 	if host != "" {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
@@ -697,14 +697,14 @@ func getServerListenAddrs() []string {
 		haddrs, err := globalDNSCache.LookupHost(ctx, host)
 		if err == nil {
 			for _, addr := range haddrs {
-				addrs.Add(net.JoinHostPort(addr, globalMinioPort))
+				addrs.Add(net.JoinHostPort(addr, globalKypelloPort))
 			}
 		} else {
 			// Unable to lookup host in 2-secs, let it fail later anyways.
-			addrs.Add(globalMinioAddr)
+			addrs.Add(globalKypelloAddr)
 		}
 	} else {
-		addrs.Add(globalMinioAddr)
+		addrs.Add(globalKypelloAddr)
 	}
 	return addrs.ToSlice()
 }
@@ -742,7 +742,7 @@ func initializeLogRotate(ctx *cli.Context) (io.WriteCloser, error) {
 	return output, nil
 }
 
-// serverMain handler called for 'minio server' command.
+// serverMain handler called for 'kypello server' command.
 func serverMain(ctx *cli.Context) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 

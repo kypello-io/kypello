@@ -29,7 +29,7 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
-	"github.com/minio/minio/internal/kms"
+	"github.com/kypello-io/kypello/internal/kms"
 )
 
 // Return pointer to testOneByteReadEOF{}
@@ -562,7 +562,7 @@ func enableCompression(t *testing.T, encrypt bool, mimeTypes []string, extension
 	globalCompressConfigMu.Unlock()
 	if encrypt {
 		globalAutoEncryption = encrypt
-		KMS, err := kms.ParseSecretKey("my-minio-key:5lF+0pJM0OWwlQrvK2S/I7W9mO4a6rJJI7wzj7v09cw=")
+		KMS, err := kms.ParseSecretKey("my-kypello-key:5lF+0pJM0OWwlQrvK2S/I7W9mO4a6rJJI7wzj7v09cw=")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -577,7 +577,7 @@ func enableEncryption(t *testing.T) {
 	globalCompressConfigMu.Unlock()
 
 	globalAutoEncryption = true
-	KMS, err := kms.ParseSecretKey("my-minio-key:5lF+0pJM0OWwlQrvK2S/I7W9mO4a6rJJI7wzj7v09cw=")
+	KMS, err := kms.ParseSecretKey("my-kypello-key:5lF+0pJM0OWwlQrvK2S/I7W9mO4a6rJJI7wzj7v09cw=")
 	if err != nil {
 		t.Fatal(err)
 	}

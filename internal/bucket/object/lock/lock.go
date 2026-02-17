@@ -31,10 +31,10 @@ import (
 	"time"
 
 	"github.com/beevik/ntp"
-	"github.com/minio/minio/internal/amztime"
-	xhttp "github.com/minio/minio/internal/http"
+	"github.com/kypello-io/kypello/internal/amztime"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/pkg/v3/env"
 )
 
@@ -455,7 +455,7 @@ func ParseObjectLockRetentionHeaders(h http.Header) (rmode RetMode, r RetentionD
 	if err != nil {
 		return rmode, r, ErrInvalidRetentionDate
 	}
-	_, replReq := h[textproto.CanonicalMIMEHeaderKey(xhttp.MinIOSourceReplicationRequest)]
+	_, replReq := h[textproto.CanonicalMIMEHeaderKey(xhttp.KypelloSourceReplicationRequest)]
 
 	t, err := UTCNowNTP()
 	if err != nil {

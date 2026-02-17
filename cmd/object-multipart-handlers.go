@@ -31,23 +31,23 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/kypello-io/kypello/internal/amztime"
+	sse "github.com/kypello-io/kypello/internal/bucket/encryption"
+	objectlock "github.com/kypello-io/kypello/internal/bucket/object/lock"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/config/dns"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/etag"
+	"github.com/kypello-io/kypello/internal/event"
+	"github.com/kypello-io/kypello/internal/handlers"
+	"github.com/kypello-io/kypello/internal/hash"
+	"github.com/kypello-io/kypello/internal/hash/sha256"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/encrypt"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/minio/internal/amztime"
-	sse "github.com/minio/minio/internal/bucket/encryption"
-	objectlock "github.com/minio/minio/internal/bucket/object/lock"
-	"github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/config/dns"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/etag"
-	"github.com/minio/minio/internal/event"
-	"github.com/minio/minio/internal/handlers"
-	"github.com/minio/minio/internal/hash"
-	"github.com/minio/minio/internal/hash/sha256"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/mux"
 	"github.com/minio/pkg/v3/policy"
 	"github.com/minio/sio"
@@ -117,7 +117,7 @@ func (api objectAPIHandlers) NewMultipartUploadHandler(w http.ResponseWriter, r 
 			return
 		}
 
-		_, sourceReplReq := r.Header[xhttp.MinIOSourceReplicationRequest]
+		_, sourceReplReq := r.Header[xhttp.KypelloSourceReplicationRequest]
 		ssecRepHeaders := []string{
 			"X-Minio-Replication-Server-Side-Encryption-Seal-Algorithm",
 			"X-Minio-Replication-Server-Side-Encryption-Sealed-Key",
@@ -784,7 +784,7 @@ func (api objectAPIHandlers) PutObjectPartHandler(w http.ResponseWriter, r *http
 
 	_, isEncrypted := crypto.IsEncrypted(mi.UserDefined)
 	_, replicationStatus := mi.UserDefined[xhttp.AmzBucketReplicationStatus]
-	_, sourceReplReq := r.Header[xhttp.MinIOSourceReplicationRequest]
+	_, sourceReplReq := r.Header[xhttp.KypelloSourceReplicationRequest]
 	var objectEncryptionKey crypto.ObjectKey
 	if isEncrypted {
 		if !crypto.SSEC.IsRequested(r.Header) && crypto.SSEC.IsEncrypted(mi.UserDefined) && !replicationStatus {
@@ -1055,7 +1055,7 @@ func (api objectAPIHandlers) CompleteMultipartUploadHandler(w http.ResponseWrite
 	if dsc := mustReplicate(ctx, bucket, object, objInfo.getMustReplicateOptions(replication.ObjectReplicationType, opts)); dsc.ReplicateAny() {
 		scheduleReplication(ctx, objInfo, objectAPI, dsc, replication.ObjectReplicationType)
 	}
-	if _, ok := r.Header[xhttp.MinIOSourceReplicationRequest]; ok {
+	if _, ok := r.Header[xhttp.KypelloSourceReplicationRequest]; ok {
 		actualSize, _ := objInfo.GetActualSize()
 		defer globalReplicationStats.Load().UpdateReplicaStat(bucket, actualSize)
 	}

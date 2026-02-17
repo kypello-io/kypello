@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/minio/minio/internal/dsync"
+	"github.com/kypello-io/kypello/internal/dsync"
 )
 
 func TestLocalLockerExpire(t *testing.T) {
@@ -209,7 +209,7 @@ func TestLocalLockerUnlock(t *testing.T) {
 		arg := dsync.LockArgs{
 			UID:       rUIDs[i*2+1],
 			Resources: []string{name},
-			Source:    "minio",
+			Source:    "kypello",
 			Owner:     "owner",
 			Quorum:    &quorum,
 		}
@@ -237,7 +237,7 @@ func TestLocalLockerUnlock(t *testing.T) {
 		arg := dsync.LockArgs{
 			UID:       wUIDs[i],
 			Resources: names[:],
-			Source:    "minio",
+			Source:    "kypello",
 			Owner:     "owner",
 			Quorum:    &quorum,
 		}

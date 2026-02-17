@@ -20,9 +20,9 @@ package cmd
 import (
 	"time"
 
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/grid"
-	xioutil "github.com/minio/minio/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/grid"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 )
 
 //msgp:clearomitted
@@ -269,6 +269,82 @@ type FileInfo struct {
 	// Versioned - indicates if this file is versioned or not.
 	Versioned bool `msg:"vs"`
 }
+
+// ErasureInfo holds erasure coding and bitrot related information.
+type ErasureInfo struct {
+	// Algorithm is the string representation of erasure-coding-algorithm
+	Algorithm string `json:"algorithm"`
+	// DataBlocks is the number of data blocks for erasure-coding
+	DataBlocks int `json:"data"`
+	// ParityBlocks is the number of parity blocks for erasure-coding
+	ParityBlocks int `json:"parity"`
+	// BlockSize is the size of one erasure-coded block
+	BlockSize int64 `json:"blockSize"`
+	// Index is the index of the current disk
+	Index int `json:"index"`
+	// Distribution is the distribution of the data and parity blocks
+	Distribution []int `json:"distribution"`
+	// Checksums holds all bitrot checksums of all erasure encoded blocks
+	Checksums []ChecksumInfo `json:"checksum,omitempty"`
+}
+
+// Equal equates current erasure info with newer erasure info.
+// returns false if one of the following check fails
+// - erasure algorithm is different
+// - data blocks are different
+// - parity blocks are different
+// - block size is different
+// - distribution array size is different
+// - distribution indexes are different
+func (ei ErasureInfo) Equal(nei ErasureInfo) bool {
+	if ei.Algorithm != nei.Algorithm {
+		return false
+	}
+	if ei.DataBlocks != nei.DataBlocks {
+		return false
+	}
+	if ei.ParityBlocks != nei.ParityBlocks {
+		return false
+	}
+	if ei.BlockSize != nei.BlockSize {
+		return false
+	}
+	if len(ei.Distribution) != len(nei.Distribution) {
+		return false
+	}
+	for i, ecindex := range ei.Distribution {
+		if ecindex != nei.Distribution[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// ChecksumInfo - carries checksums of individual scattered parts per disk.
+type ChecksumInfo struct {
+	PartNumber int
+	Algorithm  BitrotAlgorithm
+	Hash       []byte
+}
+
+// BitrotAlgorithm specifies a algorithm used for bitrot protection.
+type BitrotAlgorithm uint
+
+const (
+	// SHA256 represents the SHA-256 hash function
+	SHA256 BitrotAlgorithm = 1 + iota
+	// HighwayHash256 represents the HighwayHash-256 hash function
+	HighwayHash256
+	// HighwayHash256S represents the Streaming HighwayHash-256 hash function
+	HighwayHash256S
+	// BLAKE2b512 represents the BLAKE2b-512 hash function
+	BLAKE2b512
+)
+
+// DefaultBitrotAlgorithm is the default algorithm used for bitrot protection.
+const (
+	DefaultBitrotAlgorithm = HighwayHash256S
+)
 
 func (fi FileInfo) shardSize() int64 {
 	return ceilFrac(fi.Erasure.BlockSize, int64(fi.Erasure.DataBlocks))

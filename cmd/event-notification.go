@@ -25,10 +25,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/event"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/pubsub"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/event"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/pubsub"
 	"github.com/minio/pkg/v3/policy"
 )
 
@@ -173,8 +173,8 @@ func (args eventArgs) ToEvent(escape bool) event.Event {
 		"x-amz-request-id": args.RespElements["requestId"],
 		"x-amz-id-2":       args.RespElements["nodeId"],
 		"x-minio-origin-endpoint": func() string {
-			if globalMinioEndpoint != "" {
-				return globalMinioEndpoint
+			if globalKypelloEndpoint != "" {
+				return globalKypelloEndpoint
 			}
 			return getAPIEndpoints()[0]
 		}(), // MinIO specific custom elements.
@@ -193,7 +193,7 @@ func (args eventArgs) ToEvent(escape bool) event.Event {
 
 	newEvent := event.Event{
 		EventVersion:      "2.0",
-		EventSource:       "minio:s3",
+		EventSource:       "kypello:s3",
 		AwsRegion:         args.ReqParams["region"],
 		EventTime:         eventTime.Format(event.AMZTimeFormat),
 		EventName:         args.EventName,
@@ -242,7 +242,7 @@ func (args eventArgs) ToEvent(escape bool) event.Event {
 
 func sendEvent(args eventArgs) {
 	// avoid generating a notification for REPLICA creation event.
-	if _, ok := args.ReqParams[xhttp.MinIOSourceReplicationRequest]; ok {
+	if _, ok := args.ReqParams[xhttp.KypelloSourceReplicationRequest]; ok {
 		return
 	}
 

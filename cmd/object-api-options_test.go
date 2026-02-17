@@ -23,14 +23,14 @@ import (
 	"reflect"
 	"testing"
 
-	xhttp "github.com/minio/minio/internal/http"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 )
 
 // TestGetAndValidateAttributesOpts is currently minimal and covers a subset of getAndValidateAttributesOpts(),
 // it is intended to be expanded when the function is worked on in the future.
 func TestGetAndValidateAttributesOpts(t *testing.T) {
 	globalBucketVersioningSys = &BucketVersioningSys{}
-	bucket := minioMetaBucket
+	bucket := kypelloMetaBucket
 	ctx := t.Context()
 	testCases := []struct {
 		name            string

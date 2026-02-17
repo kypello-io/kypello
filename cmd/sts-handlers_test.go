@@ -1352,7 +1352,7 @@ func (s *TestSuiteIAM) TestIAMImport(c *check, exportedContent []byte, caseNum i
 		c.Fatalf("import %d: Unable to list policies: %v", caseNum, err)
 	}
 	defaultCannedPolicies := set.CreateStringSet("consoleAdmin", "readwrite", "readonly",
-		"diagnostics", "writeonly")
+		"diagnostics", "writeonly", "tablesAdmin")
 	for policy, policyBytes := range policyContentMap {
 		if defaultCannedPolicies.Contains(policy) {
 			continue

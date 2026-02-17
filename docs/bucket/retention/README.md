@@ -53,7 +53,7 @@ See <https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html> 
 
 ## Explore Further
 
-- [Use `mc` with MinIO Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html#quickstart)
-- [Use `aws-cli` with MinIO Server](https://docs.min.io/community/minio-object-store/integrations/aws-cli-with-minio.html)
-- [Use `minio-go` SDK with MinIO Server](https://docs.min.io/community/minio-object-store/developers/go/minio-go.html)
+- [Use `mc` with Kypello Server](https://docs.min.io/community/minio-object-store/reference/minio-mc.html#quickstart)
+- [Use `aws-cli` with Kypello Server](https://docs.min.io/community/minio-object-store/integrations/aws-cli-with-minio.html)
+- [Use `minio-go` SDK with Kypello Server](https://docs.min.io/community/minio-object-store/developers/go/minio-go.html)
 - [The MinIO documentation website](https://docs.min.io/community/minio-object-store/index.html)

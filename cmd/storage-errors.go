@@ -103,10 +103,6 @@ var errFileAccessDenied = StorageErr("file access denied")
 // errFileCorrupt - file has an unexpected size, or is not readable
 var errFileCorrupt = StorageErr("file is corrupted")
 
-// errBitrotHashAlgoInvalid - the algo for bit-rot hash
-// verification is empty or invalid.
-var errBitrotHashAlgoInvalid = StorageErr("bit-rot hash algorithm is invalid")
-
 // errCrossDeviceLink - rename across devices not allowed.
 var errCrossDeviceLink = StorageErr("Rename across devices not allowed, please fix your backend configuration")
 

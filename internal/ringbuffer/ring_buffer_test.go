@@ -605,9 +605,7 @@ func TestRingBuffer_BlockingBig(t *testing.T) {
 	// Reader
 	var readErr error
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		defer rb.CloseWithError(readErr)
 		readRng := rand.New(rand.NewSource(1))
 		buf := make([]byte, 64<<10)
@@ -645,7 +643,7 @@ func TestRingBuffer_BlockingBig(t *testing.T) {
 				time.Sleep(time.Duration(readRng.Intn(maxSleep)))
 			}
 		}
-	}()
+	})
 
 	// Writer
 	{

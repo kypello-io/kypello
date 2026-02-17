@@ -21,7 +21,7 @@ connectToMinio() {
   ACCESS=$(cat /config/rootUser) ; SECRET=$(cat /config/rootPassword) ;
   set +e ; # The connections to minio are allowed to fail.
   echo "Connecting to MinIO server: $SCHEME://$MINIO_ENDPOINT:$MINIO_PORT" ;
-  MC_COMMAND="${MC} alias set myminio $SCHEME://$MINIO_ENDPOINT:$MINIO_PORT $ACCESS $SECRET" ;
+  MC_COMMAND="${MC} alias set mykypello $SCHEME://$MINIO_ENDPOINT:$MINIO_PORT $ACCESS $SECRET" ;
   $MC_COMMAND ;
   STATUS=$? ;
   until [ $STATUS = 0 ]
@@ -42,7 +42,7 @@ connectToMinio() {
 # checkSvcacctExists ()
 # Check if the svcacct exists, by using the exit code of `mc admin user svcacct info`
 checkSvcacctExists() {
-  CMD=$(${MC} admin user svcacct info myminio $(head -1 $MINIO_ACCESSKEY_SECRETKEY_TMP) > /dev/null 2>&1)
+  CMD=$(${MC} admin user svcacct info mykypello $(head -1 $MINIO_ACCESSKEY_SECRETKEY_TMP) > /dev/null 2>&1)
   return $?
 }
 
@@ -66,9 +66,9 @@ createSvcacct () {
     echo "Creating svcacct '$SVCACCT'"
     # Check if policy file is define
     if [ -z $FILENAME ]; then
-      ${MC} admin user svcacct add --access-key $(head -1 $MINIO_ACCESSKEY_SECRETKEY_TMP) --secret-key $(tail -n1 $MINIO_ACCESSKEY_SECRETKEY_TMP) myminio $USER
+      ${MC} admin user svcacct add --access-key $(head -1 $MINIO_ACCESSKEY_SECRETKEY_TMP) --secret-key $(tail -n1 $MINIO_ACCESSKEY_SECRETKEY_TMP) mykypello $USER
     else
-      ${MC} admin user svcacct add --access-key $(head -1 $MINIO_ACCESSKEY_SECRETKEY_TMP) --secret-key $(tail -n1 $MINIO_ACCESSKEY_SECRETKEY_TMP) --policy /config/$FILENAME.json myminio $USER
+      ${MC} admin user svcacct add --access-key $(head -1 $MINIO_ACCESSKEY_SECRETKEY_TMP) --secret-key $(tail -n1 $MINIO_ACCESSKEY_SECRETKEY_TMP) --policy /config/$FILENAME.json mykypello $USER
     fi
   else
     echo "Svcacct '$SVCACCT' already exists."
@@ -77,7 +77,7 @@ createSvcacct () {
   rm -f $MINIO_ACCESSKEY_SECRETKEY_TMP
 }
 
-# Try connecting to MinIO instance
+# Try connecting to Kypello instance
 {{- if .Values.tls.enabled }}
 scheme=https
 {{- else }}

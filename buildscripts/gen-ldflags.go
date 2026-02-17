@@ -1,5 +1,4 @@
 //go:build ignore
-// +build ignore
 
 // Copyright (c) 2015-2021 MinIO, Inc.
 //
@@ -33,13 +32,13 @@ func genLDFlags(version string) string {
 	releaseTag, date := releaseTag(version)
 	copyrightYear := strconv.Itoa(date.Year())
 	ldflagsStr := "-s -w"
-	ldflagsStr += " -X github.com/minio/minio/cmd.Version=" + version
-	ldflagsStr += " -X github.com/minio/minio/cmd.CopyrightYear=" + copyrightYear
-	ldflagsStr += " -X github.com/minio/minio/cmd.ReleaseTag=" + releaseTag
-	ldflagsStr += " -X github.com/minio/minio/cmd.CommitID=" + commitID()
-	ldflagsStr += " -X github.com/minio/minio/cmd.ShortCommitID=" + commitID()[:12]
-	ldflagsStr += " -X github.com/minio/minio/cmd.GOPATH=" + os.Getenv("GOPATH")
-	ldflagsStr += " -X github.com/minio/minio/cmd.GOROOT=" + os.Getenv("GOROOT")
+	ldflagsStr += " -X github.com/kypello-io/kypello/cmd.Version=" + version
+	ldflagsStr += " -X github.com/kypello-io/kypello/cmd.CopyrightYear=" + copyrightYear
+	ldflagsStr += " -X github.com/kypello-io/kypello/cmd.ReleaseTag=" + releaseTag
+	ldflagsStr += " -X github.com/kypello-io/kypello/cmd.CommitID=" + commitID()
+	ldflagsStr += " -X github.com/kypello-io/kypello/cmd.ShortCommitID=" + commitID()[:12]
+	ldflagsStr += " -X github.com/kypello-io/kypello/cmd.GOPATH=" + os.Getenv("GOPATH")
+	ldflagsStr += " -X github.com/kypello-io/kypello/cmd.GOROOT=" + os.Getenv("GOROOT")
 	return ldflagsStr
 }
 

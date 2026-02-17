@@ -34,7 +34,7 @@ type sharedLock struct {
 
 func (ld sharedLock) backgroundRoutine(ctx context.Context, objAPI ObjectLayer, lockName string) {
 	for {
-		locker := objAPI.NewNSLock(minioMetaBucket, lockName)
+		locker := objAPI.NewNSLock(kypelloMetaBucket, lockName)
 		lkctx, err := locker.GetLock(ctx, sharedLockTimeout)
 		if err != nil {
 			continue

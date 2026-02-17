@@ -22,12 +22,12 @@ import (
 
 	"github.com/klauspost/compress/gzhttp"
 	"github.com/klauspost/compress/gzip"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/mux"
 )
 
 const (
-	kmsPathPrefix       = minioReservedBucketPath + "/kms"
+	kmsPathPrefix       = kypelloReservedBucketPath + "/kms"
 	kmsAPIVersion       = "v1"
 	kmsAPIVersionPrefix = SlashSeparator + kmsAPIVersion
 )

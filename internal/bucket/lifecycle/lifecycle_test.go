@@ -30,8 +30,8 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/google/uuid"
-	"github.com/minio/minio/internal/bucket/object/lock"
-	xhttp "github.com/minio/minio/internal/http"
+	"github.com/kypello-io/kypello/internal/bucket/object/lock"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 )
 
 func TestParseAndValidateLifecycleConfig(t *testing.T) {
@@ -902,9 +902,9 @@ func TestSetPredictionHeaders(t *testing.T) {
 		if expHdrs, ok := w.Header()[xhttp.AmzExpiration]; ok && !strings.Contains(expHdrs[0], lc.Rules[tc.expRuleID].ID) {
 			t.Fatalf("Test %d: Expected %s header", i+1, xhttp.AmzExpiration)
 		}
-		if transHdrs, ok := w.Header()[xhttp.MinIOTransition]; ok {
+		if transHdrs, ok := w.Header()[xhttp.KypelloTransition]; ok {
 			if !strings.Contains(transHdrs[0], lc.Rules[tc.transRuleID].ID) {
-				t.Fatalf("Test %d: Expected %s header", i+1, xhttp.MinIOTransition)
+				t.Fatalf("Test %d: Expected %s header", i+1, xhttp.KypelloTransition)
 			}
 
 			if tc.obj.IsLatest {

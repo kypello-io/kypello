@@ -26,10 +26,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 	"github.com/minio/minio-go/v7/pkg/encrypt"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
 )
 
 func getDefaultOpts(header http.Header, copySource bool, metadata map[string]string) (opts ObjectOptions, err error) {
@@ -37,11 +37,11 @@ func getDefaultOpts(header http.Header, copySource bool, metadata map[string]str
 	var sse encrypt.ServerSide
 
 	opts = ObjectOptions{UserDefined: metadata}
-	if v, ok := header[xhttp.MinIOSourceProxyRequest]; ok {
+	if v, ok := header[xhttp.KypelloSourceProxyRequest]; ok {
 		opts.ProxyHeaderSet = true
 		opts.ProxyRequest = strings.Join(v, "") == "true"
 	}
-	if _, ok := header[xhttp.MinIOSourceReplicationRequest]; ok {
+	if _, ok := header[xhttp.KypelloSourceReplicationRequest]; ok {
 		opts.ReplicationRequest = true
 	}
 	opts.Speedtest = header.Get(globalObjectPerfUserMetadata) != ""
@@ -117,13 +117,13 @@ func getOpts(ctx context.Context, r *http.Request, bucket, object string) (Objec
 	opts.PartNumber = partNumber
 	opts.VersionID = vid
 
-	delMarker, err := parseBoolHeader(bucket, object, r.Header, xhttp.MinIOSourceDeleteMarker)
+	delMarker, err := parseBoolHeader(bucket, object, r.Header, xhttp.KypelloSourceDeleteMarker)
 	if err != nil {
 		return opts, err
 	}
 	opts.DeleteMarker = delMarker
 
-	replReadyCheck, err := parseBoolHeader(bucket, object, r.Header, xhttp.MinIOCheckDMReplicationReady)
+	replReadyCheck, err := parseBoolHeader(bucket, object, r.Header, xhttp.KypelloCheckDMReplicationReady)
 	if err != nil {
 		return opts, err
 	}
@@ -277,7 +277,7 @@ func delOpts(ctx context.Context, r *http.Request, bucket, object string) (opts 
 	}
 
 	deletePrefix := false
-	if d := r.Header.Get(xhttp.MinIOForceDelete); d != "" {
+	if d := r.Header.Get(xhttp.KypelloForceDelete); d != "" {
 		if b, err := strconv.ParseBool(d); err == nil {
 			deletePrefix = b
 		} else {
@@ -297,20 +297,20 @@ func delOpts(ctx context.Context, r *http.Request, bucket, object string) (opts 
 		opts.VersionID = nullVersionID
 	}
 
-	delMarker, err := parseBoolHeader(bucket, object, r.Header, xhttp.MinIOSourceDeleteMarker)
+	delMarker, err := parseBoolHeader(bucket, object, r.Header, xhttp.KypelloSourceDeleteMarker)
 	if err != nil {
 		return opts, err
 	}
 	opts.DeleteMarker = delMarker
 
-	mtime := strings.TrimSpace(r.Header.Get(xhttp.MinIOSourceMTime))
+	mtime := strings.TrimSpace(r.Header.Get(xhttp.KypelloSourceMTime))
 	if mtime != "" {
 		opts.MTime, err = time.Parse(time.RFC3339Nano, mtime)
 		if err != nil {
 			return opts, InvalidArgument{
 				Bucket: bucket,
 				Object: object,
-				Err:    fmt.Errorf("Unable to parse %s, failed with %w", xhttp.MinIOSourceMTime, err),
+				Err:    fmt.Errorf("Unable to parse %s, failed with %w", xhttp.KypelloSourceMTime, err),
 			}
 		}
 	}
@@ -366,37 +366,37 @@ func putOpts(ctx context.Context, bucket, object, vid string, hdrs http.Header, 
 }
 
 func putOptsFromHeaders(ctx context.Context, hdr http.Header, metadata map[string]string) (opts ObjectOptions, err error) {
-	mtimeStr := strings.TrimSpace(hdr.Get(xhttp.MinIOSourceMTime))
+	mtimeStr := strings.TrimSpace(hdr.Get(xhttp.KypelloSourceMTime))
 	var mtime time.Time
 	if mtimeStr != "" {
 		mtime, err = time.Parse(time.RFC3339Nano, mtimeStr)
 		if err != nil {
-			return opts, fmt.Errorf("Unable to parse %s, failed with %w", xhttp.MinIOSourceMTime, err)
+			return opts, fmt.Errorf("Unable to parse %s, failed with %w", xhttp.KypelloSourceMTime, err)
 		}
 	}
-	retaintimeStr := strings.TrimSpace(hdr.Get(xhttp.MinIOSourceObjectRetentionTimestamp))
+	retaintimeStr := strings.TrimSpace(hdr.Get(xhttp.KypelloSourceObjectRetentionTimestamp))
 	var retaintimestmp time.Time
 	if retaintimeStr != "" {
 		retaintimestmp, err = time.Parse(time.RFC3339, retaintimeStr)
 		if err != nil {
-			return opts, fmt.Errorf("Unable to parse %s, failed with %w", xhttp.MinIOSourceObjectRetentionTimestamp, err)
+			return opts, fmt.Errorf("Unable to parse %s, failed with %w", xhttp.KypelloSourceObjectRetentionTimestamp, err)
 		}
 	}
 
-	lholdtimeStr := strings.TrimSpace(hdr.Get(xhttp.MinIOSourceObjectLegalHoldTimestamp))
+	lholdtimeStr := strings.TrimSpace(hdr.Get(xhttp.KypelloSourceObjectLegalHoldTimestamp))
 	var lholdtimestmp time.Time
 	if lholdtimeStr != "" {
 		lholdtimestmp, err = time.Parse(time.RFC3339, lholdtimeStr)
 		if err != nil {
-			return opts, fmt.Errorf("Unable to parse %s, failed with %w", xhttp.MinIOSourceObjectLegalHoldTimestamp, err)
+			return opts, fmt.Errorf("Unable to parse %s, failed with %w", xhttp.KypelloSourceObjectLegalHoldTimestamp, err)
 		}
 	}
-	tagtimeStr := strings.TrimSpace(hdr.Get(xhttp.MinIOSourceTaggingTimestamp))
+	tagtimeStr := strings.TrimSpace(hdr.Get(xhttp.KypelloSourceTaggingTimestamp))
 	var taggingtimestmp time.Time
 	if tagtimeStr != "" {
 		taggingtimestmp, err = time.Parse(time.RFC3339, tagtimeStr)
 		if err != nil {
-			return opts, fmt.Errorf("Unable to parse %s, failed with %w", xhttp.MinIOSourceTaggingTimestamp, err)
+			return opts, fmt.Errorf("Unable to parse %s, failed with %w", xhttp.KypelloSourceTaggingTimestamp, err)
 		}
 	}
 
@@ -404,7 +404,7 @@ func putOptsFromHeaders(ctx context.Context, hdr http.Header, metadata map[strin
 		metadata = make(map[string]string)
 	}
 
-	etag := strings.TrimSpace(hdr.Get(xhttp.MinIOSourceETag))
+	etag := strings.TrimSpace(hdr.Get(xhttp.KypelloSourceETag))
 	if crypto.S3KMS.IsRequested(hdr) {
 		keyID, context, err := crypto.S3KMS.ParseHTTP(hdr)
 		if err != nil {
@@ -456,7 +456,7 @@ func copySrcOpts(ctx context.Context, r *http.Request, bucket, object string) (O
 
 // get ObjectOptions for CompleteMultipart calls
 func completeMultipartOpts(ctx context.Context, r *http.Request, bucket, object string) (opts ObjectOptions, err error) {
-	mtimeStr := strings.TrimSpace(r.Header.Get(xhttp.MinIOSourceMTime))
+	mtimeStr := strings.TrimSpace(r.Header.Get(xhttp.KypelloSourceMTime))
 	var mtime time.Time
 	if mtimeStr != "" {
 		mtime, err = time.Parse(time.RFC3339Nano, mtimeStr)
@@ -464,7 +464,7 @@ func completeMultipartOpts(ctx context.Context, r *http.Request, bucket, object 
 			return opts, InvalidArgument{
 				Bucket: bucket,
 				Object: object,
-				Err:    fmt.Errorf("Unable to parse %s, failed with %w", xhttp.MinIOSourceMTime, err),
+				Err:    fmt.Errorf("Unable to parse %s, failed with %w", xhttp.KypelloSourceMTime, err),
 			}
 		}
 	}
@@ -485,9 +485,9 @@ func completeMultipartOpts(ctx context.Context, r *http.Request, bucket, object 
 			}
 		}
 	}
-	if _, ok := r.Header[xhttp.MinIOSourceReplicationRequest]; ok {
+	if _, ok := r.Header[xhttp.KypelloSourceReplicationRequest]; ok {
 		opts.ReplicationRequest = true
-		opts.UserDefined[ReservedMetadataPrefix+"Actual-Object-Size"] = r.Header.Get(xhttp.MinIOReplicationActualObjectSize)
+		opts.UserDefined[ReservedMetadataPrefix+"Actual-Object-Size"] = r.Header.Get(xhttp.KypelloReplicationActualObjectSize)
 	}
 	if r.Header.Get(ReplicationSsecChecksumHeader) != "" {
 		opts.UserDefined[ReplicationSsecChecksumHeader] = r.Header.Get(ReplicationSsecChecksumHeader)

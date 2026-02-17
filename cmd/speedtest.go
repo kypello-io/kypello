@@ -25,10 +25,10 @@ import (
 	"sort"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/auth"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/minio/dperf/pkg/dperf"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/auth"
-	xioutil "github.com/minio/minio/internal/ioutil"
 )
 
 const speedTest = "speedtest"
@@ -251,8 +251,8 @@ func driveSpeedTest(ctx context.Context, opts madmin.DriveSpeedTestOpts) madmin.
 	var ignoredPaths []string
 	paths := func() (tmpPaths []string) {
 		for _, lp := range localPaths {
-			if _, err := Lstat(pathJoin(lp, minioMetaBucket, formatConfigFile)); err == nil {
-				tmpPaths = append(tmpPaths, pathJoin(lp, minioMetaTmpBucket))
+			if _, err := Lstat(pathJoin(lp, kypelloMetaBucket, formatConfigFile)); err == nil {
+				tmpPaths = append(tmpPaths, pathJoin(lp, kypelloMetaTmpBucket))
 			} else {
 				// Use dperf on only formatted drives.
 				ignoredPaths = append(ignoredPaths, lp)

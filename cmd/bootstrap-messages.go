@@ -21,8 +21,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/kypello-io/kypello/internal/pubsub"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/pubsub"
 )
 
 const bootstrapTraceLimit = 4 << 10

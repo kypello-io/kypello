@@ -32,12 +32,12 @@ import (
 	"time"
 
 	elasticsearch7 "github.com/elastic/go-elasticsearch/v7"
+	"github.com/kypello-io/kypello/internal/event"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/once"
+	"github.com/kypello-io/kypello/internal/store"
 	"github.com/minio/highwayhash"
-	"github.com/minio/minio/internal/event"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/once"
-	"github.com/minio/minio/internal/store"
 	xnet "github.com/minio/pkg/v3/net"
 	"github.com/pkg/errors"
 )

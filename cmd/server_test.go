@@ -36,9 +36,9 @@ import (
 
 	"github.com/dustin/go-humanize"
 	jwtgo "github.com/golang-jwt/jwt/v4"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 	"github.com/minio/minio-go/v7/pkg/set"
 	"github.com/minio/minio-go/v7/pkg/signer"
-	xhttp "github.com/minio/minio/internal/http"
 	"github.com/minio/pkg/v3/policy"
 )
 
@@ -210,7 +210,7 @@ func (s *TestSuiteCommon) TestMetricsV3Handler(c *check) {
 	c.Assert(err, nil)
 
 	for _, cpath := range globalMetricsV3CollectorPaths {
-		request, err := newTestSignedRequest(http.MethodGet, s.endPoint+minioReservedBucketPath+metricsV3Path+string(cpath),
+		request, err := newTestSignedRequest(http.MethodGet, s.endPoint+kypelloReservedBucketPath+metricsV3Path+string(cpath),
 			0, nil, s.accessKey, s.secretKey, s.signer)
 		c.Assert(err, nil)
 
@@ -1055,9 +1055,7 @@ func (s *TestSuiteCommon) TestPutBucket(c *check) {
 	// Run the test with -race flag to utilize this
 	var wg sync.WaitGroup
 	for range testConcurrencyLevel {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			// HTTP request to create the bucket.
 			request, err := newTestSignedRequest(http.MethodPut, getMakeBucketURL(s.endPoint, bucketName),
 				0, nil, s.accessKey, s.secretKey, s.signer)
@@ -1069,7 +1067,7 @@ func (s *TestSuiteCommon) TestPutBucket(c *check) {
 				return
 			}
 			defer response.Body.Close()
-		}()
+		})
 	}
 	wg.Wait()
 
@@ -1705,7 +1703,7 @@ func (s *TestSuiteCommon) TestListObjectsHandler(c *check) {
 			[]string{
 				"<Key>foo bar 1</Key>",
 				"<Key>foo bar 2</Key>",
-				fmt.Sprintf("<Owner><ID>%s</ID><DisplayName>minio</DisplayName></Owner>", globalMinioDefaultOwnerID),
+				fmt.Sprintf("<Owner><ID>%s</ID><DisplayName>kypello</DisplayName></Owner>", globalKypelloDefaultOwnerID),
 			},
 		},
 		{getListObjectsV2URL(s.endPoint, bucketName, "", "1000", "", "url", ""), []string{"<Key>foo+bar+1</Key>", "<Key>foo+bar+2</Key>"}},
@@ -1731,6 +1729,7 @@ func (s *TestSuiteCommon) TestListObjectsHandler(c *check) {
 		c.Assert(err, nil)
 
 		for _, expectedStr := range testCase.expectedStrings {
+			c.Logf("asserting %q to %q", string(getContent), expectedStr)
 			c.Assert(strings.Contains(string(getContent), expectedStr), true)
 		}
 	}
@@ -1998,7 +1997,7 @@ func (s *TestSuiteCommon) TestListObjectsSpecialCharactersHandler(c *check) {
 				"<Key>foo bar 1</Key>",
 				"<Key>foo bar 2</Key>",
 				"<Key>foo &#x1; bar</Key>",
-				fmt.Sprintf("<Owner><ID>%s</ID><DisplayName>minio</DisplayName></Owner>", globalMinioDefaultOwnerID),
+				fmt.Sprintf("<Owner><ID>%s</ID><DisplayName>minio</DisplayName></Owner>", globalKypelloDefaultOwnerID),
 			},
 		},
 		{
@@ -2007,7 +2006,7 @@ func (s *TestSuiteCommon) TestListObjectsSpecialCharactersHandler(c *check) {
 				"<Key>foo bar 1</Key>",
 				"<Key>foo bar 2</Key>",
 				"<Key>foo &#x1; bar</Key>",
-				fmt.Sprintf("<Owner><ID>%s</ID><DisplayName>minio</DisplayName></Owner>", globalMinioDefaultOwnerID),
+				fmt.Sprintf("<Owner><ID>%s</ID><DisplayName>minio</DisplayName></Owner>", globalKypelloDefaultOwnerID),
 			},
 		},
 		{getListObjectsV2URL(s.endPoint, bucketName, "", "1000", "", "url", ""), []string{"<Key>foo+bar+1</Key>", "<Key>foo+bar+2</Key>", "<Key>foo+%01+bar</Key>"}},

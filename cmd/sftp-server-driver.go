@@ -30,10 +30,10 @@ import (
 	"sync"
 	"time"
 
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	xioutil "github.com/minio/minio/internal/ioutil"
 	"github.com/minio/pkg/v3/mimedb"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -93,7 +93,7 @@ func (m *sftpMetrics) log(s *sftp.Request, user string) func(sz int64, err error
 // - sftp.Filecmd
 func NewSFTPDriver(perms *ssh.Permissions, remoteIP string) sftp.Handlers {
 	handler := &sftpDriver{
-		endpoint:    fmt.Sprintf("127.0.0.1:%s", globalMinioPort),
+		endpoint:    fmt.Sprintf("127.0.0.1:%s", globalKypelloPort),
 		permissions: perms,
 		remoteIP:    remoteIP,
 	}
@@ -285,8 +285,7 @@ func (f *sftpDriver) Filewrite(r *sftp.Request) (w io.WriterAt, err error) {
 		r:      pr,
 		wg:     &sync.WaitGroup{},
 	}
-	wa.wg.Add(1)
-	go func() {
+	wa.wg.Go(func() {
 		oi, err := clnt.PutObject(r.Context(), bucket, object, pr, -1, minio.PutObjectOptions{
 			ContentType:          mimedb.TypeByExtension(path.Ext(object)),
 			DisableContentSha256: true,
@@ -294,8 +293,7 @@ func (f *sftpDriver) Filewrite(r *sftp.Request) (w io.WriterAt, err error) {
 		})
 		stopFn(oi.Size, err)
 		pr.CloseWithError(err)
-		wa.wg.Done()
-	}()
+	})
 	return wa, nil
 }
 

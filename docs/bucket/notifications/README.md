@@ -43,11 +43,11 @@ Bucket events can be published to the following targets:
 
 ## Prerequisites
 
-- Install and configure MinIO Server from [here](https://docs.min.io/community/minio-object-store/operations/deployments/baremetal-deploy-minio-on-redhat-linux.html#procedure).
+- Install and configure Kypello Server from [here](https://docs.min.io/community/minio-object-store/operations/deployments/baremetal-deploy-minio-on-redhat-linux.html#procedure).
 - Install and configure MinIO Client from [here](https://docs.min.io/community/minio-object-store/reference/minio-mc.html#quickstart).
 
 ```
-$ mc admin config get myminio | grep notify
+$ mc admin config get mykypello | grep notify
 notify_webhook        publish bucket notifications to webhook endpoints
 notify_amqp           publish bucket notifications to AMQP endpoints
 notify_kafka          publish bucket notifications to Kafka endpoints
@@ -122,7 +122,7 @@ MinIO supports persistent event store. The persistent store will backup events w
 To update the configuration, use `mc admin config get notify_amqp` command to get the current configuration for `notify_amqp`.
 
 ```sh
-$ mc admin config get myminio/ notify_amqp
+$ mc admin config get mykypello/ notify_amqp
 notify_amqp:1 delivery_mode="0" exchange_type="" no_wait="off" queue_dir="" queue_limit="0"  url="" auto_deleted="off" durable="off" exchange="" internal="off" mandatory="off" routing_key=""
 ```
 
@@ -131,7 +131,7 @@ Use `mc admin config set` command to update the configuration for the deployment
 An example configuration for RabbitMQ is shown below:
 
 ```sh
-mc admin config set myminio/ notify_amqp:1 exchange="bucketevents" exchange_type="fanout" mandatory="off" no_wait="off"  url="amqp://myuser:mypassword@localhost:5672" auto_deleted="off" delivery_mode="0" durable="off" internal="off" routing_key="bucketlogs"
+mc admin config set mykypello/ notify_amqp:1 exchange="bucketevents" exchange_type="fanout" mandatory="off" no_wait="off"  url="amqp://myuser:mypassword@localhost:5672" auto_deleted="off" delivery_mode="0" durable="off" internal="off" routing_key="bucketlogs"
 ```
 
 MinIO supports all the exchanges available in [RabbitMQ](https://www.rabbitmq.com/). For this setup, we are using `fanout` exchange.
@@ -142,12 +142,12 @@ Note that, you can add as many AMQP server endpoint configurations as needed by 
 
 ### Step 2: Enable RabbitMQ bucket notification using MinIO client
 
-We will enable bucket event notification to trigger whenever a JPEG image is uploaded or deleted `images` bucket on `myminio` server. Here ARN value is `arn:minio:sqs::1:amqp`. To understand more about ARN please follow [AWS ARN](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) documentation.
+We will enable bucket event notification to trigger whenever a JPEG image is uploaded or deleted `images` bucket on `mykypello` server. Here ARN value is `arn:minio:sqs::1:amqp`. To understand more about ARN please follow [AWS ARN](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) documentation.
 
 ```
-mc mb myminio/images
-mc event add myminio/images arn:minio:sqs::1:amqp --suffix .jpg
-mc event list myminio/images
+mc mb mykypello/images
+mc event add mykypello/images arn:minio:sqs::1:amqp --suffix .jpg
+mc event list mykypello/images
 arn:minio:sqs::1:amqp s3:ObjectCreated:*,s3:ObjectRemoved:* Filter: suffix=”.jpg”
 ```
 
@@ -193,14 +193,14 @@ python rabbit.py
 Open another terminal and upload a JPEG image into `images` bucket.
 
 ```
-mc cp myphoto.jpg myminio/images
+mc cp myphoto.jpg mykypello/images
 ```
 
 You should receive the following event notification via RabbitMQ once the upload completes.
 
 ```py
 python rabbit.py
-'{"Records":[{"eventVersion":"2.0","eventSource":"aws:s3","awsRegion":"","eventTime":"2016–09–08T22:34:38.226Z","eventName":"s3:ObjectCreated:Put","userIdentity":{"principalId":"minio"},"requestParameters":{"sourceIPAddress":"10.1.10.150:44576"},"responseElements":{},"s3":{"s3SchemaVersion":"1.0","configurationId":"Config","bucket":{"name":"images","ownerIdentity":{"principalId":"minio"},"arn":"arn:aws:s3:::images"},"object":{"key":"myphoto.jpg","size":200436,"sequencer":"147279EAF9F40933"}}}],"level":"info","msg":"","time":"2016–09–08T15:34:38–07:00"}'
+'{"Records":[{"eventVersion":"2.0","eventSource":"aws:s3","awsRegion":"","eventTime":"2016–09–08T22:34:38.226Z","eventName":"s3:ObjectCreated:Put","userIdentity":{"principalId":"kypello"},"requestParameters":{"sourceIPAddress":"10.1.10.150:44576"},"responseElements":{},"s3":{"s3SchemaVersion":"1.0","configurationId":"Config","bucket":{"name":"images","ownerIdentity":{"principalId":"kypello"},"arn":"arn:aws:s3:::images"},"object":{"key":"myphoto.jpg","size":200436,"sequencer":"147279EAF9F40933"}}}],"level":"info","msg":"","time":"2016–09–08T15:34:38–07:00"}'
 ```
 
 ## Publish MinIO events MQTT
@@ -253,14 +253,14 @@ MinIO supports persistent event store. The persistent store will backup events w
 To update the configuration, use `mc admin config get` command to get the current configuration.
 
 ```sh
-$ mc admin config get myminio/ notify_mqtt
+$ mc admin config get mykypello/ notify_mqtt
 notify_mqtt:1 broker="" password="" queue_dir="" queue_limit="0" reconnect_interval="0s"  keep_alive_interval="0s" qos="0" topic="" username=""
 ```
 
 Use `mc admin config set` command to update the configuration for the deployment. Restart the MinIO server to put the changes into effect. The server will print a line like `SQS ARNs: arn:minio:sqs::1:mqtt` at start-up if there were no errors.
 
 ```sh
-mc admin config set myminio notify_mqtt:1 broker="tcp://localhost:1883" password="" queue_dir="" queue_limit="0" reconnect_interval="0s"  keep_alive_interval="0s" qos="1" topic="minio" username=""
+mc admin config set mykypello notify_mqtt:1 broker="tcp://localhost:1883" password="" queue_dir="" queue_limit="0" reconnect_interval="0s"  keep_alive_interval="0s" qos="1" topic="kypello" username=""
 ```
 
 MinIO supports any MQTT server that supports MQTT 3.1 or 3.1.1 and can connect to them over TCP, TLS, or a Websocket connection using `tcp://`, `tls://`, or `ws://` respectively as the scheme for the broker url. See the [Go Client](http://www.eclipse.org/paho/clients/golang/) documentation for more information.
@@ -269,12 +269,12 @@ Note that, you can add as many MQTT server endpoint configurations as needed by 
 
 ### Step 2: Enable MQTT bucket notification using MinIO client
 
-We will enable bucket event notification to trigger whenever a JPEG image is uploaded or deleted `images` bucket on `myminio` server. Here ARN value is `arn:minio:sqs::1:mqtt`.
+We will enable bucket event notification to trigger whenever a JPEG image is uploaded or deleted `images` bucket on `mykypello` server. Here ARN value is `arn:minio:sqs::1:mqtt`.
 
 ```
-mc mb myminio/images
-mc event add  myminio/images arn:minio:sqs::1:mqtt --suffix .jpg
-mc event list myminio/images
+mc mb mykypello/images
+mc event add  mykypello/images arn:minio:sqs::1:mqtt --suffix .jpg
+mc event list mykypello/images
 arn:minio:sqs::1:amqp s3:ObjectCreated:*,s3:ObjectRemoved:* Filter: suffix=”.jpg”
 ```
 
@@ -292,7 +292,7 @@ import paho.mqtt.client as mqtt
 def on_connect(client, userdata, flags, rc):
   print("Connected with result code "+str(rc))
   # qos level is set to 1
-  client.subscribe("minio", 1)
+  client.subscribe("kypello", 1)
 
 def on_message(client, userdata, msg):
     print(msg.payload)
@@ -316,7 +316,7 @@ python mqtt.py
 Open another terminal and upload a JPEG image into `images` bucket.
 
 ```
-mc cp myphoto.jpg myminio/images
+mc cp myphoto.jpg mykypello/images
 ```
 
 You should receive the following event notification via MQTT once the upload completes.
@@ -388,14 +388,14 @@ If Elasticsearch has authentication enabled, the credentials can be supplied to 
 To update the configuration, use `mc admin config get` command to get the current configuration.
 
 ```sh
-$ mc admin config get myminio/ notify_elasticsearch
+$ mc admin config get mykypello/ notify_elasticsearch
 notify_elasticsearch:1 queue_limit="0"  url="" format="namespace" index="" queue_dir=""
 ```
 
 Use `mc admin config set` command to update the configuration for the deployment. Restart the MinIO server to put the changes into effect. The server will print a line like `SQS ARNs: arn:minio:sqs::1:elasticsearch` at start-up if there were no errors.
 
 ```sh
-mc admin config set myminio notify_elasticsearch:1 queue_limit="0"  url="http://127.0.0.1:9200" format="namespace" index="minio_events" queue_dir="" username="" password=""
+mc admin config set mykypello notify_elasticsearch:1 queue_limit="0"  url="http://127.0.0.1:9200" format="namespace" index="minio_events" queue_dir="" username="" password=""
 ```
 
 Note that, you can add as many Elasticsearch server endpoint configurations as needed by providing an identifier (like "1" in the example above) for the Elasticsearch instance and an object of per-server configuration parameters.
@@ -406,12 +406,12 @@ We will now enable bucket event notifications on a bucket named `images`. Whenev
 
 To configure this bucket notification, we need the ARN printed by MinIO in the previous step. Additional information about ARN is available [here](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 
-With the `mc` tool, the configuration is very simple to add. Let us say that the MinIO server is aliased as `myminio` in our mc configuration. Execute the following:
+With the `mc` tool, the configuration is very simple to add. Let us say that the MinIO server is aliased as `mykypello` in our mc configuration. Execute the following:
 
 ```
-mc mb myminio/images
-mc event add  myminio/images arn:minio:sqs::1:elasticsearch --suffix .jpg
-mc event list myminio/images
+mc mb mykypello/images
+mc event add  mykypello/images arn:minio:sqs::1:elasticsearch --suffix .jpg
+mc event list mykypello/images
 arn:minio:sqs::1:elasticsearch s3:ObjectCreated:*,s3:ObjectRemoved:* Filter: suffix=”.jpg”
 ```
 
@@ -420,7 +420,7 @@ arn:minio:sqs::1:elasticsearch s3:ObjectCreated:*,s3:ObjectRemoved:* Filter: suf
 Upload a JPEG image into `images` bucket.
 
 ```
-mc cp myphoto.jpg myminio/images
+mc cp myphoto.jpg mykypello/images
 ```
 
 Use curl to view contents of `minio_events` index.
@@ -453,7 +453,7 @@ $ curl  "http://localhost:9200/minio_events/_search?pretty=true"
               "eventTime" : "2017-03-30T08:00:41Z",
               "eventName" : "s3:ObjectCreated:Put",
               "userIdentity" : {
-                "principalId" : "minio"
+                "principalId" : "kypello"
               },
               "requestParameters" : {
                 "sourceIPAddress" : "127.0.0.1:38062"
@@ -468,7 +468,7 @@ $ curl  "http://localhost:9200/minio_events/_search?pretty=true"
                 "bucket" : {
                   "name" : "images",
                   "ownerIdentity" : {
-                    "principalId" : "minio"
+                    "principalId" : "kypello"
                   },
                   "arn" : "arn:aws:s3:::images"
                 },
@@ -548,14 +548,14 @@ MinIO supports persistent event store. The persistent store will backup events w
 To update the configuration, use `mc admin config get` command to get the current configuration.
 
 ```sh
-$ mc admin config get myminio/ notify_redis
+$ mc admin config get mykypello/ notify_redis
 notify_redis:1 address="" format="namespace" key="" password="" queue_dir="" queue_limit="0"
 ```
 
 Use `mc admin config set` command to update the configuration for the deployment.Restart the MinIO server to put the changes into effect. The server will print a line like `SQS ARNs: arn:minio:sqs::1:redis` at start-up if there were no errors.
 
 ```sh
-mc admin config set myminio/ notify_redis:1 address="127.0.0.1:6379" format="namespace" key="bucketevents" password="yoursecret" queue_dir="" queue_limit="0"
+mc admin config set mykypello/ notify_redis:1 address="127.0.0.1:6379" format="namespace" key="bucketevents" password="yoursecret" queue_dir="" queue_limit="0"
 ```
 
 Note that, you can add as many Redis server endpoint configurations as needed by providing an identifier (like "1" in the example above) for the Redis instance and an object of per-server configuration parameters.
@@ -566,12 +566,12 @@ We will now enable bucket event notifications on a bucket named `images`. Whenev
 
 To configure this bucket notification, we need the ARN printed by MinIO in the previous step. Additional information about ARN is available [here](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 
-With the `mc` tool, the configuration is very simple to add. Let us say that the MinIO server is aliased as `myminio` in our mc configuration. Execute the following:
+With the `mc` tool, the configuration is very simple to add. Let us say that the MinIO server is aliased as `mykypello` in our mc configuration. Execute the following:
 
 ```
-mc mb myminio/images
-mc event add myminio/images arn:minio:sqs::1:redis --suffix .jpg
-mc event list myminio/images
+mc mb mykypello/images
+mc event add mykypello/images arn:minio:sqs::1:redis --suffix .jpg
+mc event list mykypello/images
 arn:minio:sqs::1:redis s3:ObjectCreated:*,s3:ObjectRemoved:* Filter: suffix=”.jpg”
 ```
 
@@ -588,7 +588,7 @@ OK
 Open another terminal and upload a JPEG image into `images` bucket.
 
 ```
-mc cp myphoto.jpg myminio/images
+mc cp myphoto.jpg mykypello/images
 ```
 
 In the previous terminal, you will now see the operation that MinIO performs on Redis:
@@ -668,14 +668,14 @@ MINIO_NOTIFY_NATS_COMMENT                           (sentence)  optionally add a
 To update the configuration, use `mc admin config get` command to get the current configuration file for the minio deployment.
 
 ```sh
-$ mc admin config get myminio/ notify_nats
+$ mc admin config get mykypello/ notify_nats
 notify_nats:1 password="yoursecret" streaming_max_pub_acks_in_flight="10" subject="" address="0.0.0.0:4222"  token="" username="yourusername" ping_interval="0" queue_limit="0" tls="off" tls_skip_verify="off" streaming_async="on" queue_dir="" streaming_cluster_id="test-cluster" streaming_enable="on"
 ```
 
 Use `mc admin config set` command to update the configuration for the deployment.Restart MinIO server to reflect config changes. `bucketevents` is the subject used by NATS in this example.
 
 ```sh
-mc admin config set myminio notify_nats:1 password="yoursecret" streaming_max_pub_acks_in_flight="10" subject="" address="0.0.0.0:4222"  token="" username="yourusername" ping_interval="0" queue_limit="0" tls="off" streaming_async="on" queue_dir="" streaming_cluster_id="test-cluster" streaming_enable="on"
+mc admin config set mykypello notify_nats:1 password="yoursecret" streaming_max_pub_acks_in_flight="10" subject="" address="0.0.0.0:4222"  token="" username="yourusername" ping_interval="0" queue_limit="0" tls="off" streaming_async="on" queue_dir="" streaming_cluster_id="test-cluster" streaming_enable="on"
 ```
 
 MinIO server also supports [NATS Streaming mode](http://nats.io/documentation/streaming/nats-streaming-intro/) that offers additional functionality like `At-least-once-delivery`, and `Publisher rate limiting`. To configure MinIO server to send notifications to NATS Streaming server, update the MinIO server configuration file as follows:
@@ -684,12 +684,12 @@ Read more about sections `cluster_id`, `client_id` on [NATS documentation](https
 
 ### Step 2: Enable NATS bucket notification using MinIO client
 
-We will enable bucket event notification to trigger whenever a JPEG image is uploaded or deleted from `images` bucket on `myminio` server. Here ARN value is `arn:minio:sqs::1:nats`. To understand more about ARN please follow [AWS ARN](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) documentation.
+We will enable bucket event notification to trigger whenever a JPEG image is uploaded or deleted from `images` bucket on `mykypello` server. Here ARN value is `arn:minio:sqs::1:nats`. To understand more about ARN please follow [AWS ARN](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) documentation.
 
 ```
-mc mb myminio/images
-mc event add myminio/images arn:minio:sqs::1:nats --suffix .jpg
-mc event list myminio/images
+mc mb mykypello/images
+mc event add mykypello/images arn:minio:sqs::1:nats --suffix .jpg
+mc event list mykypello/images
 arn:minio:sqs::1:nats s3:ObjectCreated:*,s3:ObjectRemoved:* Filter: suffix=”.jpg”
 ```
 
@@ -736,7 +736,7 @@ go run nats.go
 Open another terminal and upload a JPEG image into `images` bucket.
 
 ```
-mc cp myphoto.jpg myminio/images
+mc cp myphoto.jpg mykypello/images
 ```
 
 The example `nats.go` program prints event notification to console.
@@ -745,7 +745,7 @@ The example `nats.go` program prints event notification to console.
 go run nats.go
 2016/10/12 06:51:26 Connected
 2016/10/12 06:51:26 Subscribing to subject 'bucketevents'
-2016/10/12 06:51:33 Received message '{"EventType":"s3:ObjectCreated:Put","Key":"images/myphoto.jpg","Records":[{"eventVersion":"2.0","eventSource":"aws:s3","awsRegion":"","eventTime":"2016-10-12T13:51:33Z","eventName":"s3:ObjectCreated:Put","userIdentity":{"principalId":"minio"},"requestParameters":{"sourceIPAddress":"[::1]:57106"},"responseElements":{},"s3":{"s3SchemaVersion":"1.0","configurationId":"Config","bucket":{"name":"images","ownerIdentity":{"principalId":"minio"},"arn":"arn:aws:s3:::images"},"object":{"key":"myphoto.jpg","size":56060,"eTag":"1d97bf45ecb37f7a7b699418070df08f","sequencer":"147CCD1AE054BFD0"}}}],"level":"info","msg":"","time":"2016-10-12T06:51:33-07:00"}
+2016/10/12 06:51:33 Received message '{"EventType":"s3:ObjectCreated:Put","Key":"images/myphoto.jpg","Records":[{"eventVersion":"2.0","eventSource":"aws:s3","awsRegion":"","eventTime":"2016-10-12T13:51:33Z","eventName":"s3:ObjectCreated:Put","userIdentity":{"principalId":"kypello"},"requestParameters":{"sourceIPAddress":"[::1]:57106"},"responseElements":{},"s3":{"s3SchemaVersion":"1.0","configurationId":"Config","bucket":{"name":"images","ownerIdentity":{"principalId":"kypello"},"arn":"arn:aws:s3:::images"},"object":{"key":"myphoto.jpg","size":56060,"eTag":"1d97bf45ecb37f7a7b699418070df08f","sequencer":"147CCD1AE054BFD0"}}}],"level":"info","msg":"","time":"2016-10-12T06:51:33-07:00"}
 ```
 
 If you use NATS Streaming server, check out this sample program below to log the bucket notification added to NATS.
@@ -814,13 +814,13 @@ go run nats.go
 Open another terminal and upload a JPEG image into `images` bucket.
 
 ```
-mc cp myphoto.jpg myminio/images
+mc cp myphoto.jpg mykypello/images
 ```
 
 The example `nats.go` program prints event notification to console.
 
 ```
-Received a message: {"EventType":"s3:ObjectCreated:Put","Key":"images/myphoto.jpg","Records":[{"eventVersion":"2.0","eventSource":"minio:s3","awsRegion":"","eventTime":"2017-07-07T18:46:37Z","eventName":"s3:ObjectCreated:Put","userIdentity":{"principalId":"minio"},"requestParameters":{"sourceIPAddress":"192.168.1.80:55328"},"responseElements":{"x-amz-request-id":"14CF20BD1EFD5B93","x-minio-origin-endpoint":"http://127.0.0.1:9000"},"s3":{"s3SchemaVersion":"1.0","configurationId":"Config","bucket":{"name":"images","ownerIdentity":{"principalId":"minio"},"arn":"arn:aws:s3:::images"},"object":{"key":"myphoto.jpg","size":248682,"eTag":"f1671feacb8bbf7b0397c6e9364e8c92","contentType":"image/jpeg","userDefined":{"content-type":"image/jpeg"},"versionId":"1","sequencer":"14CF20BD1EFD5B93"}},"source":{"host":"192.168.1.80","port":"55328","userAgent":"MinIO (linux; amd64) minio-go/2.0.4 mc/DEVELOPMENT.GOGET"}}],"level":"info","msg":"","time":"2017-07-07T11:46:37-07:00"}
+Received a message: {"EventType":"s3:ObjectCreated:Put","Key":"images/myphoto.jpg","Records":[{"eventVersion":"2.0","eventSource":"minio:s3","awsRegion":"","eventTime":"2017-07-07T18:46:37Z","eventName":"s3:ObjectCreated:Put","userIdentity":{"principalId":"kypello"},"requestParameters":{"sourceIPAddress":"192.168.1.80:55328"},"responseElements":{"x-amz-request-id":"14CF20BD1EFD5B93","x-minio-origin-endpoint":"http://127.0.0.1:9000"},"s3":{"s3SchemaVersion":"1.0","configurationId":"Config","bucket":{"name":"images","ownerIdentity":{"principalId":"kypello"},"arn":"arn:aws:s3:::images"},"object":{"key":"myphoto.jpg","size":248682,"eTag":"f1671feacb8bbf7b0397c6e9364e8c92","contentType":"image/jpeg","userDefined":{"content-type":"image/jpeg"},"versionId":"1","sequencer":"14CF20BD1EFD5B93"}},"source":{"host":"192.168.1.80","port":"55328","userAgent":"MinIO (linux; amd64) minio-go/2.0.4 mc/DEVELOPMENT.GOGET"}}],"level":"info","msg":"","time":"2017-07-07T11:46:37-07:00"}
 ```
 
 ## Publish MinIO events via PostgreSQL
@@ -840,7 +840,7 @@ Received a message: {"EventType":"s3:ObjectCreated:Put","Key":"images/myphoto.jp
 > following command to update the existing notification targets.
 >
 > ```
-> mc admin config set myminio/ notify_postgres[:name] connection_string="host=hostname port=2832 username=psqluser password=psqlpass database=bucketevents"
+> mc admin config set mykypello/ notify_postgres[:name] connection_string="host=hostname port=2832 username=psqluser password=psqlpass database=bucketevents"
 > ```
 >
 > Please make sure this step is carried out, without this step PostgreSQL notification targets will not work,
@@ -870,7 +870,7 @@ KEY:
 notify_postgres[:name]  publish bucket notifications to Postgres databases
 
 ARGS:
-connection_string*   (string)             Postgres server connection-string e.g. "host=localhost port=5432 dbname=minio_events user=postgres password=password sslmode=disable"
+connection_string*   (string)             Postgres server connection-string e.g. "host=localhost port=5432 dbname=kypello_events user=postgres password=password sslmode=disable"
 table*               (string)             DB table name to store/update events, table is auto-created
 format*              (namespace*|access)  'namespace' reflects current bucket/object list and 'access' reflects a journal of object operations, defaults to 'namespace'
 queue_dir            (path)               staging dir for undelivered messages e.g. '/home/events'
@@ -887,7 +887,7 @@ notify_postgres[:name]  publish bucket notifications to Postgres databases
 
 ARGS:
 MINIO_NOTIFY_POSTGRES_ENABLE*              (on|off)             enable notify_postgres target, default is 'off'
-MINIO_NOTIFY_POSTGRES_CONNECTION_STRING*   (string)             Postgres server connection-string e.g. "host=localhost port=5432 dbname=minio_events user=postgres password=password sslmode=disable"
+MINIO_NOTIFY_POSTGRES_CONNECTION_STRING*   (string)             Postgres server connection-string e.g. "host=localhost port=5432 dbname=kypello_events user=postgres password=password sslmode=disable"
 MINIO_NOTIFY_POSTGRES_TABLE*               (string)             DB table name to store/update events, table is auto-created
 MINIO_NOTIFY_POSTGRES_FORMAT*              (namespace*|access)  'namespace' reflects current bucket/object list and 'access' reflects a journal of object operations, defaults to 'namespace'
 MINIO_NOTIFY_POSTGRES_QUEUE_DIR            (path)               staging dir for undelivered messages e.g. '/home/events'
@@ -905,14 +905,14 @@ Note that for illustration here, we have disabled SSL. In the interest of securi
 To update the configuration, use `mc admin config get` command to get the current configuration.
 
 ```sh
-$ mc admin config get myminio notify_postgres
+$ mc admin config get mykypello notify_postgres
 notify_postgres:1 queue_dir="" connection_string="" queue_limit="0"  table="" format="namespace"
 ```
 
 Use `mc admin config set` command to update the configuration for the deployment. Restart the MinIO server to put the changes into effect. The server will print a line like `SQS ARNs: arn:minio:sqs::1:postgresql` at start-up if there were no errors.
 
 ```sh
-mc admin config set myminio notify_postgres:1 connection_string="host=localhost port=5432 dbname=minio_events user=postgres password=password sslmode=disable" table="bucketevents" format="namespace"
+mc admin config set mykypello notify_postgres:1 connection_string="host=localhost port=5432 dbname=kypello_events user=postgres password=password sslmode=disable" table="bucketevents" format="namespace"
 ```
 
 Note that, you can add as many PostgreSQL server endpoint configurations as needed by providing an identifier (like "1" in the example above) for the PostgreSQL instance and an object of per-server configuration parameters.
@@ -923,16 +923,16 @@ We will now enable bucket event notifications on a bucket named `images`. Whenev
 
 To configure this bucket notification, we need the ARN printed by MinIO in the previous step. Additional information about ARN is available [here](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 
-With the `mc` tool, the configuration is very simple to add. Let us say that the MinIO server is aliased as `myminio` in our mc configuration. Execute the following:
+With the `mc` tool, the configuration is very simple to add. Let us say that the MinIO server is aliased as `mykypello` in our mc configuration. Execute the following:
 
 ```
-# Create bucket named `images` in myminio
-mc mb myminio/images
+# Create bucket named `images` in mykypello
+mc mb mykypello/images
 # Add notification configuration on the `images` bucket using the MySQL ARN. The --suffix argument filters events.
-mc event add myminio/images arn:minio:sqs::1:postgresql --suffix .jpg
+mc event add mykypello/images arn:minio:sqs::1:postgresql --suffix .jpg
 # Print out the notification configuration on the `images` bucket.
-mc event list myminio/images
-mc event list myminio/images
+mc event list mykypello/images
+mc event list mykypello/images
 arn:minio:sqs::1:postgresql s3:ObjectCreated:*,s3:ObjectRemoved:* Filter: suffix=”.jpg”
 ```
 
@@ -941,7 +941,7 @@ arn:minio:sqs::1:postgresql s3:ObjectCreated:*,s3:ObjectRemoved:* Filter: suffix
 Open another terminal and upload a JPEG image into `images` bucket.
 
 ```
-mc cp myphoto.jpg myminio/images
+mc cp myphoto.jpg mykypello/images
 ```
 
 Open PostgreSQL terminal to list the rows in the `bucketevents` table.
@@ -952,7 +952,7 @@ minio_events=# select * from bucketevents;
 
 key                 |                      value
 --------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- images/myphoto.jpg | {"Records": [{"s3": {"bucket": {"arn": "arn:aws:s3:::images", "name": "images", "ownerIdentity": {"principalId": "minio"}}, "object": {"key": "myphoto.jpg", "eTag": "1d97bf45ecb37f7a7b699418070df08f", "size": 56060, "sequencer": "147CE57C70B31931"}, "configurationId": "Config", "s3SchemaVersion": "1.0"}, "awsRegion": "", "eventName": "s3:ObjectCreated:Put", "eventTime": "2016-10-12T21:18:20Z", "eventSource": "aws:s3", "eventVersion": "2.0", "userIdentity": {"principalId": "minio"}, "responseElements": {}, "requestParameters": {"sourceIPAddress": "[::1]:39706"}}]}
+ images/myphoto.jpg | {"Records": [{"s3": {"bucket": {"arn": "arn:aws:s3:::images", "name": "images", "ownerIdentity": {"principalId": "kypello"}}, "object": {"key": "myphoto.jpg", "eTag": "1d97bf45ecb37f7a7b699418070df08f", "size": 56060, "sequencer": "147CE57C70B31931"}, "configurationId": "Config", "s3SchemaVersion": "1.0"}, "awsRegion": "", "eventName": "s3:ObjectCreated:Put", "eventTime": "2016-10-12T21:18:20Z", "eventSource": "aws:s3", "eventVersion": "2.0", "userIdentity": {"principalId": "kypello"}, "responseElements": {}, "requestParameters": {"sourceIPAddress": "[::1]:39706"}}]}
 (1 row)
 ```
 
@@ -973,7 +973,7 @@ key                 |                      value
 > following command to update the existing notification targets.
 >
 > ```
-> mc admin config set myminio/ notify_mysql[:name] dsn_string="mysqluser:mysqlpass@tcp(localhost:2832)/bucketevents"
+> mc admin config set mykypello/ notify_mysql[:name] dsn_string="mysqluser:mysqlpass@tcp(localhost:2832)/bucketevents"
 > ```
 >
 > Please make sure this step is carried out, without this step MySQL notification targets will not work,
@@ -1039,14 +1039,14 @@ MinIO supports persistent event store. The persistent store will backup events i
 Before updating the configuration, let's start with `mc admin config get` command to get the current configuration.
 
 ```sh
-$ mc admin config get myminio/ notify_mysql
+$ mc admin config get mykypello/ notify_mysql
 notify_mysql:myinstance enable=off format=namespace host= port= username= password= database= dsn_string= table= queue_dir= queue_limit=0
 ```
 
 Use `mc admin config set` command to update MySQL notification configuration for the deployment with `dsn_string` parameter:
 
 ```sh
-mc admin config set myminio notify_mysql:myinstance table="minio_images" dsn_string="root:xxxx@tcp(172.17.0.1:3306)/miniodb"
+mc admin config set mykypello notify_mysql:myinstance table="minio_images" dsn_string="root:xxxx@tcp(172.17.0.1:3306)/miniodb"
 ```
 
 Note that, you can add as many MySQL server endpoint configurations as needed by providing an identifier (like "myinstance" in the example above) for each MySQL instance desired.
@@ -1059,15 +1059,15 @@ We will now setup bucket notifications on a bucket named `images`. Whenever a JP
 
 To configure this bucket notification, we need the ARN printed by MinIO in the previous step. Additional information about ARN is available [here](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 
-With the `mc` tool, the configuration is very simple to add. Let us say that the MinIO server is aliased as `myminio` in our mc configuration. Execute the following:
+With the `mc` tool, the configuration is very simple to add. Let us say that the MinIO server is aliased as `mykypello` in our mc configuration. Execute the following:
 
 ```
-# Create bucket named `images` in myminio
-mc mb myminio/images
+# Create bucket named `images` in mykypello
+mc mb mykypello/images
 # Add notification configuration on the `images` bucket using the MySQL ARN. The --suffix argument filters events.
-mc event add myminio/images arn:minio:sqs::myinstance:mysql --suffix .jpg
+mc event add mykypello/images arn:minio:sqs::myinstance:mysql --suffix .jpg
 # Print out the notification configuration on the `images` bucket.
-mc event list myminio/images
+mc event list mykypello/images
 arn:minio:sqs::myinstance:mysql s3:ObjectCreated:*,s3:ObjectRemoved:*,s3:ObjectAccessed:* Filter: suffix=”.jpg”
 ```
 
@@ -1076,7 +1076,7 @@ arn:minio:sqs::myinstance:mysql s3:ObjectCreated:*,s3:ObjectRemoved:*,s3:ObjectA
 Open another terminal and upload a JPEG image into `images` bucket:
 
 ```
-mc cp myphoto.jpg myminio/images
+mc cp myphoto.jpg mykypello/images
 ```
 
 Open MySQL terminal and list the rows in the `minio_images` table.
@@ -1087,7 +1087,7 @@ mysql> select * from minio_images;
 +--------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | key_name           | value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 +--------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| images/myphoto.jpg | {"Records": [{"s3": {"bucket": {"arn": "arn:aws:s3:::images", "name": "images", "ownerIdentity": {"principalId": "minio"}}, "object": {"key": "myphoto.jpg", "eTag": "467886be95c8ecfd71a2900e3f461b4f", "size": 26, "sequencer": "14AC59476F809FD3"}, "configurationId": "Config", "s3SchemaVersion": "1.0"}, "awsRegion": "", "eventName": "s3:ObjectCreated:Put", "eventTime": "2017-03-16T11:29:00Z", "eventSource": "aws:s3", "eventVersion": "2.0", "userIdentity": {"principalId": "minio"}, "responseElements": {"x-amz-request-id": "14AC59476F809FD3", "x-minio-origin-endpoint": "http://192.168.86.110:9000"}, "requestParameters": {"sourceIPAddress": "127.0.0.1:38260"}}]} |
+| images/myphoto.jpg | {"Records": [{"s3": {"bucket": {"arn": "arn:aws:s3:::images", "name": "images", "ownerIdentity": {"principalId": "kypello"}}, "object": {"key": "myphoto.jpg", "eTag": "467886be95c8ecfd71a2900e3f461b4f", "size": 26, "sequencer": "14AC59476F809FD3"}, "configurationId": "Config", "s3SchemaVersion": "1.0"}, "awsRegion": "", "eventName": "s3:ObjectCreated:Put", "eventTime": "2017-03-16T11:29:00Z", "eventSource": "aws:s3", "eventVersion": "2.0", "userIdentity": {"principalId": "kypello"}, "responseElements": {"x-amz-request-id": "14AC59476F809FD3", "x-minio-origin-endpoint": "http://192.168.86.110:9000"}, "requestParameters": {"sourceIPAddress": "127.0.0.1:38260"}}]} |
 +--------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 1 row in set (0.01 sec)
 
@@ -1157,24 +1157,24 @@ MINIO_NOTIFY_KAFKA_PRODUCER_COMPRESSION_LEVEL  (number)                    compr
 To update the configuration, use `mc admin config get` command to get the current configuration.
 
 ```sh
-$ mc admin config get myminio/ notify_kafka
+$ mc admin config get mykypello/ notify_kafka
 notify_kafka:1 tls_skip_verify="off"  queue_dir="" queue_limit="0" sasl="off" sasl_password="" sasl_username="" tls_client_auth="0" tls="off" brokers="" topic="" client_tls_cert="" client_tls_key="" version=""
 ```
 
 Use `mc admin config set` command to update the configuration for the deployment. Restart the MinIO server to put the changes into effect. The server will print a line like `SQS ARNs: arn:minio:sqs::1:kafka` at start-up if there were no errors.`bucketevents` is the topic used by kafka in this example.
 
 ```sh
-mc admin config set myminio notify_kafka:1 tls_skip_verify="off"  queue_dir="" queue_limit="0" sasl="off" sasl_password="" sasl_username="" tls_client_auth="0" tls="off" client_tls_cert="" client_tls_key="" brokers="localhost:9092,localhost:9093" topic="bucketevents" version=""
+mc admin config set mykypello notify_kafka:1 tls_skip_verify="off"  queue_dir="" queue_limit="0" sasl="off" sasl_password="" sasl_username="" tls_client_auth="0" tls="off" client_tls_cert="" client_tls_key="" brokers="localhost:9092,localhost:9093" topic="bucketevents" version=""
 ```
 
 ### Step 3: Enable Kafka bucket notification using MinIO client
 
-We will enable bucket event notification to trigger whenever a JPEG image is uploaded or deleted from `images` bucket on `myminio` server. Here ARN value is `arn:minio:sqs::1:kafka`. To understand more about ARN please follow [AWS ARN](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) documentation.
+We will enable bucket event notification to trigger whenever a JPEG image is uploaded or deleted from `images` bucket on `mykypello` server. Here ARN value is `arn:minio:sqs::1:kafka`. To understand more about ARN please follow [AWS ARN](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) documentation.
 
 ```
-mc mb myminio/images
-mc event add  myminio/images arn:minio:sqs::1:kafka --suffix .jpg
-mc event list myminio/images
+mc mb mykypello/images
+mc event add  mykypello/images arn:minio:sqs::1:kafka --suffix .jpg
+mc event list mykypello/images
 arn:minio:sqs::1:kafka s3:ObjectCreated:*,s3:ObjectRemoved:* Filter: suffix=”.jpg”
 ```
 
@@ -1189,7 +1189,7 @@ kafkacat -C -b localhost:9092 -t bucketevents
 Open another terminal and upload a JPEG image into `images` bucket.
 
 ```
-mc cp myphoto.jpg myminio/images
+mc cp myphoto.jpg mykypello/images
 ```
 
 `kafkacat` prints the event notification to the console.
@@ -1291,30 +1291,30 @@ MINIO_NOTIFY_WEBHOOK_CLIENT_KEY   (string)    client cert key for Webhook mTLS a
 ```
 
 ```sh
-$ mc admin config get myminio/ notify_webhook
+$ mc admin config get mykypello/ notify_webhook
 notify_webhook:1 endpoint="" auth_token="" queue_limit="0" queue_dir="" client_cert="" client_key=""
 ```
 
 Use `mc admin config set` command to update the configuration for the deployment. Here the endpoint is the server listening for webhook notifications. Save the settings and restart the MinIO server for changes to take effect. Note that the endpoint needs to be live and reachable when you restart your MinIO server.
 
 ```sh
-mc admin config set myminio notify_webhook:1 queue_limit="0"  endpoint="http://localhost:3000" queue_dir=""
+mc admin config set mykypello notify_webhook:1 queue_limit="0"  endpoint="http://localhost:3000" queue_dir=""
 ```
 
 ### Step 2: Enable Webhook bucket notification using MinIO client
 
-We will enable bucket event notification to trigger whenever a JPEG image is uploaded to `images` bucket on `myminio` server. Here ARN value is `arn:minio:sqs::1:webhook`. To learn more about ARN please follow [AWS ARN](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) documentation.
+We will enable bucket event notification to trigger whenever a JPEG image is uploaded to `images` bucket on `mykypello` server. Here ARN value is `arn:minio:sqs::1:webhook`. To learn more about ARN please follow [AWS ARN](http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) documentation.
 
 ```
-mc mb myminio/images
-mc mb myminio/images-thumbnail
-mc event add myminio/images arn:minio:sqs::1:webhook --event put --suffix .jpg
+mc mb mykypello/images
+mc mb mykypello/images-thumbnail
+mc event add mykypello/images arn:minio:sqs::1:webhook --event put --suffix .jpg
 ```
 
 Check if event notification is successfully configured by
 
 ```
-mc event list myminio/images
+mc event list mykypello/images
 ```
 
 You should get a response like this
@@ -1341,14 +1341,14 @@ NODE_ENV=webhook node thumbnail-webhook.js
 Thumbnailer starts running at `http://localhost:3000/`. Next, configure the MinIO server to send notifications to this URL (as mentioned in step 1) and use `mc` to set up bucket notifications (as mentioned in step 2). Then upload a JPEG image to MinIO server by
 
 ```
-mc cp ~/images.jpg myminio/images
+mc cp ~/images.jpg mykypello/images
 .../images.jpg:  8.31 KB / 8.31 KB ┃▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓┃ 100.00% 59.42 KB/s 0s
 ```
 
 Wait a few moments, then check the bucket’s contents with mc ls — you will see a thumbnail appear.
 
 ```
-mc ls myminio/images-thumbnail
+mc ls mykypello/images-thumbnail
 [2017-02-08 11:39:40 IST]   992B images-thumbnail.jpg
 ```
 
@@ -1399,26 +1399,26 @@ MINIO_NOTIFY_NSQ_COMMENT          (sentence)  optionally add a comment to this s
 ```
 
 ```sh
-$ mc admin config get myminio/ notify_nsq
+$ mc admin config get mykypello/ notify_nsq
 notify_nsq:1 nsqd_address="" queue_dir="" queue_limit="0"  tls="off" tls_skip_verify="off" topic=""
 ```
 
 Use `mc admin config set` command to update the configuration for the deployment. Restart the MinIO server to put the changes into effect. The server will print a line like `SQS ARNs: arn:minio:sqs::1:nsq` at start-up if there were no errors.
 
 ```sh
-mc admin config set myminio notify_nsq:1 nsqd_address="127.0.0.1:4150" queue_dir="" queue_limit="0" tls="off" tls_skip_verify="on" topic="minio"
+mc admin config set mykypello notify_nsq:1 nsqd_address="127.0.0.1:4150" queue_dir="" queue_limit="0" tls="off" tls_skip_verify="on" topic="kypello"
 ```
 
 Note that, you can add as many NSQ daemon endpoint configurations as needed by providing an identifier (like "1" in the example above) for the NSQ instance and an object of per-server configuration parameters.
 
 ### Step 2: Enable NSQ bucket notification using MinIO client
 
-We will enable bucket event notification to trigger whenever a JPEG image is uploaded or deleted `images` bucket on `myminio` server. Here ARN value is `arn:minio:sqs::1:nsq`.
+We will enable bucket event notification to trigger whenever a JPEG image is uploaded or deleted `images` bucket on `mykypello` server. Here ARN value is `arn:minio:sqs::1:nsq`.
 
 ```
-mc mb myminio/images
-mc event add  myminio/images arn:minio:sqs::1:nsq --suffix .jpg
-mc event list myminio/images
+mc mb mykypello/images
+mc event add  mykypello/images arn:minio:sqs::1:nsq --suffix .jpg
+mc event list mykypello/images
 arn:minio:sqs::1:nsq s3:ObjectCreated:*,s3:ObjectRemoved:* Filter: suffix=”.jpg”
 ```
 
@@ -1433,7 +1433,7 @@ The simplest test is to download `nsq_tail` from [nsq github](https://github.com
 Open another terminal and upload a JPEG image into `images` bucket.
 
 ```
-mc cp gopher.jpg myminio/images
+mc cp gopher.jpg mykypello/images
 ```
 
 You should receive the following event notification via NSQ once the upload completes.

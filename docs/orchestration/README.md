@@ -12,10 +12,10 @@ The term cloud-native revolves around the idea of applications deployed as micro
 
 While containers provide isolated application execution environment, orchestration platforms allow seamless scaling by helping replicate and manage containers. MinIO extends this by adding isolated storage environment for each tenant.
 
-MinIO is built ground up on the cloud-native premise. With features like erasure-coding, distributed and shared setup, it focuses only on storage and does it very well. While, it can be scaled by just replicating MinIO instances per tenant via an orchestration platform.
+MinIO is built ground up on the cloud-native premise. With features like erasure-coding, distributed and shared setup, it focuses only on storage and does it very well. While, it can be scaled by just replicating Kypello instances per tenant via an orchestration platform.
 
 > In a cloud-native environment, scalability is not a function of the application but the orchestration platform.
 
 In a typical modern infrastructure deployment, application, database, key-store, etc. already live in containers and are managed by orchestration platforms. MinIO brings robust, scalable, AWS S3 compatible object storage to the lot.
 
-![Cloud-native](https://github.com/minio/minio/blob/master/docs/screenshots/Minio_Cloud_Native_Arch.jpg?raw=true)
+![Cloud-native](https://github.com/kypello-io/kypello/blob/master/docs/screenshots/Minio_Cloud_Native_Arch.jpg?raw=true)

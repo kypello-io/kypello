@@ -27,12 +27,12 @@ import (
 	"strings"
 	"sync/atomic"
 
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/handlers"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/mcontext"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/handlers"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/mcontext"
 	xnet "github.com/minio/pkg/v3/net"
 )
 
@@ -264,8 +264,8 @@ func extractReqParams(r *http.Request) map[string]string {
 		m["range"] = rangeField
 	}
 
-	if _, ok := r.Header[xhttp.MinIOSourceReplicationRequest]; ok {
-		m[xhttp.MinIOSourceReplicationRequest] = ""
+	if _, ok := r.Header[xhttp.KypelloSourceReplicationRequest]; ok {
+		m[xhttp.KypelloSourceReplicationRequest] = ""
 	}
 	return m
 }
@@ -330,7 +330,7 @@ func collectAPIStats(api string, f http.HandlerFunc) http.HandlerFunc {
 		bucket, _ := path2BucketObject(resource)
 
 		meta, err := globalBucketMetadataSys.Get(bucket) // check if this bucket exists.
-		countBktStat := bucket != "" && bucket != minioReservedBucket && err == nil && !meta.Created.IsZero()
+		countBktStat := bucket != "" && bucket != kypelloReservedBucket && err == nil && !meta.Created.IsZero()
 		if countBktStat {
 			globalBucketHTTPStats.updateHTTPStats(bucket, api, nil)
 		}
@@ -367,7 +367,7 @@ func getResource(path string, host string, domains []string) (string, error) {
 	}
 
 	for _, domain := range domains {
-		if xhost.Name == minioReservedBucket+"."+domain {
+		if xhost.Name == kypelloReservedBucket+"."+domain {
 			continue
 		}
 		if !strings.HasSuffix(xhost.Name, "."+domain) {

@@ -31,11 +31,11 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/cachevalue"
+	"github.com/kypello-io/kypello/internal/grid"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/cachevalue"
-	"github.com/minio/minio/internal/grid"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/logger"
 )
 
 //go:generate stringer -type=storageMetric -trimprefix=storageMetric $GOFILE
@@ -938,17 +938,17 @@ func (p *xlStorageDiskIDCheck) monitorDiskStatus(spent time.Duration, fn string)
 			return
 		}
 
-		err := p.storage.WriteAll(context.Background(), minioMetaTmpBucket, fn, toWrite)
+		err := p.storage.WriteAll(context.Background(), kypelloMetaTmpBucket, fn, toWrite)
 		if err != nil {
 			continue
 		}
 
-		b, err := p.storage.ReadAll(context.Background(), minioMetaTmpBucket, fn)
+		b, err := p.storage.ReadAll(context.Background(), kypelloMetaTmpBucket, fn)
 		if err != nil || len(b) != len(toWrite) {
 			continue
 		}
 
-		err = p.storage.Delete(context.Background(), minioMetaTmpBucket, fn, DeleteOptions{
+		err = p.storage.Delete(context.Background(), kypelloMetaTmpBucket, fn, DeleteOptions{
 			Recursive: false,
 			Immediate: false,
 		})
@@ -1041,14 +1041,14 @@ func (p *xlStorageDiskIDCheck) monitorDiskWritable(ctx context.Context) {
 		func() {
 			defer dcancel()
 
-			err := p.storage.WriteAll(ctx, minioMetaTmpBucket, fn, toWrite)
+			err := p.storage.WriteAll(ctx, kypelloMetaTmpBucket, fn, toWrite)
 			if err != nil {
 				if osErrToFileErr(err) == errFaultyDisk {
 					goOffline(fmt.Errorf("unable to write: %w", err), 0)
 				}
 				return
 			}
-			b, err := p.storage.ReadAll(context.Background(), minioMetaTmpBucket, fn)
+			b, err := p.storage.ReadAll(context.Background(), kypelloMetaTmpBucket, fn)
 			if err != nil || len(b) != len(toWrite) {
 				if osErrToFileErr(err) == errFaultyDisk {
 					goOffline(fmt.Errorf("unable to read: %w", err), 0)

@@ -5,15 +5,15 @@ set -o pipefail
 set -x
 
 WORK_DIR="$PWD/.verify-$RANDOM"
-MINIO_CONFIG_DIR="$WORK_DIR/.minio"
-MINIO=("$PWD/minio" --config-dir "$MINIO_CONFIG_DIR" server)
+MINIO_CONFIG_DIR="$WORK_DIR/.kypello"
+MINIO=("$PWD/kypello" --config-dir "$MINIO_CONFIG_DIR" server)
 
-if [ ! -x "$PWD/minio" ]; then
+if [ ! -x "$PWD/kypello" ]; then
 	echo "minio executable binary not found in current directory"
 	exit 1
 fi
 
-if [ ! -x "$PWD/minio" ]; then
+if [ ! -x "$PWD/kypello" ]; then
 	echo "minio executable binary not found in current directory"
 	exit 1
 fi
@@ -21,9 +21,9 @@ fi
 function start_minio_4drive() {
 	start_port=$1
 
-	export MINIO_ROOT_USER=minio
-	export MINIO_ROOT_PASSWORD=minio123
-	export MC_HOST_minio="http://minio:minio123@127.0.0.1:${start_port}/"
+	export MINIO_ROOT_USER=kypello
+	export MINIO_ROOT_PASSWORD=kypello123
+	export MC_HOST_minio="http://kypello:kypello123@127.0.0.1:${start_port}/"
 	unset MINIO_KMS_AUTO_ENCRYPTION # do not auto-encrypt objects
 	export MINIO_CI_CD=1
 
@@ -72,7 +72,7 @@ function start_minio_4drive() {
 		"${PWD}/mc" cat --vid "${vid}" minio/bucket/testobj | md5sum
 	done
 
-	pkill minio
+	pkill kypello
 	sleep 3
 }
 

@@ -21,9 +21,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/minio/minio/internal/dsync"
-	"github.com/minio/minio/internal/grid"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/dsync"
+	"github.com/kypello-io/kypello/internal/grid"
+	"github.com/kypello-io/kypello/internal/logger"
 )
 
 // To abstract a node over network.

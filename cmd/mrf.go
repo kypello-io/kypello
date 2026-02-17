@@ -144,7 +144,7 @@ func (m *mrfState) shutdown() {
 
 	for _, localDrive := range localDrives {
 		r := newReader()
-		err := localDrive.CreateFile(context.Background(), "", minioMetaBucket, pathJoin(healMRFDir, "list.bin"), -1, r)
+		err := localDrive.CreateFile(context.Background(), "", kypelloMetaBucket, pathJoin(healMRFDir, "list.bin"), -1, r)
 		r.Close()
 		if err == nil {
 			break
@@ -196,7 +196,7 @@ func (m *mrfState) startMRFPersistence() {
 		if localDrive == nil {
 			continue
 		}
-		rc, err := localDrive.ReadFileStream(context.Background(), minioMetaBucket, pathJoin(healMRFDir, "list.bin"), 0, -1)
+		rc, err := localDrive.ReadFileStream(context.Background(), kypelloMetaBucket, pathJoin(healMRFDir, "list.bin"), 0, -1)
 		if err != nil {
 			continue
 		}
@@ -205,7 +205,7 @@ func (m *mrfState) startMRFPersistence() {
 			continue
 		}
 		// finally delete the file after processing mrf entries
-		localDrive.Delete(GlobalContext, minioMetaBucket, pathJoin(healMRFDir, "list.bin"), DeleteOptions{})
+		localDrive.Delete(GlobalContext, kypelloMetaBucket, pathJoin(healMRFDir, "list.bin"), DeleteOptions{})
 		break
 	}
 }
@@ -227,8 +227,8 @@ func (m *mrfState) healRoutine(z *erasureServerPools) {
 
 			// We might land at .metacache, .trash, .multipart
 			// no need to heal them skip, only when bucket
-			// is '.minio.sys'
-			if u.Bucket == minioMetaBucket {
+			// is '.kypello.sys'
+			if u.Bucket == kypelloMetaBucket {
 				// No MRF needed for temporary objects
 				if wildcard.Match("buckets/*/.metacache/*", u.Object) {
 					continue

@@ -1,6 +1,6 @@
 # How to monitor MinIO server with Prometheus? [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io)
 
-[Prometheus](https://prometheus.io) is a cloud-native monitoring platform. Prometheus offers a multi-dimensional data model with time series data identified by metric name and key/value pairs. The data collection happens via a pull model over HTTP/HTTPS. Users looking to monitor their MinIO instances can point Prometheus configuration to scrape data from following endpoints. 
+[Prometheus](https://prometheus.io) is a cloud-native monitoring platform. Prometheus offers a multi-dimensional data model with time series data identified by metric name and key/value pairs. The data collection happens via a pull model over HTTP/HTTPS. Users looking to monitor their Kypello instances can point Prometheus configuration to scrape data from following endpoints. 
 
 - MinIO exports Prometheus compatible data by default as an authorized endpoint at `/minio/v2/metrics/cluster`. 
 - MinIO exports Prometheus compatible data by default which is bucket centric as an authorized endpoint at `/minio/v2/metrics/bucket`.
@@ -40,7 +40,7 @@ MinIO supports two authentication modes for Prometheus either `jwt` or `public`,
 
 ```
 export MINIO_PROMETHEUS_AUTH_TYPE="public"
-minio server ~/test
+kypello server ~/test
 ```
 
 ### 3. Configuring Prometheus
@@ -171,7 +171,7 @@ Prometheus sets the `Host` header to `domain:port` as part of HTTP operations ag
 
 ### 6. Configure Grafana
 
-After Prometheus is configured, you can use Grafana to visualize MinIO metrics. Refer the [document here to setup Grafana with MinIO prometheus metrics](https://github.com/minio/minio/blob/master/docs/metrics/prometheus/grafana/README.md).
+After Prometheus is configured, you can use Grafana to visualize MinIO metrics. Refer the [document here to setup Grafana with MinIO prometheus metrics](https://github.com/kypello-io/kypello/blob/master/docs/metrics/prometheus/grafana/README.md).
 
 ## List of metrics exposed by MinIO
 
@@ -188,8 +188,8 @@ curl https://play.min.io/minio/v2/metrics/cluster
 
 ### List of metrics reported Cluster and Bucket level
 
-[The list of metrics reported can be here](https://github.com/minio/minio/blob/master/docs/metrics/prometheus/list.md)
+[The list of metrics reported can be here](https://github.com/kypello-io/kypello/blob/master/docs/metrics/prometheus/list.md)
 
 ### Configure Alerts for Prometheus
 
-[The Prometheus AlertManager and alerts can be configured following this](https://github.com/minio/minio/blob/master/docs/metrics/prometheus/alerts.md)
+[The Prometheus AlertManager and alerts can be configured following this](https://github.com/kypello-io/kypello/blob/master/docs/metrics/prometheus/alerts.md)

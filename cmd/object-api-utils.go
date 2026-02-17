@@ -40,15 +40,15 @@ import (
 	"github.com/google/uuid"
 	"github.com/klauspost/compress/s2"
 	"github.com/klauspost/readahead"
+	"github.com/kypello-io/kypello/internal/config/compress"
+	"github.com/kypello-io/kypello/internal/config/dns"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/minio-go/v7/pkg/s3utils"
-	"github.com/minio/minio/internal/config/compress"
-	"github.com/minio/minio/internal/config/dns"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/trie"
 	"github.com/minio/pkg/v3/wildcard"
 	"github.com/valyala/bytebufferpool"
@@ -56,15 +56,15 @@ import (
 
 const (
 	// MinIO meta bucket.
-	minioMetaBucket = ".minio.sys"
+	kypelloMetaBucket = ".kypello.sys"
 	// Multipart meta prefix.
 	mpartMetaPrefix = "multipart"
 	// MinIO Multipart meta prefix.
-	minioMetaMultipartBucket = minioMetaBucket + SlashSeparator + mpartMetaPrefix
+	kypelloMetaMultipartBucket = kypelloMetaBucket + SlashSeparator + mpartMetaPrefix
 	// MinIO tmp meta prefix.
-	minioMetaTmpBucket = minioMetaBucket + "/tmp"
+	kypelloMetaTmpBucket = kypelloMetaBucket + "/tmp"
 	// MinIO tmp meta prefix for deleted objects.
-	minioMetaTmpDeletedBucket = minioMetaTmpBucket + "/.trash"
+	kypelloMetaTmpDeletedBucket = kypelloMetaTmpBucket + "/.trash"
 
 	// DNS separator (period), used for bucket name validation.
 	dnsDelimiter = "."
@@ -95,7 +95,7 @@ func getKeySeparator() string {
 // isMinioBucket returns true if given bucket is a MinIO internal
 // bucket and false otherwise.
 func isMinioMetaBucketName(bucket string) bool {
-	return strings.HasPrefix(bucket, minioMetaBucket)
+	return strings.HasPrefix(bucket, kypelloMetaBucket)
 }
 
 // IsValidBucketName verifies that a bucket name is in accordance with
@@ -163,7 +163,7 @@ func IsValidBucketName(bucket string) bool {
 //
 // - Backslash ("\")
 //
-// additionally minio does not support object names with trailing SlashSeparator.
+// additionally kypello does not support object names with trailing SlashSeparator.
 func IsValidObjectName(object string) bool {
 	if len(object) == 0 {
 		return false
@@ -486,14 +486,14 @@ func isReservedOrInvalidBucket(bucketEntry string, strict bool) bool {
 	return isMinioMetaBucket(bucketEntry) || isMinioReservedBucket(bucketEntry)
 }
 
-// Returns true if input bucket is a reserved minio meta bucket '.minio.sys'.
+// Returns true if input bucket is a reserved kypello meta bucket '.kypello.sys'.
 func isMinioMetaBucket(bucketName string) bool {
-	return bucketName == minioMetaBucket
+	return bucketName == kypelloMetaBucket
 }
 
-// Returns true if input bucket is a reserved minio bucket 'minio'.
+// Returns true if input bucket is a reserved kypello bucket 'kypello'.
 func isMinioReservedBucket(bucketName string) bool {
-	return bucketName == minioReservedBucket
+	return bucketName == kypelloReservedBucket
 }
 
 // returns a slice of hosts by reading a slice of DNS records

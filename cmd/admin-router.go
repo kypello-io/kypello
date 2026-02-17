@@ -22,13 +22,13 @@ import (
 
 	"github.com/klauspost/compress/gzhttp"
 	"github.com/klauspost/compress/gzip"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/mux"
 )
 
 const (
-	adminPathPrefix                = minioReservedBucketPath + "/admin"
+	adminPathPrefix                = kypelloReservedBucketPath + "/admin"
 	adminAPIVersion                = madmin.AdminAPIVersion
 	adminAPIVersionPrefix          = SlashSeparator + adminAPIVersion
 	adminAPISiteReplicationDevNull = "/site-replication/devnull"

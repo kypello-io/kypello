@@ -14,7 +14,7 @@ exit_1() {
 
 cleanup() {
 	echo -n "Cleaning up instances of MinIO ..."
-	pkill -9 minio || sudo pkill -9 minio
+	pkill -9 kypello || sudo pkill -9 kypello
 	rm -rf /tmp/minio{1,2}
 	echo "done"
 }
@@ -32,8 +32,8 @@ cleanup
 
 export MINIO_CI_CD=1
 export MINIO_BROWSER=off
-export MINIO_ROOT_USER="minio"
-export MINIO_ROOT_PASSWORD="minio123"
+export MINIO_ROOT_USER="kypello"
+export MINIO_ROOT_PASSWORD="kypello123"
 
 # Download AWS CLI
 echo -n "Download and install AWS CLI"
@@ -51,11 +51,11 @@ cat >~/.aws/credentials <<EOF
 [enterprise]
 region = us-east-1
 aws_access_key_id = minio
-aws_secret_access_key = minio123
+aws_secret_access_key = kypello123
 EOF
 
 # Create certificates for TLS enabled MinIO
-echo -n "Setup certs for MinIO instances ..."
+echo -n "Setup certs for Kypello instances ..."
 wget -O certgen https://github.com/minio/certgen/releases/latest/download/certgen-linux-amd64 && chmod +x certgen
 ./certgen --host localhost
 mkdir -p /tmp/certs
@@ -63,10 +63,10 @@ mv public.crt /tmp/certs || sudo mv public.crt /tmp/certs
 mv private.key /tmp/certs || sudo mv private.key /tmp/certs
 echo "done"
 
-# Start MinIO instances
-echo -n "Starting MinIO instances ..."
-CI=on MINIO_KMS_SECRET_KEY=minio-default-key:IyqsU3kMFloCNup4BsZtf/rmfHVcTgznO2F25CkEH1g= MINIO_ROOT_USER=minio MINIO_ROOT_PASSWORD=minio123 minio server --certs-dir /tmp/certs --address ":9001" --console-address ":10000" /tmp/minio1/{1...4}/disk{1...4} /tmp/minio1/{5...8}/disk{1...4} >/tmp/minio1_1.log 2>&1 &
-CI=on MINIO_KMS_SECRET_KEY=minio-default-key:IyqsU3kMFloCNup4BsZtf/rmfHVcTgznO2F25CkEH1g= MINIO_ROOT_USER=minio MINIO_ROOT_PASSWORD=minio123 minio server --certs-dir /tmp/certs --address ":9002" --console-address ":11000" /tmp/minio2/{1...4}/disk{1...4} /tmp/minio2/{5...8}/disk{1...4} >/tmp/minio2_1.log 2>&1 &
+# Start Kypello instances
+echo -n "Starting Kypello instances ..."
+CI=on MINIO_KMS_SECRET_KEY=kypello-default-key:IyqsU3kMFloCNup4BsZtf/rmfHVcTgznO2F25CkEH1g= MINIO_ROOT_USER=kypello MINIO_ROOT_PASSWORD=kypello123 kypello server --certs-dir /tmp/certs --address ":9001" --console-address ":10000" /tmp/minio1/{1...4}/disk{1...4} /tmp/minio1/{5...8}/disk{1...4} >/tmp/minio1_1.log 2>&1 &
+CI=on MINIO_KMS_SECRET_KEY=kypello-default-key:IyqsU3kMFloCNup4BsZtf/rmfHVcTgznO2F25CkEH1g= MINIO_ROOT_USER=kypello MINIO_ROOT_PASSWORD=kypello123 kypello server --certs-dir /tmp/certs --address ":9002" --console-address ":11000" /tmp/minio2/{1...4}/disk{1...4} /tmp/minio2/{5...8}/disk{1...4} >/tmp/minio2_1.log 2>&1 &
 echo "done"
 
 if [ ! -f ./mc ]; then
@@ -76,8 +76,8 @@ if [ ! -f ./mc ]; then
 	echo "done"
 fi
 
-export MC_HOST_minio1=https://minio:minio123@localhost:9001
-export MC_HOST_minio2=https://minio:minio123@localhost:9002
+export MC_HOST_minio1=https://kypello:kypello123@localhost:9001
+export MC_HOST_minio2=https://kypello:kypello123@localhost:9002
 
 ./mc ready minio1 --insecure
 ./mc ready minio2 --insecure
@@ -96,11 +96,11 @@ echo "done"
 sleep 30
 
 # Create bucket in source cluster
-echo "Create bucket in source MinIO instance"
+echo "Create bucket in source Kypello instance"
 ./mc mb minio1/test-bucket --insecure
 
 # Load objects to source site with checksum header
-echo "Loading objects to source MinIO instance"
+echo "Loading objects to source Kypello instance"
 OBJ_CHKSUM=$(openssl dgst -sha256 -binary </tmp/data/obj | base64)
 aws s3api --endpoint-url=https://localhost:9001 put-object --checksum-algorithm SHA256 --checksum-sha256 "${OBJ_CHKSUM}" --bucket test-bucket --key obj --body /tmp/data/obj --no-verify-ssl --profile enterprise
 
@@ -180,10 +180,10 @@ echo "Set default encryption on "
 
 # test if checksum header is replicated for encrypted objects
 # Enable SSE KMS for test-bucket bucket
-./mc encrypt set sse-kms minio-default-key minio1/test-bucket --insecure
+./mc encrypt set sse-kms kypello-default-key minio1/test-bucket --insecure
 
 # Load objects to source site with checksum header
-echo "Loading objects to source MinIO instance"
+echo "Loading objects to source Kypello instance"
 OBJ_CHKSUM=$(openssl dgst -sha256 -binary </tmp/data/obj | base64)
 aws s3api --endpoint-url=https://localhost:9001 put-object --checksum-algorithm SHA256 --checksum-sha256 "${OBJ_CHKSUM}" --bucket test-bucket --key obj2 --body /tmp/data/obj --no-verify-ssl --profile enterprise
 

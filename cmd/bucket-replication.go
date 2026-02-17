@@ -36,23 +36,23 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/kypello-io/kypello/internal/amztime"
+	"github.com/kypello-io/kypello/internal/bucket/bandwidth"
+	objectlock "github.com/kypello-io/kypello/internal/bucket/object/lock"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/event"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/kms"
+	"github.com/kypello-io/kypello/internal/logger"
+	"github.com/kypello-io/kypello/internal/once"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/encrypt"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/minio/internal/amztime"
-	"github.com/minio/minio/internal/bucket/bandwidth"
-	objectlock "github.com/minio/minio/internal/bucket/object/lock"
-	"github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/event"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/kms"
-	"github.com/minio/minio/internal/logger"
-	"github.com/minio/minio/internal/once"
 	"github.com/tinylib/msgp/msgp"
 	"github.com/zeebo/xxh3"
 )
@@ -157,7 +157,7 @@ func validateReplicationDestination(ctx context.Context, bucket string, rCfg *re
 			}
 		}
 		// validate replication ARN against target endpoint
-		selfTarget, _ := isLocalHost(clnt.EndpointURL().Hostname(), clnt.EndpointURL().Port(), globalMinioPort)
+		selfTarget, _ := isLocalHost(clnt.EndpointURL().Hostname(), clnt.EndpointURL().Port(), globalKypelloPort)
 		if !sameTarget {
 			sameTarget = selfTarget
 		}
@@ -749,8 +749,8 @@ func getCopyObjMetadata(oi ObjectInfo, sc string) map[string]string {
 		meta[xhttp.AmzStorageClass] = sc
 	}
 
-	meta[xhttp.MinIOSourceETag] = oi.ETag
-	meta[xhttp.MinIOSourceMTime] = oi.ModTime.UTC().Format(time.RFC3339Nano)
+	meta[xhttp.KypelloSourceETag] = oi.ETag
+	meta[xhttp.KypelloSourceMTime] = oi.ModTime.UTC().Format(time.RFC3339Nano)
 	meta[xhttp.AmzBucketReplicationStatus] = replication.Replica.String()
 	return meta
 }
@@ -1691,7 +1691,7 @@ func replicateObjectWithMultipart(ctx context.Context, c *minio.Core, bucket, ob
 		}
 
 		cHeader := http.Header{}
-		cHeader.Add(xhttp.MinIOSourceReplicationRequest, "true")
+		cHeader.Add(xhttp.KypelloSourceReplicationRequest, "true")
 		if !isSSEC {
 			cs, _ := getCRCMeta(objInfo, partInfo.Number, nil)
 			for k, v := range cs {
@@ -1728,7 +1728,7 @@ func replicateObjectWithMultipart(ctx context.Context, c *minio.Core, bucket, ob
 		})
 	}
 	userMeta := map[string]string{
-		xhttp.MinIOReplicationActualObjectSize: objInfo.UserDefined[ReservedMetadataPrefix+"actual-size"],
+		xhttp.KypelloReplicationActualObjectSize: objInfo.UserDefined[ReservedMetadataPrefix+"actual-size"],
 	}
 	if isSSEC && objInfo.UserDefined[ReplicationSsecChecksumHeader] != "" {
 		userMeta[ReplicationSsecChecksumHeader] = objInfo.UserDefined[ReplicationSsecChecksumHeader]
@@ -2409,7 +2409,7 @@ func getProxyTargets(ctx context.Context, bucket, object string, opts ObjectOpti
 func proxyHeadToRepTarget(ctx context.Context, bucket, object string, rs *HTTPRangeSpec, opts ObjectOptions, proxyTargets *madmin.BucketTargets) (tgt *TargetClient, oi ObjectInfo, proxy proxyResult) {
 	// this option is set when active-active replication is in place between site A -> B,
 	// and site B does not have the object yet.
-	if opts.ProxyRequest || (opts.ProxyHeaderSet && !opts.ProxyRequest) { // true only when site B sets MinIOSourceProxyRequest header
+	if opts.ProxyRequest || (opts.ProxyHeaderSet && !opts.ProxyRequest) { // true only when site B sets KypelloSourceProxyRequest header
 		return nil, oi, proxy
 	}
 	var perr error
@@ -2536,7 +2536,7 @@ func scheduleReplication(ctx context.Context, oi ObjectInfo, o ObjectLayer, dsc 
 func proxyTaggingToRepTarget(ctx context.Context, bucket, object string, tags *tags.Tags, opts ObjectOptions, proxyTargets *madmin.BucketTargets) (proxy proxyResult) {
 	// this option is set when active-active replication is in place between site A -> B,
 	// and request hits site B that does not have the object yet.
-	if opts.ProxyRequest || (opts.ProxyHeaderSet && !opts.ProxyRequest) { // true only when site B sets MinIOSourceProxyRequest header
+	if opts.ProxyRequest || (opts.ProxyHeaderSet && !opts.ProxyRequest) { // true only when site B sets KypelloSourceProxyRequest header
 		return proxy
 	}
 	var wg sync.WaitGroup
@@ -2604,7 +2604,7 @@ func proxyTaggingToRepTarget(ctx context.Context, bucket, object string, tags *t
 func proxyGetTaggingToRepTarget(ctx context.Context, bucket, object string, opts ObjectOptions, proxyTargets *madmin.BucketTargets) (tgs *tags.Tags, proxy proxyResult) {
 	// this option is set when active-active replication is in place between site A -> B,
 	// and request hits site B that does not have the object yet.
-	if opts.ProxyRequest || (opts.ProxyHeaderSet && !opts.ProxyRequest) { // true only when site B sets MinIOSourceProxyRequest header
+	if opts.ProxyRequest || (opts.ProxyHeaderSet && !opts.ProxyRequest) { // true only when site B sets KypelloSourceProxyRequest header
 		return nil, proxy
 	}
 	var wg sync.WaitGroup
@@ -2745,7 +2745,7 @@ func resyncTarget(oi ObjectInfo, arn string, resetID string, resetBeforeDate tim
 	}
 	rs, ok := oi.UserDefined[targetResetHeader(arn)]
 	if !ok {
-		rs, ok = oi.UserDefined[xhttp.MinIOReplicationResetStatus] // for backward compatibility
+		rs, ok = oi.UserDefined[xhttp.KypelloReplicationResetStatus] // for backward compatibility
 	}
 	if !ok { // existing object replication is enabled and object version is unreplicated so far.
 		if resetID != "" && oi.ModTime.Before(resetBeforeDate) { // trigger replication if `mc replicate reset` requested
@@ -3593,7 +3593,7 @@ func (p *ReplicationPool) persistToDrive(ctx context.Context, v MRFReplicateEntr
 
 	for _, localDrive := range localDrives {
 		r := newReader()
-		err := localDrive.CreateFile(ctx, "", minioMetaBucket, pathJoin(replicationMRFDir, globalLocalNodeNameHex+".bin"), -1, r)
+		err := localDrive.CreateFile(ctx, "", kypelloMetaBucket, pathJoin(replicationMRFDir, globalLocalNodeNameHex+".bin"), -1, r)
 		r.Close()
 		if err == nil {
 			break
@@ -3659,7 +3659,7 @@ func (p *ReplicationPool) loadMRF() (mrfRec MRFReplicateEntries, err error) {
 	globalLocalDrivesMu.RUnlock()
 
 	for _, localDrive := range localDrives {
-		rc, err := localDrive.ReadFileStream(p.ctx, minioMetaBucket, pathJoin(replicationMRFDir, globalLocalNodeNameHex+".bin"), 0, -1)
+		rc, err := localDrive.ReadFileStream(p.ctx, kypelloMetaBucket, pathJoin(replicationMRFDir, globalLocalNodeNameHex+".bin"), 0, -1)
 		if err != nil {
 			continue
 		}
@@ -3670,7 +3670,7 @@ func (p *ReplicationPool) loadMRF() (mrfRec MRFReplicateEntries, err error) {
 		}
 
 		// finally delete the file after processing mrf entries
-		localDrive.Delete(p.ctx, minioMetaBucket, pathJoin(replicationMRFDir, globalLocalNodeNameHex+".bin"), DeleteOptions{})
+		localDrive.Delete(p.ctx, kypelloMetaBucket, pathJoin(replicationMRFDir, globalLocalNodeNameHex+".bin"), DeleteOptions{})
 		break
 	}
 

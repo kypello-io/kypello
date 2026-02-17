@@ -5,7 +5,7 @@ set -e
 set -E
 set -o pipefail
 
-if [ ! -x "$PWD/minio" ]; then
+if [ ! -x "$PWD/kypello" ]; then
 	echo "minio executable binary not found in current directory"
 	exit 1
 fi
@@ -15,18 +15,18 @@ WORK_DIR="$PWD/.verify-$RANDOM"
 export MINT_MODE=core
 export MINT_DATA_DIR="$WORK_DIR/data"
 export SERVER_ENDPOINT="127.0.0.1:9000"
-export MC_HOST_verify="http://minio:minio123@${SERVER_ENDPOINT}/"
-export MC_HOST_verify_ipv6="http://minio:minio123@[::1]:9000/"
-export ACCESS_KEY="minio"
-export SECRET_KEY="minio123"
+export MC_HOST_verify="http://kypello:kypello123@${SERVER_ENDPOINT}/"
+export MC_HOST_verify_ipv6="http://kypello:kypello123@[::1]:9000/"
+export ACCESS_KEY="kypello"
+export SECRET_KEY="kypello123"
 export ENABLE_HTTPS=0
 export GO111MODULE=on
 export GOGC=25
 export ENABLE_ADMIN=1
 export MINIO_CI_CD=1
 
-MINIO_CONFIG_DIR="$WORK_DIR/.minio"
-MINIO=("$PWD/minio" --config-dir "$MINIO_CONFIG_DIR")
+MINIO_CONFIG_DIR="$WORK_DIR/.kypello"
+MINIO=("$PWD/kypello" --config-dir "$MINIO_CONFIG_DIR")
 
 FILE_1_MB="$MINT_DATA_DIR/datafile-1-MB"
 FILE_65_MB="$MINT_DATA_DIR/datafile-65-MB"
@@ -91,7 +91,7 @@ function run_test_fs() {
 	(cd "$WORK_DIR" && "$FUNCTIONAL_TESTS")
 	rv=$?
 
-	pkill minio
+	pkill kypello
 	sleep 3
 
 	if [ "$rv" -ne 0 ]; then
@@ -108,7 +108,7 @@ function run_test_erasure_sets() {
 	(cd "$WORK_DIR" && "$FUNCTIONAL_TESTS")
 	rv=$?
 
-	pkill minio
+	pkill kypello
 	sleep 3
 
 	if [ "$rv" -ne 0 ]; then
@@ -125,7 +125,7 @@ function run_test_pool_erasure_sets() {
 	(cd "$WORK_DIR" && "$FUNCTIONAL_TESTS")
 	rv=$?
 
-	pkill minio
+	pkill kypello
 	sleep 3
 
 	if [ "$rv" -ne 0 ]; then
@@ -150,7 +150,7 @@ function run_test_pool_erasure_sets_ipv6() {
 	(cd "$WORK_DIR" && "$FUNCTIONAL_TESTS")
 	rv=$?
 
-	pkill minio
+	pkill kypello
 	sleep 3
 
 	if [ "$rv" -ne 0 ]; then
@@ -173,7 +173,7 @@ function run_test_erasure() {
 	(cd "$WORK_DIR" && "$FUNCTIONAL_TESTS")
 	rv=$?
 
-	pkill minio
+	pkill kypello
 	sleep 3
 
 	if [ "$rv" -ne 0 ]; then
@@ -190,7 +190,7 @@ function run_test_dist_erasure() {
 	(cd "$WORK_DIR" && "$FUNCTIONAL_TESTS")
 	rv=$?
 
-	pkill minio
+	pkill kypello
 	sleep 3
 
 	if [ "$rv" -ne 0 ]; then
@@ -235,7 +235,7 @@ function __init__() {
 	shred -n 1 -s 65M - 1>"$FILE_65_MB" 2>/dev/null
 
 	## version is purposefully set to '3' for minio to migrate configuration file
-	echo '{"version": "3", "credential": {"accessKey": "minio", "secretKey": "minio123"}, "region": "us-east-1"}' >"$MINIO_CONFIG_DIR/config.json"
+	echo '{"version": "3", "credential": {"accessKey": "kypello", "secretKey": "kypello123"}, "region": "us-east-1"}' >"$MINIO_CONFIG_DIR/config.json"
 
 	if ! wget -q -O "$FUNCTIONAL_TESTS" https://raw.githubusercontent.com/minio/mc/master/functional-tests.sh; then
 		echo "failed to download https://raw.githubusercontent.com/minio/mc/master/functional-tests.sh"

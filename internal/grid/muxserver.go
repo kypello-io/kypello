@@ -25,7 +25,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	xioutil "github.com/minio/minio/internal/ioutil"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 )
 
 type muxServer struct {
@@ -103,9 +103,7 @@ func newMuxStream(ctx context.Context, msg message, c *Connection, handler Strea
 	// Acknowledge Mux created.
 	// Send async.
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		var ack message
 		ack.Op = OpAckMux
 		ack.Flags = m.BaseFlags
@@ -114,7 +112,7 @@ func newMuxStream(ctx context.Context, msg message, c *Connection, handler Strea
 		if debugPrint {
 			fmt.Println("connected stream mux:", ack.MuxID)
 		}
-	}()
+	})
 
 	// Data inbound to the handler
 	var handlerIn chan []byte

@@ -1,5 +1,4 @@
 //go:build linux
-// +build linux
 
 // Copyright (c) 2015-2023 MinIO, Inc.
 //
@@ -26,7 +25,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/minio/minio/internal/deadlineconn"
+	"github.com/kypello-io/kypello/internal/deadlineconn"
 	"golang.org/x/sys/unix"
 )
 

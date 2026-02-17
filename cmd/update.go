@@ -36,8 +36,8 @@ import (
 	"time"
 
 	"github.com/klauspost/compress/zstd"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/logger"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/pkg/v3/env"
 	xnet "github.com/minio/pkg/v3/net"
 	"github.com/minio/selfupdate"
@@ -52,10 +52,10 @@ const (
 
 var (
 	// Newer official download info URLs appear earlier below.
-	minioReleaseInfoURL = MinioReleaseURL + "minio.sha256sum"
+	minioReleaseInfoURL = KypelloReleaseURL + "minio.sha256sum"
 
 	// For windows our files have .exe additionally.
-	minioReleaseWindowsInfoURL = MinioReleaseURL + "minio.exe.sha256sum"
+	minioReleaseWindowsInfoURL = KypelloReleaseURL + "minio.exe.sha256sum"
 )
 
 // minioVersionToReleaseTime - parses a standard official release
@@ -237,7 +237,7 @@ func getUserAgent(mode string) string {
 	uaAppend := func(p, q string) {
 		userAgentParts = append(userAgentParts, p, q)
 	}
-	uaAppend(MinioUAName, " (")
+	uaAppend(KypelloUAName, " (")
 	uaAppend("", runtime.GOOS)
 	uaAppend("; ", runtime.GOARCH)
 	if mode != "" {
@@ -374,7 +374,7 @@ func releaseInfoToReleaseTime(releaseInfo string) (releaseTime time.Time, err er
 		err = fmt.Errorf("Unknown release information `%s`", releaseInfo)
 		return releaseTime, err
 	}
-	if nfields[0] != "minio" {
+	if nfields[0] != "kypello" {
 		err = fmt.Errorf("Unknown release `%s`", releaseInfo)
 		return releaseTime, err
 	}
@@ -477,10 +477,10 @@ func getDownloadURL(releaseTag string) (downloadURL string) {
 
 	// For binary only installations, we return link to the latest binary.
 	if runtime.GOOS == "windows" {
-		return MinioReleaseURL + "minio.exe"
+		return KypelloReleaseURL + "minio.exe"
 	}
 
-	return MinioReleaseURL + "minio"
+	return KypelloReleaseURL + "kypello"
 }
 
 func getUpdateReaderFromURL(u *url.URL, transport http.RoundTripper, mode string) (io.ReadCloser, error) {

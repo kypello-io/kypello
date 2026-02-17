@@ -12,7 +12,7 @@ This document explains how to configure MinIO server with TLS certificates on Ku
 
 For a [distributed MinIO setup](https://docs.min.io/community/minio-object-store/operations/deployments/kubernetes.html), where there are multiple pods with different domain names expected to run, you will either need wildcard certificates valid for all the domains or have specific certificates for each domain. If you are going to use specific certificates, make sure to create Kubernetes secrets accordingly.
 
-For testing purposes, here is [how to create self-signed certificates](https://github.com/minio/minio/tree/master/docs/tls#3-generate-self-signed-certificates).
+For testing purposes, here is [how to create self-signed certificates](https://github.com/kypello-io/kypello/tree/master/docs/tls#3-generate-self-signed-certificates).
 
 ## 2. Create Kubernetes secret
 
@@ -60,12 +60,12 @@ Note that the `secretName` should be same as the secret name created in previous
 ```yaml
     volumeMounts:
         - name: secret-volume
-          mountPath: /<user-running-minio>/.minio/certs
+          mountPath: /<user-running-minio>/.kypello/certs
 ```
 
 Here the name of `volumeMount` should match the name of `volume` created previously. Also `mountPath` must be set to the path of
 the MinIO server's config sub-directory that is used to store certificates. By default, the location is
-`/<user-running-minio>/.minio/certs`.
+`/<user-running-minio>/.kypello/certs`.
 
-*Tip*: In a standard Kubernetes configuration, this will be `/root/.minio/certs`. Kubernetes will mount the secrets volume read-only,
+*Tip*: In a standard Kubernetes configuration, this will be `/root/.kypello/certs`. Kubernetes will mount the secrets volume read-only,
 so avoid setting `mountPath` to a path that MinIO server expects to write to.

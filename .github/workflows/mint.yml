@@ -16,6 +16,8 @@ permissions:
 
 jobs:
   mint-test:
+    # TODO: re-enable once custom self-hosted runner is set up on Fly.io
+    if: false
     runs-on: mint
     timeout-minutes: 120
     steps:
@@ -29,7 +31,7 @@ jobs:
       - name: setup-go-step
         uses: actions/setup-go@v5
         with:
-          go-version: 1.24.x
+          go-version: 1.26.x
 
       - name: github sha short
         id: vars
@@ -45,20 +47,20 @@ jobs:
 
       - name: compress and encrypt
         run: |
-          ${GITHUB_WORKSPACE}/.github/workflows/run-mint.sh "compress-encrypt" "minio" "minio123" "${{ steps.vars.outputs.sha_short }}"
+          ${GITHUB_WORKSPACE}/.github/workflows/run-mint.sh "compress-encrypt" "kypello" "kypello123" "${{ steps.vars.outputs.sha_short }}"
 
       - name: multiple pools
         run: |
-          ${GITHUB_WORKSPACE}/.github/workflows/run-mint.sh "pools" "minio" "minio123" "${{ steps.vars.outputs.sha_short }}"
+          ${GITHUB_WORKSPACE}/.github/workflows/run-mint.sh "pools" "kypello" "kypello123" "${{ steps.vars.outputs.sha_short }}"
 
       - name: standalone erasure
         run: |
-          ${GITHUB_WORKSPACE}/.github/workflows/run-mint.sh "erasure" "minio" "minio123" "${{ steps.vars.outputs.sha_short }}"
+          ${GITHUB_WORKSPACE}/.github/workflows/run-mint.sh "erasure" "kypello" "kypello123" "${{ steps.vars.outputs.sha_short }}"
 
       # FIXME: renable this back when we have a valid way to add deadlines for PUT()s (internode CreateFile)
       # - name: resiliency
       #   run: |
-      #     ${GITHUB_WORKSPACE}/.github/workflows/run-mint.sh "resiliency" "minio" "minio123" "${{ steps.vars.outputs.sha_short }}"
+      #     ${GITHUB_WORKSPACE}/.github/workflows/run-mint.sh "resiliency" "kypello" "kypello123" "${{ steps.vars.outputs.sha_short }}"
 
       - name: The job must cleanup
         if: ${{ always() }}

@@ -98,13 +98,13 @@ const (
 
 	// AmzSnowballExtract will trigger unpacking of an archive content
 	AmzSnowballExtract = "X-Amz-Meta-Snowball-Auto-Extract"
-	// MinIOSnowballIgnoreDirs will skip creating empty directory objects.
-	MinIOSnowballIgnoreDirs = "X-Amz-Meta-Minio-Snowball-Ignore-Dirs"
+	// KypelloSnowballIgnoreDirs will skip creating empty directory objects.
+	KypelloSnowballIgnoreDirs = "X-Amz-Meta-Kypello-Snowball-Ignore-Dirs"
 	// MinIOSnowballIgnoreErrors will ignore recoverable errors, typically single files failing to upload.
 	// An error will be printed to console instead.
-	MinIOSnowballIgnoreErrors = "X-Amz-Meta-Minio-Snowball-Ignore-Errors"
-	// MinIOSnowballPrefix will apply this prefix (plus / at end) to all extracted objects
-	MinIOSnowballPrefix = "X-Amz-Meta-Minio-Snowball-Prefix"
+	KypelloSnowballIgnoreErrors = "X-Amz-Meta-Kypello-Snowball-Ignore-Errors"
+	// KypelloSnowballPrefix will apply this prefix (plus / at end) to all extracted objects
+	KypelloSnowballPrefix = "X-Amz-Meta-Kypello-Snowball-Prefix"
 
 	// Object lock enabled
 	AmzObjectLockEnabled = "x-amz-bucket-object-lock-enabled"
@@ -161,13 +161,13 @@ const (
 	AmzRequestHostID = "x-amz-id-2"
 
 	// Deployment id.
-	MinioDeploymentID = "x-minio-deployment-id"
+	KypelloDeploymentID = "x-minio-deployment-id"
 
 	// Peer call
-	MinIOPeerCall = "x-minio-from-peer"
+	KypelloPeerCall = "x-minio-from-peer"
 
 	// Server-Status
-	MinIOServerStatus = "x-minio-server-status"
+	KypelloServerStatus = "x-minio-server-status"
 
 	// Content Checksums
 	AmzChecksumAlgo           = "x-amz-checksum-algorithm"
@@ -189,70 +189,70 @@ const (
 	AmzMetaName = "X-Amz-Meta-Name"
 
 	// Delete special flag to force delete a bucket or a prefix
-	MinIOForceDelete = "x-minio-force-delete"
+	KypelloForceDelete = "x-minio-force-delete"
 
 	// Create special flag to force create a bucket
-	MinIOForceCreate = "x-minio-force-create"
+	KypelloForceCreate = "x-minio-force-create"
 
 	// Header indicates if the mtime should be preserved by client
-	MinIOSourceMTime = "x-minio-source-mtime"
+	KypelloSourceMTime = "x-minio-source-mtime"
 
 	// Header indicates if the etag should be preserved by client
-	MinIOSourceETag = "x-minio-source-etag"
+	KypelloSourceETag = "x-minio-source-etag"
 
 	// Writes expected write quorum
-	MinIOWriteQuorum = "x-minio-write-quorum"
+	KypelloWriteQuorum = "x-minio-write-quorum"
 
 	// Reads expected read quorum
-	MinIOReadQuorum = "x-minio-read-quorum"
+	KypelloReadQuorum = "x-minio-read-quorum"
 
 	// Indicates if we are using default storage class and there was problem loading config
 	// if this header is set to "true"
-	MinIOStorageClassDefaults = "x-minio-storage-class-defaults"
+	KypelloStorageClassDefaults = "x-minio-storage-class-defaults"
 
 	// Reports number of drives currently healing
-	MinIOHealingDrives = "x-minio-healing-drives"
+	KypelloHealingDrives = "x-minio-healing-drives"
 
 	// Header indicates if the delete marker should be preserved by client
-	MinIOSourceDeleteMarker = "x-minio-source-deletemarker"
+	KypelloSourceDeleteMarker = "x-minio-source-deletemarker"
 
 	// Header indicates if the delete marker version needs to be purged.
-	MinIOSourceDeleteMarkerDelete = "x-minio-source-deletemarker-delete"
+	KypelloSourceDeleteMarkerDelete = "x-minio-source-deletemarker-delete"
 
 	// Header indicates permanent delete replication status.
-	MinIODeleteReplicationStatus = "X-Minio-Replication-Delete-Status"
+	KypelloDeleteReplicationStatus = "X-Minio-Replication-Delete-Status"
 	// Header indicates delete-marker replication status.
-	MinIODeleteMarkerReplicationStatus = "X-Minio-Replication-DeleteMarker-Status"
+	KypelloDeleteMarkerReplicationStatus = "X-Minio-Replication-DeleteMarker-Status"
 	// Header indicates if its a GET/HEAD proxy request for active-active replication
-	MinIOSourceProxyRequest = "X-Minio-Source-Proxy-Request"
+	KypelloSourceProxyRequest = "X-Minio-Source-Proxy-Request"
 	// Header indicates that this request is a replication request to create a REPLICA
-	MinIOSourceReplicationRequest = "X-Minio-Source-Replication-Request"
+	KypelloSourceReplicationRequest = "X-Minio-Source-Replication-Request"
 	// Header checks replication permissions without actually completing replication
-	MinIOSourceReplicationCheck = "X-Minio-Source-Replication-Check"
+	KypelloSourceReplicationCheck = "X-Minio-Source-Replication-Check"
 	// Header indicates replication reset status.
-	MinIOReplicationResetStatus = "X-Minio-Replication-Reset-Status"
+	KypelloReplicationResetStatus = "X-Minio-Replication-Reset-Status"
 	// Header indicating target cluster can receive delete marker replication requests because object has been replicated
-	MinIOTargetReplicationReady = "X-Minio-Replication-Ready"
+	KypelloTargetReplicationReady = "X-Minio-Replication-Ready"
 	// Header asking if cluster can receive delete marker replication request now.
-	MinIOCheckDMReplicationReady = "X-Minio-Check-Replication-Ready"
+	KypelloCheckDMReplicationReady = "X-Minio-Check-Replication-Ready"
 	// Header indiicates last tag update time on source
-	MinIOSourceTaggingTimestamp = "X-Minio-Source-Replication-Tagging-Timestamp"
+	KypelloSourceTaggingTimestamp = "X-Minio-Source-Replication-Tagging-Timestamp"
 	// Header indiicates last rtention update time on source
-	MinIOSourceObjectRetentionTimestamp = "X-Minio-Source-Replication-Retention-Timestamp"
+	KypelloSourceObjectRetentionTimestamp = "X-Minio-Source-Replication-Retention-Timestamp"
 	// Header indiicates last rtention update time on source
-	MinIOSourceObjectLegalHoldTimestamp = "X-Minio-Source-Replication-LegalHold-Timestamp"
+	KypelloSourceObjectLegalHoldTimestamp = "X-Minio-Source-Replication-LegalHold-Timestamp"
 	// Header indicates a Tag operation was performed on one/more peers successfully, though the
 	// current cluster does not have the object yet. This is in a site/bucket replication scenario.
-	MinIOTaggingProxied = "X-Minio-Tagging-Proxied"
+	KypelloTaggingProxied = "X-Minio-Tagging-Proxied"
 	// Header indicates the actual replicated object size
 	// In case of SSEC objects getting replicated (multipart) actual size would be needed at target
-	MinIOReplicationActualObjectSize = "X-Minio-Replication-Actual-Object-Size"
+	KypelloReplicationActualObjectSize = "X-Minio-Replication-Actual-Object-Size"
 
 	// predicted date/time of transition
-	MinIOTransition            = "X-Minio-Transition"
-	MinIOLifecycleCfgUpdatedAt = "X-Minio-LifecycleConfig-UpdatedAt"
-	// MinIOCompressed is returned when object is compressed
-	MinIOCompressed = "X-Minio-Compressed"
+	KypelloTransition            = "X-Minio-Transition"
+	KypelloLifecycleCfgUpdatedAt = "X-Minio-LifecycleConfig-UpdatedAt"
+	// KypelloCompressed is returned when object is compressed
+	KypelloCompressed = "X-Minio-Compressed"
 
 	// SUBNET related
 	SubnetAPIKey = "x-subnet-api-key"
@@ -269,7 +269,7 @@ const (
 
 // http headers sent to webhook targets
 const (
-	// Reports the version of MinIO server
-	MinIOVersion             = "x-minio-version"
+	// Reports the version of Kypello server
+	KypelloVersion           = "x-minio-version"
 	WebhookEventPayloadCount = "x-minio-webhook-payload-count"
 )

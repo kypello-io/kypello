@@ -25,8 +25,8 @@ import (
 
 	xnet "github.com/minio/pkg/v3/net"
 
-	"github.com/minio/minio/internal/color"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/color"
+	"github.com/kypello-io/kypello/internal/logger"
 )
 
 // generates format string depending on the string length and padding.
@@ -37,11 +37,11 @@ func getFormatStr(strLen int, padding int) string {
 
 // Prints the formatted startup message.
 func printStartupMessage(apiEndpoints []string, err error) {
-	banner := strings.Repeat("-", len(MinioBannerName))
+	banner := strings.Repeat("-", len(KypelloBannerName))
 	if globalIsDistErasure {
 		logger.Startup(color.Bold(banner))
 	}
-	logger.Startup(color.Bold(MinioBannerName))
+	logger.Startup(color.Bold(KypelloBannerName))
 	if err != nil {
 		if globalConsoleSys != nil {
 			globalConsoleSys.Send(GlobalContext, fmt.Sprintf("Server startup failed with '%v', some features may be missing", err))
@@ -54,14 +54,14 @@ func printStartupMessage(apiEndpoints []string, err error) {
 		logger.Startup(builder.String())
 	}
 
-	strippedAPIEndpoints := stripStandardPorts(apiEndpoints, globalMinioHost)
+	strippedAPIEndpoints := stripStandardPorts(apiEndpoints, globalKypelloHost)
 
 	// Prints credential, region and browser access.
 	printServerCommonMsg(strippedAPIEndpoints)
 
 	// Prints `mc` cli configuration message chooses
 	// first endpoint as default.
-	printCLIAccessMsg(strippedAPIEndpoints[0], "myminio")
+	printCLIAccessMsg(strippedAPIEndpoints[0], "mykypello")
 
 	// Prints documentation message.
 	printObjectAPIMsg()
@@ -130,7 +130,7 @@ func printServerCommonMsg(apiEndpoints []string) {
 	}
 
 	if globalBrowserEnabled {
-		consoleEndpointStr := strings.Join(stripStandardPorts(getConsoleEndpoints(), globalMinioConsoleHost), " ")
+		consoleEndpointStr := strings.Join(stripStandardPorts(getConsoleEndpoints(), globalKypelloConsoleHost), " ")
 		logger.Startup(color.Blue("WebUI: ") + color.Bold(fmt.Sprintf("%s ", consoleEndpointStr)))
 		if color.IsTerminal() && (!globalServerCtxt.Anonymous && !globalServerCtxt.JSON && globalAPIConfig.permitRootAccess()) {
 			logger.Startup(color.Blue("   RootUser: ") + color.Bold("%s ", cred.AccessKey))
@@ -152,11 +152,12 @@ func printLambdaTargets() {
 		return
 	}
 
-	arnMsg := color.Blue("Object Lambda ARNs: ")
+	var arnMsg strings.Builder
+	arnMsg.WriteString(color.Blue("Object Lambda ARNs: "))
 	for _, arn := range globalLambdaTargetList.List(globalSite.Region()) {
-		arnMsg += color.Bold(fmt.Sprintf("%s ", arn))
+		arnMsg.WriteString(color.Bold(fmt.Sprintf("%s ", arn)))
 	}
-	logger.Startup(arnMsg + "\n")
+	logger.Startup(arnMsg.String() + "\n")
 }
 
 // Prints bucket notification configurations.
@@ -170,12 +171,13 @@ func printEventNotifiers() {
 		return
 	}
 
-	arnMsg := color.Blue("SQS ARNs: ")
+	var arnMsg strings.Builder
+	arnMsg.WriteString(color.Blue("SQS ARNs: "))
 	for _, arn := range arns {
-		arnMsg += color.Bold(fmt.Sprintf("%s ", arn))
+		arnMsg.WriteString(color.Bold(fmt.Sprintf("%s ", arn)))
 	}
 
-	logger.Startup(arnMsg + "\n")
+	logger.Startup(arnMsg.String() + "\n")
 }
 
 // Prints startup message for command line access. Prints link to our documentation

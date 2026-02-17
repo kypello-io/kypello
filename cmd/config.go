@@ -27,21 +27,21 @@ import (
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/kms"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/kms"
 )
 
 const (
-	minioConfigPrefix = "config"
-	minioConfigBucket = minioMetaBucket + SlashSeparator + minioConfigPrefix
-	kvPrefix          = ".kv"
+	kypelloConfigPrefix = "config"
+	kypelloConfigBucket = kypelloMetaBucket + SlashSeparator + kypelloConfigPrefix
+	kvPrefix            = ".kv"
 
 	// Captures all the previous SetKV operations and allows rollback.
-	minioConfigHistoryPrefix = minioConfigPrefix + "/history"
+	kypelloConfigHistoryPrefix = kypelloConfigPrefix + "/history"
 
 	// MinIO configuration file.
-	minioConfigFile = "config.json"
+	kypelloConfigFile = "config.json"
 )
 
 func listServerConfigHistory(ctx context.Context, objAPI ObjectLayer, withData bool, count int) (
@@ -52,7 +52,7 @@ func listServerConfigHistory(ctx context.Context, objAPI ObjectLayer, withData b
 	// List all kvs
 	marker := ""
 	for {
-		res, err := objAPI.ListObjects(ctx, minioMetaBucket, minioConfigHistoryPrefix, marker, "", maxObjectList)
+		res, err := objAPI.ListObjects(ctx, kypelloMetaBucket, kypelloConfigHistoryPrefix, marker, "", maxObjectList)
 		if err != nil {
 			return nil, err
 		}
@@ -95,8 +95,8 @@ func listServerConfigHistory(ctx context.Context, objAPI ObjectLayer, withData b
 }
 
 func delServerConfigHistory(ctx context.Context, objAPI ObjectLayer, uuidKV string) error {
-	historyFile := pathJoin(minioConfigHistoryPrefix, uuidKV+kvPrefix)
-	_, err := objAPI.DeleteObject(ctx, minioMetaBucket, historyFile, ObjectOptions{
+	historyFile := pathJoin(kypelloConfigHistoryPrefix, uuidKV+kvPrefix)
+	_, err := objAPI.DeleteObject(ctx, kypelloMetaBucket, historyFile, ObjectOptions{
 		DeletePrefix:       true,
 		DeletePrefixObject: true, // use prefix delete on exact object (this is an optimization to avoid fan-out calls)
 	})
@@ -104,7 +104,7 @@ func delServerConfigHistory(ctx context.Context, objAPI ObjectLayer, uuidKV stri
 }
 
 func readServerConfigHistory(ctx context.Context, objAPI ObjectLayer, uuidKV string) ([]byte, error) {
-	historyFile := pathJoin(minioConfigHistoryPrefix, uuidKV+kvPrefix)
+	historyFile := pathJoin(kypelloConfigHistoryPrefix, uuidKV+kvPrefix)
 	data, err := readConfig(ctx, objAPI, historyFile)
 	if err != nil {
 		return nil, err
@@ -115,12 +115,12 @@ func readServerConfigHistory(ctx context.Context, objAPI ObjectLayer, uuidKV str
 
 func saveServerConfigHistory(ctx context.Context, objAPI ObjectLayer, kv []byte) error {
 	uuidKV := mustGetUUID() + kvPrefix
-	historyFile := pathJoin(minioConfigHistoryPrefix, uuidKV)
+	historyFile := pathJoin(kypelloConfigHistoryPrefix, uuidKV)
 
 	if GlobalKMS != nil {
 		var err error
 		kv, err = config.EncryptBytes(GlobalKMS, kv, kms.Context{
-			minioMetaBucket: path.Join(minioMetaBucket, historyFile),
+			kypelloMetaBucket: path.Join(kypelloMetaBucket, historyFile),
 		})
 		if err != nil {
 			return err
@@ -135,10 +135,10 @@ func saveServerConfig(ctx context.Context, objAPI ObjectLayer, cfg any) error {
 		return err
 	}
 
-	configFile := path.Join(minioConfigPrefix, minioConfigFile)
+	configFile := path.Join(kypelloConfigPrefix, kypelloConfigFile)
 	if GlobalKMS != nil {
 		data, err = config.EncryptBytes(GlobalKMS, data, kms.Context{
-			minioMetaBucket: path.Join(minioMetaBucket, configFile),
+			kypelloMetaBucket: path.Join(kypelloMetaBucket, configFile),
 		})
 		if err != nil {
 			return err
@@ -152,7 +152,7 @@ func readServerConfig(ctx context.Context, objAPI ObjectLayer, data []byte) (con
 	srvCfg := config.New()
 	var err error
 	if len(data) == 0 {
-		configFile := path.Join(minioConfigPrefix, minioConfigFile)
+		configFile := path.Join(kypelloConfigPrefix, kypelloConfigFile)
 		data, err = readConfig(ctx, objAPI, configFile)
 		if err != nil {
 			if errors.Is(err, errConfigNotFound) {

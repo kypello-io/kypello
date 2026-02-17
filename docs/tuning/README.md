@@ -1,4 +1,4 @@
-# How to enable 'minio' performance profile with tuned?
+# How to enable 'kypello' performance profile with tuned?
 
 ## Prerequisites
 

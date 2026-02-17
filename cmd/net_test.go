@@ -162,9 +162,9 @@ func TestGetHostIP(t *testing.T) {
 
 // Tests finalize api endpoints.
 func TestGetAPIEndpoints(t *testing.T) {
-	host, port := globalMinioHost, globalMinioPort
+	host, port := globalKypelloHost, globalKypelloPort
 	defer func() {
-		globalMinioHost, globalMinioPort = host, port
+		globalKypelloHost, globalKypelloPort = host, port
 	}()
 	testCases := []struct {
 		host, port     string
@@ -176,7 +176,7 @@ func TestGetAPIEndpoints(t *testing.T) {
 	}
 
 	for i, testCase := range testCases {
-		globalMinioHost, globalMinioPort = testCase.host, testCase.port
+		globalKypelloHost, globalKypelloPort = testCase.host, testCase.port
 		apiEndpoints := getAPIEndpoints()
 		apiEndpointSet := set.CreateStringSet(apiEndpoints...)
 		if !apiEndpointSet.Contains(testCase.expectedResult) {

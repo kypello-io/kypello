@@ -1,13 +1,13 @@
 # KMS IAM/Config Encryption
 
-MinIO supports encrypting config, IAM assets with KMS provided keys. If the KMS is not enabled, MinIO will store the config, IAM data as plain text erasure coded in its backend.
+Kypello supports encrypting config, IAM assets with KMS provided keys. If the KMS is not enabled, Kypello will store the config, IAM data as plain text erasure coded in its backend.
 
-## MinIO KMS Quick Start
+## Kypello KMS Quick Start
 
-MinIO supports two ways of encrypting IAM and configuration data.
+Kypello supports two ways of encrypting IAM and configuration data.
 You can either use KES - together with an external KMS - or, much simpler,
-set the env. variable `MINIO_KMS_SECRET_KEY` and start/restart the MinIO server. For more details about KES and how
-to set it up refer to our [KMS Guide](https://github.com/minio/minio/blob/master/docs/kms/README.md).
+set the env. variable `MINIO_KMS_SECRET_KEY` and start/restart the Kypello server. For more details about KES and how
+to set it up refer to our [KMS Guide](https://github.com/kypello-io/kypello/blob/master/docs/kms/README.md).
 
 Instead of configuring an external KMS you can start with a single key by
 setting the env. variable `MINIO_KMS_SECRET_KEY`. It expects the following
@@ -27,25 +27,25 @@ OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
 Now, you can set `MINIO_KMS_SECRET_KEY` like this:
 
 ```sh
-export MINIO_KMS_SECRET_KEY=my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
+export MINIO_KMS_SECRET_KEY=my-kypello-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
 ```
 
-> You can choose an arbitrary name for the key - instead of `my-minio-key`.
+> You can choose an arbitrary name for the key - instead of `my-kypello-key`.
 > Please note that losing the `MINIO_KMS_SECRET_KEY` will cause data loss
 > since you will not be able to decrypt the IAM/configuration data anymore.
-For distributed MinIO deployments, specify the *same* `MINIO_KMS_SECRET_KEY` for each MinIO server process.
+For distributed Kypello deployments, specify the *same* `MINIO_KMS_SECRET_KEY` for each Kypello server process.
 
 At any point in time you can switch from `MINIO_KMS_SECRET_KEY` to a full KMS
 deployment. You just need to import the generated key into KES - for example via
 the KES CLI once you have successfully setup KES:
 
 ```sh
-kes key create my-minio-key OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
+kes key create my-kypello-key OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
 ```
 
-- For instructions on setting up KES, see the [KES Getting Started guide](https://github.com/minio/kes/wiki/Getting-Started)
+- For instructions on setting up KES, see the [KES Getting Started guide](https://github.com/kypello/kes/wiki/Getting-Started)
 
-- For instructions on using KES for encrypting the MinIO backend, follow the [KMS Quick Start](https://github.com/minio/minio/tree/master/docs/kms). The SSE-S3 configuration setup also supports MinIO KMS backend encryption.
+- For instructions on using KES for encrypting the Kypello backend, follow the [KMS Quick Start](https://github.com/kypello-io/kypello/tree/master/docs/kms). The SSE-S3 configuration setup also supports MinIO KMS backend encryption.
 
 ## FAQ
 
@@ -78,7 +78,7 @@ No, MinIO does not depend on any third-party KMS provider. You have three option
 - Run MinIO with a single secret key. MinIO supports a static cryptographic key
   that can act as minimal KMS. With this method all IAM data will be stored
   encrypted. The encryption key has to be passed as environment variable.
-- Run MinIO with KES (minio/kes) in combination with any supported KMS as
+- Run MinIO with KES (kypello/kes) in combination with any supported KMS as
   secure key store. For example, you can run MinIO + KES + Hashicorp Vault.
 
 > What about an exiting MinIO deployment? Can I just upgrade my cluster?

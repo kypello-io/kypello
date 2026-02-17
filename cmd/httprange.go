@@ -111,12 +111,11 @@ func parseRequestRangeSpec(rangeString string) (hrange *HTTPRangeSpec, err error
 	byteRangeString := strings.TrimPrefix(rangeString, byteRangePrefix)
 
 	// Check if range string contains delimiter '-', else return error. eg. "bytes=8"
-	sepIndex := strings.Index(byteRangeString, "-")
-	if sepIndex == -1 {
+	offsetBeginString, offsetEndString, found := strings.Cut(byteRangeString, "-")
+	if !found {
 		return nil, fmt.Errorf("'%s' does not have a valid range value", rangeString)
 	}
 
-	offsetBeginString := byteRangeString[:sepIndex]
 	offsetBegin := int64(-1)
 	// Convert offsetBeginString only if its not empty.
 	if len(offsetBeginString) > 0 {
@@ -129,7 +128,6 @@ func parseRequestRangeSpec(rangeString string) (hrange *HTTPRangeSpec, err error
 		}
 	}
 
-	offsetEndString := byteRangeString[sepIndex+1:]
 	offsetEnd := int64(-1)
 	// Convert offsetEndString only if its not empty.
 	if len(offsetEndString) > 0 {

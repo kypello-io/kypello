@@ -28,9 +28,9 @@ import (
 	"sync"
 	"time"
 
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
-	xioutil "github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/logger"
 )
 
 // healStatusSummary - overall short summary of a healing sequence
@@ -798,7 +798,7 @@ func (h *healSequence) queueHealTask(source healSource, healType madmin.HealItem
 
 func (h *healSequence) healDiskMeta(objAPI ObjectLayer) error {
 	// Start healing the config prefix.
-	return h.healMinioSysMeta(objAPI, minioConfigPrefix)()
+	return h.healMinioSysMeta(objAPI, kypelloConfigPrefix)()
 }
 
 func (h *healSequence) healItems(objAPI ObjectLayer) error {
@@ -837,7 +837,7 @@ func (h *healSequence) healMinioSysMeta(objAPI ObjectLayer, metaPrefix string) f
 		// of any bucket being selected, this is to ensure that
 		// meta are always upto date and correct.
 		h.settings.Recursive = true
-		return objAPI.HealObjects(h.ctx, minioMetaBucket, metaPrefix, h.settings, func(bucket, object, versionID string, scanMode madmin.HealScanMode) error {
+		return objAPI.HealObjects(h.ctx, kypelloMetaBucket, metaPrefix, h.settings, func(bucket, object, versionID string, scanMode madmin.HealScanMode) error {
 			if h.isQuitting() {
 				return errHealStopSignalled
 			}

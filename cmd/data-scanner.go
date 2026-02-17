@@ -34,14 +34,14 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
+	"github.com/kypello-io/kypello/internal/bucket/object/lock"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/color"
+	"github.com/kypello-io/kypello/internal/config/heal"
+	"github.com/kypello-io/kypello/internal/event"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/bucket/lifecycle"
-	"github.com/minio/minio/internal/bucket/object/lock"
-	"github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/color"
-	"github.com/minio/minio/internal/config/heal"
-	"github.com/minio/minio/internal/event"
-	xioutil "github.com/minio/minio/internal/ioutil"
 	"github.com/minio/pkg/v3/console"
 	uatomic "go.uber.org/atomic"
 )
@@ -558,7 +558,7 @@ func (f *folderScanner) scanFolder(ctx context.Context, folder cachedFolder, int
 					Size: int64(totalFolders),
 				},
 				UserAgent: "Scanner",
-				Host:      globalMinioHost,
+				Host:      globalKypelloHost,
 			})
 			auditLogInternal(context.Background(), AuditLogOptions{
 				Event:   "scanner:manyprefixes",

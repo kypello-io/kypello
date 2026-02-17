@@ -22,7 +22,7 @@ import (
 	"testing"
 	"time"
 
-	xhttp "github.com/minio/minio/internal/http"
+	xhttp "github.com/kypello-io/kypello/internal/http"
 )
 
 // Test redactLDAPPwd()
@@ -75,7 +75,7 @@ func TestRaulStatsRaceCondition(t *testing.T) {
 		wg.Add(1)
 		go func(writerID int) {
 			defer wg.Done()
-			for j := 0; j < opsPerGoroutine; j++ {
+			for j := range opsPerGoroutine {
 				switch j % 4 {
 				case 0:
 					httpStats.updateStats("GetObject", &xhttp.ResponseRecorder{})
@@ -127,7 +127,7 @@ func TestRaulHTTPAPIStatsRaceCondition(t *testing.T) {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			for j := 0; j < opsPerGoroutine; j++ {
+			for range opsPerGoroutine {
 				stats.Inc("TestAPI")
 			}
 		}(i)

@@ -26,7 +26,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/minio/minio/internal/grid"
+	"github.com/kypello-io/kypello/internal/grid"
 	xnet "github.com/minio/pkg/v3/net"
 )
 
@@ -300,9 +300,9 @@ func newStorageRESTHTTPServerClient(t testing.TB) *storageRESTClient {
 		t.Fatalf("SetupTestGrid: %v", err)
 	}
 	t.Cleanup(tg.Cleanup)
-	prevHost, prevPort := globalMinioHost, globalMinioPort
+	prevHost, prevPort := globalKypelloHost, globalKypelloPort
 	defer func() {
-		globalMinioHost, globalMinioPort = prevHost, prevPort
+		globalKypelloHost, globalKypelloPort = prevHost, prevPort
 	}()
 	// tg[0] = local, tg[1] = remote
 
@@ -313,7 +313,7 @@ func newStorageRESTHTTPServerClient(t testing.TB) *storageRESTClient {
 	}
 	url.Path = t.TempDir()
 
-	globalMinioHost, globalMinioPort = mustSplitHostPort(url.Host)
+	globalKypelloHost, globalKypelloPort = mustSplitHostPort(url.Host)
 	globalNodeAuthToken, _ = authenticateNode(globalActiveCred.AccessKey, globalActiveCred.SecretKey)
 
 	endpoint, err := NewEndpoint(url.String())

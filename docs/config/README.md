@@ -1,18 +1,18 @@
-# MinIO Server Config Guide [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Docker Pulls](https://img.shields.io/docker/pulls/minio/minio.svg?maxAge=604800)](https://hub.docker.com/r/minio/minio/)
+# Kypello Server Config Guide [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Docker Pulls](https://img.shields.io/docker/pulls/minio/minio.svg?maxAge=604800)](https://hub.docker.com/r/minio/minio/)
 
 ## Configuration Directory
 
-MinIO stores all its config as part of the server deployment, config is erasure coded on MinIO. On a fresh deployment MinIO automatically generates a new `config` and this config is available to be configured via `mc admin config` command. MinIO also encrypts all the config, IAM and policies content if KMS is configured. Please refer to how to encrypt your config and IAM credentials [here](https://github.com/minio/minio/blob/master/docs/kms/IAM.md).
+MinIO stores all its config as part of the server deployment, config is erasure coded on MinIO. On a fresh deployment MinIO automatically generates a new `config` and this config is available to be configured via `mc admin config` command. MinIO also encrypts all the config, IAM and policies content if KMS is configured. Please refer to how to encrypt your config and IAM credentials [here](https://github.com/kypello-io/kypello/blob/master/docs/kms/IAM.md).
 
 ### Certificate Directory
 
-TLS certificates by default are expected to be stored under ``${HOME}/.minio/certs`` directory. You need to place certificates here to enable `HTTPS` based access. Read more about [How to secure access to MinIO server with TLS](https://docs.min.io/community/minio-object-store/operations/network-encryption.html).
+TLS certificates by default are expected to be stored under ``${HOME}/.kypello/certs`` directory. You need to place certificates here to enable `HTTPS` based access. Read more about [How to secure access to MinIO server with TLS](https://docs.min.io/community/minio-object-store/operations/network-encryption.html).
 
 Following is a sample directory structure for MinIO server with TLS certificates.
 
 ```sh
-$ mc tree --files ~/.minio
-/home/user1/.minio
+$ mc tree --files ~/.kypello
+/home/user1/.kypello
 └─ certs
    ├─ CAs
    ├─ private.key
@@ -26,9 +26,9 @@ You can provide a custom certs directory using `--certs-dir` command line option
 On MinIO admin credentials or root credentials are only allowed to be changed using ENVs namely `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD`.
 
 ```sh
-export MINIO_ROOT_USER=minio
-export MINIO_ROOT_PASSWORD=minio13
-minio server /data
+export MINIO_ROOT_USER=kypello
+export MINIO_ROOT_PASSWORD=kypello13
+kypello server /data
 ```
 
 #### Site
@@ -60,12 +60,12 @@ Example:
 ```sh
 export MINIO_SITE_REGION="us-west-0"
 export MINIO_SITE_NAME="sfo-rack-1"
-minio server /data
+kypello server /data
 ```
 
 ### Storage Class
 
-By default, parity for objects with standard storage class is set to `N/2`, and parity for objects with reduced redundancy storage class objects is set to `2`. Read more about storage class support in MinIO server [here](https://github.com/minio/minio/blob/master/docs/erasure/storage-class/README.md).
+By default, parity for objects with standard storage class is set to `N/2`, and parity for objects with reduced redundancy storage class objects is set to `2`. Read more about storage class support in MinIO server [here](https://github.com/kypello-io/kypello/blob/master/docs/erasure/storage-class/README.md).
 
 ```
 KEY:
@@ -91,7 +91,7 @@ MINIO_STORAGE_CLASS_COMMENT   (sentence)  optionally add a comment to this setti
 
 #### Etcd
 
-MinIO supports storing encrypted IAM assets in etcd, if KMS is configured. Please refer to how to encrypt your config and IAM credentials [here](https://github.com/minio/minio/blob/master/docs/kms/IAM.md).
+MinIO supports storing encrypted IAM assets in etcd, if KMS is configured. Please refer to how to encrypt your config and IAM credentials [here](https://github.com/kypello-io/kypello/blob/master/docs/kms/IAM.md).
 
 > NOTE: if *path_prefix* is set then MinIO will not federate your buckets, namespaced IAM assets are assumed as isolated tenants, only buckets are considered globally unique but performing a lookup with a *bucket* which belongs to a different tenant will fail unlike federated setups where MinIO would port-forward and route the request to relevant cluster accordingly. This is a special feature, federated deployments should not need to set *path_prefix*.
 
@@ -125,7 +125,7 @@ MINIO_ETCD_COMMENT          (sentence)  optionally add a comment to this setting
 
 ### API
 
-By default, there is no limitation on the number of concurrent requests that a server/cluster processes at the same time. However, it is possible to impose such limitation using the API subsystem. Read more about throttling limitation in MinIO server [here](https://github.com/minio/minio/blob/master/docs/throttle/README.md).
+By default, there is no limitation on the number of concurrent requests that a server/cluster processes at the same time. However, it is possible to impose such limitation using the API subsystem. Read more about throttling limitation in MinIO server [here](https://github.com/kypello-io/kypello/blob/master/docs/throttle/README.md).
 
 ```
 KEY:
@@ -194,16 +194,16 @@ All configuration changes can be made using [`mc admin config` get/set/reset/exp
 #### List all config keys available
 
 ```
-~ mc admin config set myminio/
+~ mc admin config set mykypello/
 ```
 
 #### Obtain help for each key
 
 ```
-~ mc admin config set myminio/ <key>
+~ mc admin config set mykypello/ <key>
 ```
 
-e.g: `mc admin config set myminio/ etcd` returns available `etcd` config args
+e.g: `mc admin config set mykypello/ etcd` returns available `etcd` config args
 
 ```
 ~ mc admin config set play/ etcd
@@ -313,7 +313,7 @@ Example:
 
 ```sh
 export MINIO_BROWSER=off
-minio server /data
+kypello server /data
 ```
 
 ### Domain
@@ -324,17 +324,17 @@ Example:
 
 ```sh
 export MINIO_DOMAIN=mydomain.com
-minio server /data
+kypello server /data
 ```
 
 For advanced use cases `MINIO_DOMAIN` environment variable supports multiple-domains with comma separated values.
 
 ```sh
 export MINIO_DOMAIN=sub1.mydomain.com,sub2.mydomain.com
-minio server /data
+kypello server /data
 ```
 
 ## Explore Further
 
 * [MinIO Quickstart Guide](https://docs.min.io/community/minio-object-store/operations/deployments/baremetal-deploy-minio-on-redhat-linux.html)
-* [Configure MinIO Server with TLS](https://docs.min.io/community/minio-object-store/operations/network-encryption.html)
+* [Configure Kypello Server with TLS](https://docs.min.io/community/minio-object-store/operations/network-encryption.html)

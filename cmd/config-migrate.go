@@ -24,15 +24,15 @@ import (
 	"path"
 	"strings"
 
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/config/compress"
-	xldap "github.com/minio/minio/internal/config/identity/ldap"
-	"github.com/minio/minio/internal/config/identity/openid"
-	"github.com/minio/minio/internal/config/notify"
-	"github.com/minio/minio/internal/config/policy/opa"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/event/target"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/config/compress"
+	xldap "github.com/kypello-io/kypello/internal/config/identity/ldap"
+	"github.com/kypello-io/kypello/internal/config/identity/openid"
+	"github.com/kypello-io/kypello/internal/config/notify"
+	"github.com/kypello-io/kypello/internal/config/policy/opa"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/event/target"
+	"github.com/kypello-io/kypello/internal/logger"
 	xnet "github.com/minio/pkg/v3/net"
 	"github.com/minio/pkg/v3/quick"
 )
@@ -49,7 +49,7 @@ func Load(configFile string, data any) (quick.Config, error) {
 
 func readConfigWithoutMigrate(ctx context.Context, objAPI ObjectLayer) (config.Config, error) {
 	// Construct path to config.json for the given bucket.
-	configFile := path.Join(minioConfigPrefix, minioConfigFile)
+	configFile := path.Join(kypelloConfigPrefix, kypelloConfigFile)
 
 	configFiles := []string{
 		getConfigFile(),
@@ -101,7 +101,7 @@ func readConfigWithoutMigrate(ctx context.Context, objAPI ObjectLayer) (config.C
 			return newCfg, nil
 		}
 
-		// Read older `.minio.sys/config/config.json`, if not
+		// Read older `.kypello.sys/config/config.json`, if not
 		// possible just fail.
 		if err = json.Unmarshal(data, cfg); err != nil {
 			// Unable to parse old JSON simply re-initialize a new one.

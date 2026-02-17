@@ -28,9 +28,9 @@ import (
 	"testing"
 
 	"github.com/dustin/go-humanize"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/hash"
-	"github.com/minio/minio/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/hash"
+	"github.com/kypello-io/kypello/internal/ioutil"
 )
 
 // Wrapper for calling NewMultipartUpload tests for both Erasure multiple disks and single node setup.
@@ -1019,7 +1019,7 @@ func testListMultipartUploads(obj ObjectLayer, instanceType string, t TestErrHan
 		{
 			MaxUploads:     10,
 			IsTruncated:    false,
-			Prefix:         "minio",
+			Prefix:         "kypello",
 			UploadIDMarker: uploadIDs[4],
 			Uploads: []MultipartInfo{
 				{
@@ -1274,7 +1274,7 @@ func testListObjectPartsStale(obj ObjectLayer, instanceType string, disks []stri
 
 	erasureDisks := er.getDisks()
 	uploadIDPath := er.getUploadIDDir(bucketNames[0], objectNames[0], uploadIDs[0])
-	dataDirs, err := erasureDisks[0].ListDir(context.Background(), minioMetaMultipartBucket, minioMetaMultipartBucket, uploadIDPath, -1)
+	dataDirs, err := erasureDisks[0].ListDir(context.Background(), kypelloMetaMultipartBucket, kypelloMetaMultipartBucket, uploadIDPath, -1)
 	if err != nil {
 		t.Fatalf("%s : %s", instanceType, err.Error())
 	}
@@ -1289,7 +1289,7 @@ func testListObjectPartsStale(obj ObjectLayer, instanceType string, disks []stri
 
 	toDel := (len(erasureDisks) / 2) + 1
 	for _, disk := range erasureDisks[:toDel] {
-		disk.DeleteBulk(context.Background(), minioMetaMultipartBucket, []string{pathJoin(uploadIDPath, dataDir, "part.2")}...)
+		disk.DeleteBulk(context.Background(), kypelloMetaMultipartBucket, []string{pathJoin(uploadIDPath, dataDir, "part.2")}...)
 	}
 
 	partInfos := []ListPartsInfo{

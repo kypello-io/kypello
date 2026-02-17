@@ -4,20 +4,20 @@ set -E
 set -o pipefail
 set -x
 
-if [ ! -x "$PWD/minio" ]; then
+if [ ! -x "$PWD/kypello" ]; then
 	echo "minio executable binary not found in current directory"
 	exit 1
 fi
 
 WORK_DIR="$(mktemp -d)"
-MINIO_CONFIG_DIR="$WORK_DIR/.minio"
-MINIO=("$PWD/minio" --config-dir "$MINIO_CONFIG_DIR" server)
+MINIO_CONFIG_DIR="$WORK_DIR/.kypello"
+MINIO=("$PWD/kypello" --config-dir "$MINIO_CONFIG_DIR" server)
 
 function start_minio() {
 	start_port=$1
 
-	export MINIO_ROOT_USER=minio
-	export MINIO_ROOT_PASSWORD=minio123
+	export MINIO_ROOT_USER=kypello
+	export MINIO_ROOT_PASSWORD=kypello123
 	unset MINIO_KMS_AUTO_ENCRYPTION # do not auto-encrypt objects
 	unset MINIO_CI_CD
 	unset CI
@@ -74,7 +74,7 @@ function main() {
 	# Wait until MinIO self heal kicks in
 	sleep 60
 
-	if [ -f ${WORK_DIR}/mnt/disk4/.minio.sys/format.json ]; then
+	if [ -f ${WORK_DIR}/mnt/disk4/.kypello.sys/format.json ]; then
 		echo "A root disk is formatted unexpectedely"
 		cat "${WORK_DIR}/server4.log"
 		exit -1
@@ -82,7 +82,7 @@ function main() {
 }
 
 function cleanup() {
-	pkill minio
+	pkill kypello
 	sudo umount ${WORK_DIR}/mnt/disk{1..3}/
 	sudo rm /dev/minio-loopdisk*
 	rm -rf "$WORK_DIR"

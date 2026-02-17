@@ -41,10 +41,10 @@ import (
 	"testing"
 
 	"github.com/dustin/go-humanize"
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/hash/sha256"
-	xhttp "github.com/minio/minio/internal/http"
-	ioutilx "github.com/minio/minio/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/hash/sha256"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	ioutilx "github.com/kypello-io/kypello/internal/ioutil"
 )
 
 // Type to capture different modifications to API request to simulate failure cases.
@@ -2815,10 +2815,8 @@ func testAPINewMultipartHandlerParallel(obj ObjectLayer, instanceType, bucketNam
 	objectName := "test-object-new-multipart-parallel"
 	var wg sync.WaitGroup
 	for range 10 {
-		wg.Add(1)
 		// Initiate NewMultipart upload on the same object 10 times concurrrently.
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			rec := httptest.NewRecorder()
 			// construct HTTP request NewMultipartUpload.
 			req, err := newTestSignedRequestV4(http.MethodPost, getNewMultipartURL("", bucketName, objectName), 0, nil, credentials.AccessKey, credentials.SecretKey, nil)
@@ -2847,7 +2845,7 @@ func testAPINewMultipartHandlerParallel(obj ObjectLayer, instanceType, bucketNam
 			testUploads.Lock()
 			testUploads.uploads = append(testUploads.uploads, multipartResponse.UploadID)
 			testUploads.Unlock()
-		}()
+		})
 	}
 	// Wait till all go routines finishes execution.
 	wg.Wait()

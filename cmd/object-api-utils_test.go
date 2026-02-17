@@ -30,12 +30,13 @@ import (
 	"reflect"
 	"runtime"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/klauspost/compress/s2"
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/config/compress"
-	"github.com/minio/minio/internal/crypto"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/config/compress"
+	"github.com/kypello-io/kypello/internal/crypto"
 	"github.com/minio/pkg/v3/trie"
 )
 
@@ -50,11 +51,12 @@ func pathJoinOld(elem ...string) string {
 }
 
 func concatNaive(ss ...string) string {
-	rs := ss[0]
+	var rs strings.Builder
+	rs.WriteString(ss[0])
 	for i := 1; i < len(ss); i++ {
-		rs += ss[i]
+		rs.WriteString(ss[i])
 	}
-	return rs
+	return rs.String()
 }
 
 func benchmark(b *testing.B, data []string) {
@@ -118,16 +120,16 @@ func TestPathTraversalExploit(t *testing.T) {
 }
 
 // testPathTraversal exploit test, exploits path traversal on windows
-// with following object names "\\../.minio.sys/config/iam/${username}/identity.json"
+// with following object names "\\../.kypello.sys/config/iam/${username}/identity.json"
 // #16852
 func testPathTraversalExploit(obj ObjectLayer, instanceType, bucketName string, apiRouter http.Handler,
 	credentials auth.Credentials, t *testing.T,
 ) {
-	if err := newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err := newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatalf("Initializing config.json failed")
 	}
 
-	objectName := `\../.minio.sys/config/hello.txt`
+	objectName := `\../.kypello.sys/config/hello.txt`
 
 	// initialize HTTP NewRecorder, this records any mutations to response writer inside the handler.
 	rec := httptest.NewRecorder()
@@ -154,7 +156,7 @@ func testPathTraversalExploit(obj ObjectLayer, instanceType, bucketName string, 
 	for i := range parts {
 		if errs[i] == nil {
 			if parts[i].Name == objectName {
-				t.Errorf("path traversal allowed to allow writing to minioMetaBucket: %s", instanceType)
+				t.Errorf("path traversal allowed to allow writing to kypelloMetaBucket: %s", instanceType)
 			}
 		}
 	}
@@ -313,17 +315,17 @@ func TestIsMinioMetaBucketName(t *testing.T) {
 	}{
 		// MinIO meta bucket.
 		{
-			bucket: minioMetaBucket,
+			bucket: kypelloMetaBucket,
 			result: true,
 		},
 		// MinIO meta bucket.
 		{
-			bucket: minioMetaMultipartBucket,
+			bucket: kypelloMetaMultipartBucket,
 			result: true,
 		},
 		// MinIO meta bucket.
 		{
-			bucket: minioMetaTmpBucket,
+			bucket: kypelloMetaTmpBucket,
 			result: true,
 		},
 		// Normal bucket

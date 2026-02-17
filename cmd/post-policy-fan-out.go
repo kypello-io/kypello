@@ -23,12 +23,12 @@ import (
 	"maps"
 	"sync"
 
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/kms"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/kms"
 )
 
 type fanOutOptions struct {

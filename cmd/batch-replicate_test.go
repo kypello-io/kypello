@@ -21,7 +21,7 @@ import (
 	"slices"
 	"testing"
 
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 func TestParseBatchJobReplicate(t *testing.T) {
@@ -30,7 +30,7 @@ replicate:
   apiVersion: v1
   # source of the objects to be replicated
   source:
-    type: minio # valid values are "s3" or "minio"
+    type: minio # valid values are "s3" or "kypello"
     bucket: mytest
     prefix: object-prefix1 # 'PREFIX' is optional
     # If your source is the 'local' alias specified to 'mc batch start', then the 'endpoint' and 'credentials' fields are optional and can be omitted
@@ -38,8 +38,8 @@ replicate:
 #    endpoint: "http://127.0.0.1:9000"
 #    # path: "on|off|auto" # "on" enables path-style bucket lookup. "off" enables virtual host (DNS)-style bucket lookup. Defaults to "auto"
 #    credentials:
-#      accessKey: minioadmin # Required
-#      secretKey: minioadmin # Required
+#      accessKey: kypelloadmin # Required
+#      secretKey: kypelloadmin # Required
 #    # sessionToken: SESSION-TOKEN # Optional only available when rotating credentials are used
     snowball: # automatically activated if the source is local
       disable: true # optionally turn-off snowball archive transfer
@@ -51,7 +51,7 @@ replicate:
 
   # target where the objects must be replicated
   target:
-    type: minio # valid values are "s3" or "minio"
+    type: minio # valid values are "s3" or "kypello"
     bucket: mytest
     prefix: stage # 'PREFIX' is optional
     # If your source is the 'local' alias specified to 'mc batch start', then the 'endpoint' and 'credentials' fields are optional and can be omitted
@@ -60,8 +60,8 @@ replicate:
     endpoint: "http://127.0.0.1:9001"
     # path: "on|off|auto" # "on" enables path-style bucket lookup. "off" enables virtual host (DNS)-style bucket lookup. Defaults to "auto"
     credentials:
-      accessKey: minioadmin
-      secretKey: minioadmin
+      accessKey: kypelloadmin
+      secretKey: kypelloadmin
     # sessionToken: SESSION-TOKEN # Optional only available when rotating credentials are used
 
   # NOTE: All flags are optional
@@ -106,7 +106,7 @@ replicate:
   apiVersion: v1
   # source of the objects to be replicated
   source:
-    type: minio # valid values are "s3" or "minio"
+    type: minio # valid values are "s3" or "kypello"
     bucket: mytest
     prefix: # 'PREFIX' is optional
       - object-prefix1 
@@ -116,8 +116,8 @@ replicate:
 #    endpoint: "http://127.0.0.1:9000"
 #    # path: "on|off|auto" # "on" enables path-style bucket lookup. "off" enables virtual host (DNS)-style bucket lookup. Defaults to "auto"
 #    credentials:
-#      accessKey: minioadmin # Required
-#      secretKey: minioadmin # Required
+#      accessKey: kypelloadmin # Required
+#      secretKey: kypelloadmin # Required
 #    # sessionToken: SESSION-TOKEN # Optional only available when rotating credentials are used
     snowball: # automatically activated if the source is local
       disable: true # optionally turn-off snowball archive transfer
@@ -129,7 +129,7 @@ replicate:
 
   # target where the objects must be replicated
   target:
-    type: minio # valid values are "s3" or "minio"
+    type: minio # valid values are "s3" or "kypello"
     bucket: mytest
     prefix: stage # 'PREFIX' is optional
     # If your source is the 'local' alias specified to 'mc batch start', then the 'endpoint' and 'credentials' fields are optional and can be omitted
@@ -138,8 +138,8 @@ replicate:
     endpoint: "http://127.0.0.1:9001"
     # path: "on|off|auto" # "on" enables path-style bucket lookup. "off" enables virtual host (DNS)-style bucket lookup. Defaults to "auto"
     credentials:
-      accessKey: minioadmin
-      secretKey: minioadmin
+      accessKey: kypelloadmin
+      secretKey: kypelloadmin
     # sessionToken: SESSION-TOKEN # Optional only available when rotating credentials are used
 
   # NOTE: All flags are optional

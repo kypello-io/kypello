@@ -64,7 +64,7 @@ function test_resiliency_success_with_server_down() {
 	# Finally restart the node
 	docker start resiliency-minio1-1
 
-	./mc ready myminio
+	./mc ready mykypello
 }
 
 function test_resiliency_failure_with_server_down_and_single_disk_offline() {
@@ -73,19 +73,19 @@ function test_resiliency_failure_with_server_down_and_single_disk_offline() {
 	# Stop one node
 	docker stop resiliency-minio1-1
 	# In additional, suspend one more disk per set in order to induce a failure
-	docker exec resiliency-minio2-1 /bin/sh -c "mv /data2/.minio.sys /data2/.minio.bkp && touch /data2/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "mv /data6/.minio.sys /data6/.minio.bkp && touch /data6/.minio.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "mv /data2/.kypello.sys /data2/.kypello.bkp && touch /data2/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "mv /data6/.kypello.sys /data6/.kypello.bkp && touch /data6/.kypello.sys"
 	sleep 10
 
 	verify_resiliency_failure "${FUNCNAME[0]}"
 
 	# Enable the disks back on nodes
-	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data2/.minio.sys && mv /data2/.minio.bkp /data2/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data6/.minio.sys && mv /data6/.minio.bkp /data6/.minio.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data2/.kypello.sys && mv /data2/.kypello.bkp /data2/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data6/.kypello.sys && mv /data6/.kypello.bkp /data6/.kypello.sys"
 
 	# Finally restart the node
 	docker start resiliency-minio1-1
-	./mc ready myminio
+	./mc ready mykypello
 }
 
 function test_resiliency_failure_with_servers_down() {
@@ -102,7 +102,7 @@ function test_resiliency_failure_with_servers_down() {
 	docker start resiliency-minio1-1
 	docker start resiliency-minio2-1
 
-	./mc ready myminio
+	./mc ready mykypello
 }
 
 function test_resiliency_success_with_disks_offline() {
@@ -110,29 +110,29 @@ function test_resiliency_success_with_disks_offline() {
 	echo -e "${GREEN}Running test_resiliency_success_with_disks_offline ...${NC}"
 	# There are 8 disks on each node with EC:4 and two erasure sets.
 	# We should be able to safely suspend one disk per set from each server.
-	docker exec resiliency-minio1-1 /bin/sh -c "mv /data1/.minio.sys /data1/.minio.bkp && touch /data1/.minio.sys"
-	docker exec resiliency-minio1-1 /bin/sh -c "mv /data5/.minio.sys /data5/.minio.bkp && touch /data5/.minio.sys"
-	docker exec resiliency-minio2-1 /bin/sh -c "mv /data1/.minio.sys /data1/.minio.bkp && touch /data1/.minio.sys"
-	docker exec resiliency-minio2-1 /bin/sh -c "mv /data5/.minio.sys /data5/.minio.bkp && touch /data5/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "mv /data1/.minio.sys /data1/.minio.bkp && touch /data1/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "mv /data5/.minio.sys /data5/.minio.bkp && touch /data5/.minio.sys"
-	docker exec resiliency-minio4-1 /bin/sh -c "mv /data1/.minio.sys /data1/.minio.bkp && touch /data1/.minio.sys"
-	docker exec resiliency-minio4-1 /bin/sh -c "mv /data5/.minio.sys /data5/.minio.bkp && touch /data5/.minio.sys"
+	docker exec resiliency-minio1-1 /bin/sh -c "mv /data1/.kypello.sys /data1/.kypello.bkp && touch /data1/.kypello.sys"
+	docker exec resiliency-minio1-1 /bin/sh -c "mv /data5/.kypello.sys /data5/.kypello.bkp && touch /data5/.kypello.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "mv /data1/.kypello.sys /data1/.kypello.bkp && touch /data1/.kypello.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "mv /data5/.kypello.sys /data5/.kypello.bkp && touch /data5/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "mv /data1/.kypello.sys /data1/.kypello.bkp && touch /data1/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "mv /data5/.kypello.sys /data5/.kypello.bkp && touch /data5/.kypello.sys"
+	docker exec resiliency-minio4-1 /bin/sh -c "mv /data1/.kypello.sys /data1/.kypello.bkp && touch /data1/.kypello.sys"
+	docker exec resiliency-minio4-1 /bin/sh -c "mv /data5/.kypello.sys /data5/.kypello.bkp && touch /data5/.kypello.sys"
 	sleep 10
 
 	verify_resiliency "${FUNCNAME[0]}"
 
 	# Finally enable the disks back on nodes
-	docker exec resiliency-minio1-1 /bin/sh -c "rm -rf /data1/.minio.sys && mv /data1/.minio.bkp /data1/.minio.sys"
-	docker exec resiliency-minio1-1 /bin/sh -c "rm -rf /data5/.minio.sys && mv /data5/.minio.bkp /data5/.minio.sys"
-	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data1/.minio.sys && mv /data1/.minio.bkp /data1/.minio.sys"
-	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data5/.minio.sys && mv /data5/.minio.bkp /data5/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data1/.minio.sys && mv /data1/.minio.bkp /data1/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data5/.minio.sys && mv /data5/.minio.bkp /data5/.minio.sys"
-	docker exec resiliency-minio4-1 /bin/sh -c "rm -rf /data1/.minio.sys && mv /data1/.minio.bkp /data1/.minio.sys"
-	docker exec resiliency-minio4-1 /bin/sh -c "rm -rf /data5/.minio.sys && mv /data5/.minio.bkp /data5/.minio.sys"
+	docker exec resiliency-minio1-1 /bin/sh -c "rm -rf /data1/.kypello.sys && mv /data1/.kypello.bkp /data1/.kypello.sys"
+	docker exec resiliency-minio1-1 /bin/sh -c "rm -rf /data5/.kypello.sys && mv /data5/.kypello.bkp /data5/.kypello.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data1/.kypello.sys && mv /data1/.kypello.bkp /data1/.kypello.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data5/.kypello.sys && mv /data5/.kypello.bkp /data5/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data1/.kypello.sys && mv /data1/.kypello.bkp /data1/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data5/.kypello.sys && mv /data5/.kypello.bkp /data5/.kypello.sys"
+	docker exec resiliency-minio4-1 /bin/sh -c "rm -rf /data1/.kypello.sys && mv /data1/.kypello.bkp /data1/.kypello.sys"
+	docker exec resiliency-minio4-1 /bin/sh -c "rm -rf /data5/.kypello.sys && mv /data5/.kypello.bkp /data5/.kypello.sys"
 
-	./mc ready myminio
+	./mc ready mykypello
 }
 
 function test_resiliency_failure_with_too_many_disks_offline() {
@@ -141,33 +141,33 @@ function test_resiliency_failure_with_too_many_disks_offline() {
 	# There are 8 disks on each node with EC:4 and two erasure sets.
 	# We should be able to safely suspend one disk per set from each server.
 	# suspending one additional disk from each set should cause failures
-	docker exec resiliency-minio1-1 /bin/sh -c "mv /data1/.minio.sys /data1/.minio.bkp && touch /data1/.minio.sys"
-	docker exec resiliency-minio2-1 /bin/sh -c "mv /data1/.minio.sys /data1/.minio.bkp && touch /data1/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "mv /data1/.minio.sys /data1/.minio.bkp && touch /data1/.minio.sys"
-	docker exec resiliency-minio4-1 /bin/sh -c "mv /data1/.minio.sys /data1/.minio.bkp && touch /data1/.minio.sys"
-	docker exec resiliency-minio1-1 /bin/sh -c "mv /data5/.minio.sys /data5/.minio.bkp && touch /data5/.minio.sys"
-	docker exec resiliency-minio2-1 /bin/sh -c "mv /data5/.minio.sys /data5/.minio.bkp && touch /data5/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "mv /data5/.minio.sys /data5/.minio.bkp && touch /data5/.minio.sys"
-	docker exec resiliency-minio4-1 /bin/sh -c "mv /data5/.minio.sys /data5/.minio.bkp && touch /data5/.minio.sys"
-	docker exec resiliency-minio2-1 /bin/sh -c "mv /data2/.minio.sys /data2/.minio.bkp && touch /data2/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "mv /data6/.minio.sys /data6/.minio.bkp && touch /data6/.minio.sys"
+	docker exec resiliency-minio1-1 /bin/sh -c "mv /data1/.kypello.sys /data1/.kypello.bkp && touch /data1/.kypello.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "mv /data1/.kypello.sys /data1/.kypello.bkp && touch /data1/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "mv /data1/.kypello.sys /data1/.kypello.bkp && touch /data1/.kypello.sys"
+	docker exec resiliency-minio4-1 /bin/sh -c "mv /data1/.kypello.sys /data1/.kypello.bkp && touch /data1/.kypello.sys"
+	docker exec resiliency-minio1-1 /bin/sh -c "mv /data5/.kypello.sys /data5/.kypello.bkp && touch /data5/.kypello.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "mv /data5/.kypello.sys /data5/.kypello.bkp && touch /data5/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "mv /data5/.kypello.sys /data5/.kypello.bkp && touch /data5/.kypello.sys"
+	docker exec resiliency-minio4-1 /bin/sh -c "mv /data5/.kypello.sys /data5/.kypello.bkp && touch /data5/.kypello.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "mv /data2/.kypello.sys /data2/.kypello.bkp && touch /data2/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "mv /data6/.kypello.sys /data6/.kypello.bkp && touch /data6/.kypello.sys"
 	sleep 10
 
 	verify_resiliency_failure "${FUNCNAME[0]}"
 
 	# Finally enable the disks back on nodes
-	docker exec resiliency-minio1-1 /bin/sh -c "rm -rf /data1/.minio.sys && mv /data1/.minio.bkp /data1/.minio.sys"
-	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data1/.minio.sys && mv /data1/.minio.bkp /data1/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data1/.minio.sys && mv /data1/.minio.bkp /data1/.minio.sys"
-	docker exec resiliency-minio4-1 /bin/sh -c "rm -rf /data1/.minio.sys && mv /data1/.minio.bkp /data1/.minio.sys"
-	docker exec resiliency-minio1-1 /bin/sh -c "rm -rf /data5/.minio.sys && mv /data5/.minio.bkp /data5/.minio.sys"
-	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data5/.minio.sys && mv /data5/.minio.bkp /data5/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data5/.minio.sys && mv /data5/.minio.bkp /data5/.minio.sys"
-	docker exec resiliency-minio4-1 /bin/sh -c "rm -rf /data5/.minio.sys && mv /data5/.minio.bkp /data5/.minio.sys"
-	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data2/.minio.sys && mv /data2/.minio.bkp /data2/.minio.sys"
-	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data6/.minio.sys && mv /data6/.minio.bkp /data6/.minio.sys"
+	docker exec resiliency-minio1-1 /bin/sh -c "rm -rf /data1/.kypello.sys && mv /data1/.kypello.bkp /data1/.kypello.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data1/.kypello.sys && mv /data1/.kypello.bkp /data1/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data1/.kypello.sys && mv /data1/.kypello.bkp /data1/.kypello.sys"
+	docker exec resiliency-minio4-1 /bin/sh -c "rm -rf /data1/.kypello.sys && mv /data1/.kypello.bkp /data1/.kypello.sys"
+	docker exec resiliency-minio1-1 /bin/sh -c "rm -rf /data5/.kypello.sys && mv /data5/.kypello.bkp /data5/.kypello.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data5/.kypello.sys && mv /data5/.kypello.bkp /data5/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data5/.kypello.sys && mv /data5/.kypello.bkp /data5/.kypello.sys"
+	docker exec resiliency-minio4-1 /bin/sh -c "rm -rf /data5/.kypello.sys && mv /data5/.kypello.bkp /data5/.kypello.sys"
+	docker exec resiliency-minio2-1 /bin/sh -c "rm -rf /data2/.kypello.sys && mv /data2/.kypello.bkp /data2/.kypello.sys"
+	docker exec resiliency-minio3-1 /bin/sh -c "rm -rf /data6/.kypello.sys && mv /data6/.kypello.bkp /data6/.kypello.sys"
 
-	./mc ready myminio
+	./mc ready mykypello
 }
 
 function find_erasure_set_for_file() {
@@ -396,7 +396,7 @@ function main() {
 		wget -q https://dl.minio.io/client/mc/release/linux-amd64/mc && chmod +x ./mc
 	fi
 
-	export MC_HOST_myminio=http://minioadmin:minioadmin@localhost:9000
+	export MC_HOST_mykypello=http://kypelloadmin:kypelloadmin@localhost:9000
 
 	cleanup_and_prune
 

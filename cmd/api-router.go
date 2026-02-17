@@ -21,8 +21,8 @@ import (
 	"net"
 	"net/http"
 
+	xhttp "github.com/kypello-io/kypello/internal/http"
 	consoleapi "github.com/minio/console/api"
-	xhttp "github.com/minio/minio/internal/http"
 	"github.com/minio/mux"
 	"github.com/minio/pkg/v3/wildcard"
 	"github.com/rs/cors"
@@ -280,7 +280,7 @@ func registerAPIRouter(router *mux.Router) {
 				// All other `<bucket>.<namespace>.svc.<cluster_domain>`
 				// makes sure that buckets are routed through this matcher
 				// to match for `<bucket>`
-				return host != minioReservedBucket+"."+domainName
+				return host != kypelloReservedBucket+"."+domainName
 			}).Host("{bucket:.+}."+domainName).Subrouter())
 		} else {
 			routers = append(routers, apiRouter.Host("{bucket:.+}."+domainName).Subrouter())

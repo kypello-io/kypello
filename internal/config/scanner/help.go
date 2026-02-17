@@ -17,7 +17,7 @@
 
 package scanner
 
-import "github.com/minio/minio/internal/config"
+import "github.com/kypello-io/kypello/internal/config"
 
 var (
 	defaultHelpPostfix = func(key string) string {

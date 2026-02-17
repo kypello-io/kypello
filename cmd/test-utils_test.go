@@ -58,13 +58,13 @@ import (
 
 	"github.com/fatih/color"
 
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/hash"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/minio-go/v7/pkg/s3utils"
 	"github.com/minio/minio-go/v7/pkg/signer"
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/hash"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/mux"
 	"github.com/minio/pkg/v3/policy"
 )
@@ -306,7 +306,7 @@ func isSameType(obj1, obj2 any) bool {
 	return reflect.TypeOf(obj1) == reflect.TypeOf(obj2)
 }
 
-// TestServer encapsulates an instantiation of a MinIO instance with a temporary backend.
+// TestServer encapsulates an instantiation of a Kypello instance with a temporary backend.
 // Example usage:
 //
 //	s := StartTestServer(t,"Erasure")
@@ -336,7 +336,7 @@ func UnstartedTestServer(t TestErrHandler, instanceType string) TestServer {
 	}
 
 	// set new server configuration.
-	if err = newTestConfig(globalMinioDefaultRegion, objLayer); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, objLayer); err != nil {
 		t.Fatalf("%s", err)
 	}
 
@@ -371,9 +371,9 @@ func initTestServerWithBackend(ctx context.Context, t TestErrHandler, testServer
 
 	// initialize peer rpc
 	host, port := mustSplitHostPort(testServer.Server.Listener.Addr().String())
-	globalMinioHost = host
-	globalMinioPort = port
-	globalMinioAddr = getEndpointsLocalAddr(testServer.Disks)
+	globalKypelloHost = host
+	globalKypelloPort = port
+	globalKypelloAddr = getEndpointsLocalAddr(testServer.Disks)
 
 	initAllSubsystems(ctx)
 
@@ -685,7 +685,7 @@ func signStreamingRequest(req *http.Request, accessKey, secretKey string, currTi
 	// Get scope.
 	scope := strings.Join([]string{
 		currTime.Format(yyyymmdd),
-		globalMinioDefaultRegion,
+		globalKypelloDefaultRegion,
 		string(serviceS3),
 		"aws4_request",
 	}, SlashSeparator)
@@ -695,7 +695,7 @@ func signStreamingRequest(req *http.Request, accessKey, secretKey string, currTi
 	stringToSign += getSHA256Hash([]byte(canonicalRequest))
 
 	date := sumHMAC([]byte("AWS4"+secretKey), []byte(currTime.Format(yyyymmdd)))
-	region := sumHMAC(date, []byte(globalMinioDefaultRegion))
+	region := sumHMAC(date, []byte(globalKypelloDefaultRegion))
 	service := sumHMAC(region, []byte(string(serviceS3)))
 	signingKey := sumHMAC(service, []byte("aws4_request"))
 
@@ -726,7 +726,7 @@ func newTestStreamingRequest(method, urlStr string, dataLength, chunkSize int64,
 
 	if body == nil {
 		// this is added to avoid panic during io.ReadAll(req.Body).
-		// th stack trace can be found here  https://github.com/minio/minio/pull/2074 .
+		// th stack trace can be found here  https://github.com/kypello-io/kypello/pull/2074 .
 		// This is very similar to https://github.com/golang/go/issues/7527.
 		req.Body = io.NopCloser(bytes.NewReader([]byte("")))
 	}
@@ -1774,7 +1774,7 @@ func ExecObjectLayerAPITest(args ExecObjectLayerAPITestArgs) {
 
 	// initialize the server and obtain the credentials and root.
 	// credentials are necessary to sign the HTTP request.
-	if err = newTestConfig(globalMinioDefaultRegion, objLayer); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, objLayer); err != nil {
 		args.t.Fatalf("Unable to initialize server config. %s", err)
 	}
 
@@ -1804,7 +1804,7 @@ func ExecObjectLayerAPITest(args ExecObjectLayerAPITestArgs) {
 
 	// initialize the server and obtain the credentials and root.
 	// credentials are necessary to sign the HTTP request.
-	if err = newTestConfig(globalMinioDefaultRegion, objLayer); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, objLayer); err != nil {
 		args.t.Fatalf("Unable to initialize server config. %s", err)
 	}
 
@@ -1854,7 +1854,7 @@ func ExecObjectLayerTest(t TestErrHandler, objTest objTestType) {
 
 		// initialize the server and obtain the credentials and root.
 		// credentials are necessary to sign the HTTP request.
-		if err = newTestConfig(globalMinioDefaultRegion, objLayer); err != nil {
+		if err = newTestConfig(globalKypelloDefaultRegion, objLayer); err != nil {
 			t.Fatal("Unexpected error", err)
 		}
 		initConfigSubsystem(ctx, objLayer)
@@ -1941,7 +1941,7 @@ func ExecObjectLayerDiskAlteredTest(t *testing.T, objTest objTestDiskNotFoundTyp
 	}
 	defer objLayer.Shutdown(ctx)
 
-	if err = newTestConfig(globalMinioDefaultRegion, objLayer); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, objLayer); err != nil {
 		t.Fatal("Failed to create config directory", err)
 	}
 
@@ -1954,7 +1954,7 @@ func ExecObjectLayerDiskAlteredTest(t *testing.T, objTest objTestDiskNotFoundTyp
 type objTestStaleFilesType func(obj ObjectLayer, instanceType string, dirs []string, t *testing.T)
 
 // ExecObjectLayerStaleFilesTest - executes object layer tests those leaves stale
-// files/directories under .minio/tmp.  Creates Erasure ObjectLayer instance and runs test for Erasure layer.
+// files/directories under .kypello/tmp.  Creates Erasure ObjectLayer instance and runs test for Erasure layer.
 func ExecObjectLayerStaleFilesTest(t *testing.T, objTest objTestStaleFilesType) {
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
@@ -1968,7 +1968,7 @@ func ExecObjectLayerStaleFilesTest(t *testing.T, objTest objTestStaleFilesType) 
 	if err != nil {
 		t.Fatalf("Initialization of object layer failed for Erasure setup: %s", err)
 	}
-	if err = newTestConfig(globalMinioDefaultRegion, objLayer); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, objLayer); err != nil {
 		t.Fatal("Failed to create config directory", err)
 	}
 
@@ -2239,7 +2239,7 @@ func getEndpointsLocalAddr(endpointServerPools EndpointServerPools) string {
 		}
 	}
 
-	return net.JoinHostPort(globalMinioHost, globalMinioPort)
+	return net.JoinHostPort(globalKypelloHost, globalKypelloPort)
 }
 
 // fetches a random number between range min-max.

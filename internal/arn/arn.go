@@ -35,6 +35,7 @@ import (
 const (
 	arnPrefixArn        = "arn"
 	arnPartitionMinio   = "minio"
+	arnPartitionKypello = "kypello"
 	arnServiceIAM       = "iam"
 	arnResourceTypeRole = "role"
 )
@@ -50,7 +51,7 @@ type ARN struct {
 
 // Allows english letters, numbers, '.', '-', '_' and '/'. Starts with a
 // letter or digit. At least 1 character long.
-var validResourceIDRegex = regexp.MustCompile(`[A-Za-z0-9_/\.-]+$`)
+var validResourceIDRegex = regexp.MustCompile(`[A-Za-z0-9_/.-]+$`)
 
 // NewIAMRoleARN - returns an ARN for a role in MinIO.
 func NewIAMRoleARN(resourceID, serverRegion string) (ARN, error) {
@@ -84,17 +85,17 @@ func (arn ARN) String() string {
 // Parse - parses an ARN string into a type.
 func Parse(arnStr string) (arn ARN, err error) {
 	ps := strings.Split(arnStr, ":")
-	if len(ps) != 6 || ps[0] != string(arnPrefixArn) {
+	if len(ps) != 6 || ps[0] != arnPrefixArn {
 		err = errors.New("invalid ARN string format")
 		return arn, err
 	}
 
-	if ps[1] != string(arnPartitionMinio) {
+	if ps[1] != arnPartitionMinio && ps[1] != arnPartitionKypello {
 		err = errors.New("invalid ARN - bad partition field")
 		return arn, err
 	}
 
-	if ps[2] != string(arnServiceIAM) {
+	if ps[2] != arnServiceIAM {
 		err = errors.New("invalid ARN - bad service field")
 		return arn, err
 	}
@@ -112,7 +113,7 @@ func Parse(arnStr string) (arn ARN, err error) {
 		return arn, err
 	}
 
-	if res[0] != string(arnResourceTypeRole) {
+	if res[0] != arnResourceTypeRole {
 		err = errors.New("invalid ARN: resource type is invalid")
 		return arn, err
 	}

@@ -28,10 +28,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/crypto"
-	xhttp "github.com/minio/minio/internal/http"
-	xioutil "github.com/minio/minio/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/crypto"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/minio/pkg/v3/policy"
 	"github.com/minio/zipindex"
 )

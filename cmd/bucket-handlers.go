@@ -44,24 +44,24 @@ import (
 	"github.com/minio/mux"
 	"github.com/valyala/bytebufferpool"
 
+	"github.com/kypello-io/kypello/internal/auth"
+	sse "github.com/kypello-io/kypello/internal/bucket/encryption"
+	objectlock "github.com/kypello-io/kypello/internal/bucket/object/lock"
+	"github.com/kypello-io/kypello/internal/bucket/replication"
+	"github.com/kypello-io/kypello/internal/config/dns"
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/etag"
+	"github.com/kypello-io/kypello/internal/event"
+	"github.com/kypello-io/kypello/internal/handlers"
+	"github.com/kypello-io/kypello/internal/hash"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/kms"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/madmin-go/v3"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/set"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/minio/internal/auth"
-	sse "github.com/minio/minio/internal/bucket/encryption"
-	objectlock "github.com/minio/minio/internal/bucket/object/lock"
-	"github.com/minio/minio/internal/bucket/replication"
-	"github.com/minio/minio/internal/config/dns"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/etag"
-	"github.com/minio/minio/internal/event"
-	"github.com/minio/minio/internal/handlers"
-	"github.com/minio/minio/internal/hash"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/ioutil"
-	"github.com/minio/minio/internal/kms"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/pkg/v3/policy"
 	"github.com/minio/pkg/v3/sync/errgroup"
 )
@@ -230,7 +230,7 @@ func (api objectAPIHandlers) GetBucketLocationHandler(w http.ResponseWriter, r *
 	encodedSuccessResponse := encodeResponse(LocationResponse{})
 	// Get current region.
 	region := globalSite.Region()
-	if region != globalMinioDefaultRegion {
+	if region != globalKypelloDefaultRegion {
 		encodedSuccessResponse = encodeResponse(LocationResponse{
 			Location: region,
 		})
@@ -744,7 +744,7 @@ func (api objectAPIHandlers) PutBucketHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	forceCreate := false
-	if vs := r.Header.Get(xhttp.MinIOForceCreate); len(vs) > 0 {
+	if vs := r.Header.Get(xhttp.KypelloForceCreate); len(vs) > 0 {
 		v := strings.ToLower(vs)
 		switch v {
 		case "true", "false":
@@ -1696,7 +1696,7 @@ func (api objectAPIHandlers) DeleteBucketHandler(w http.ResponseWriter, r *http.
 	}
 
 	forceDelete := false
-	if value := r.Header.Get(xhttp.MinIOForceDelete); value != "" {
+	if value := r.Header.Get(xhttp.KypelloForceDelete); value != "" {
 		var err error
 		forceDelete, err = strconv.ParseBool(value)
 		if err != nil {

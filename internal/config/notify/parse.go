@@ -28,10 +28,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/event"
-	"github.com/minio/minio/internal/event/target"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/event"
+	"github.com/kypello-io/kypello/internal/event/target"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/pkg/v3/env"
 	xnet "github.com/minio/pkg/v3/net"
 	"github.com/rabbitmq/amqp091-go"
@@ -873,26 +873,6 @@ var (
 			Value: config.EnableOff,
 		},
 		config.KV{
-			Key:           target.NATSStreaming,
-			Value:         config.EnableOff,
-			HiddenIfEmpty: true,
-		},
-		config.KV{
-			Key:           target.NATSStreamingAsync,
-			Value:         config.EnableOff,
-			HiddenIfEmpty: true,
-		},
-		config.KV{
-			Key:           target.NATSStreamingMaxPubAcksInFlight,
-			Value:         "0",
-			HiddenIfEmpty: true,
-		},
-		config.KV{
-			Key:           target.NATSStreamingClusterID,
-			Value:         "",
-			HiddenIfEmpty: true,
-		},
-		config.KV{
 			Key:   target.NATSQueueDir,
 			Value: "",
 		},
@@ -1041,36 +1021,6 @@ func GetNotifyNATS(natsKVS map[string]config.KVS, rootCAs *x509.CertPool) (map[s
 			RootCAs:           rootCAs,
 		}
 		natsArgs.JetStream.Enable = env.Get(jetStreamEnableEnv, kv.Get(target.NATSJetStream)) == config.EnableOn
-
-		streamingEnableEnv := target.EnvNATSStreaming
-		if k != config.Default {
-			streamingEnableEnv = streamingEnableEnv + config.Default + k
-		}
-
-		streamingEnabled := env.Get(streamingEnableEnv, kv.Get(target.NATSStreaming)) == config.EnableOn
-		if streamingEnabled {
-			asyncEnv := target.EnvNATSStreamingAsync
-			if k != config.Default {
-				asyncEnv = asyncEnv + config.Default + k
-			}
-			maxPubAcksInflightEnv := target.EnvNATSStreamingMaxPubAcksInFlight
-			if k != config.Default {
-				maxPubAcksInflightEnv = maxPubAcksInflightEnv + config.Default + k
-			}
-			maxPubAcksInflight, err := strconv.Atoi(env.Get(maxPubAcksInflightEnv,
-				kv.Get(target.NATSStreamingMaxPubAcksInFlight)))
-			if err != nil {
-				return nil, err
-			}
-			clusterIDEnv := target.EnvNATSStreamingClusterID
-			if k != config.Default {
-				clusterIDEnv = clusterIDEnv + config.Default + k
-			}
-			natsArgs.Streaming.Enable = streamingEnabled
-			natsArgs.Streaming.ClusterID = env.Get(clusterIDEnv, kv.Get(target.NATSStreamingClusterID))
-			natsArgs.Streaming.Async = env.Get(asyncEnv, kv.Get(target.NATSStreamingAsync)) == config.EnableOn
-			natsArgs.Streaming.MaxPubAcksInflight = maxPubAcksInflight
-		}
 
 		if err = natsArgs.Validate(); err != nil {
 			return nil, err

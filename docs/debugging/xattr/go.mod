@@ -1,4 +1,4 @@
-module github.com/minio/minio/docs/debugging/xattr
+module github.com/kypello-io/kypello/docs/debugging/xattr
 
 go 1.21
 

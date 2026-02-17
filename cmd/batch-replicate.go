@@ -20,8 +20,8 @@ package cmd
 import (
 	"time"
 
+	"github.com/kypello-io/kypello/internal/auth"
 	miniogo "github.com/minio/minio-go/v7"
-	"github.com/minio/minio/internal/auth"
 	"github.com/minio/pkg/v3/xtime"
 )
 
@@ -30,7 +30,7 @@ import (
 // replicate:
 //   # source of the objects to be replicated
 //   source:
-//     type: "minio"
+//     type: "kypello"
 //     bucket: "testbucket"
 //     prefix: "spark/"
 //
@@ -54,13 +54,13 @@ import (
 //
 //   # target where the objects must be replicated
 //   target:
-//     type: "minio"
+//     type: "kypello"
 //     bucket: "testbucket1"
 //     endpoint: "https://play.min.io"
 //     path: "on"
 //     credentials:
-//       accessKey: "minioadmin"
-//       secretKey: "minioadmin"
+//       accessKey: "kypelloadmin"
+//       secretKey: "kypelloadmin"
 //       sessionToken: ""
 
 // BatchReplicateFilter holds all the filters currently supported for batch replication
@@ -103,7 +103,7 @@ func (t BatchJobReplicateResourceType) isMinio() bool {
 
 // Different types of batch jobs..
 const (
-	BatchJobReplicateResourceMinIO BatchJobReplicateResourceType = "minio"
+	BatchJobReplicateResourceMinIO BatchJobReplicateResourceType = "kypello"
 	BatchJobReplicateResourceS3    BatchJobReplicateResourceType = "s3"
 
 	// add future targets

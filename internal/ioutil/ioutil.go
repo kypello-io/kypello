@@ -28,8 +28,8 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
-	"github.com/minio/minio/internal/bpool"
-	"github.com/minio/minio/internal/disk"
+	"github.com/kypello-io/kypello/internal/bpool"
+	"github.com/kypello-io/kypello/internal/disk"
 )
 
 // Block sizes constant.

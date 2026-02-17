@@ -24,8 +24,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/minio/minio/internal/grid"
-	xioutil "github.com/minio/minio/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/grid"
+	xioutil "github.com/kypello-io/kypello/internal/ioutil"
 	"github.com/valyala/bytebufferpool"
 )
 
@@ -72,10 +72,6 @@ const (
 // The function tries to quit as fast as the context is canceled to avoid further drive IO
 func (s *xlStorage) WalkDir(ctx context.Context, opts WalkDirOptions, wr io.Writer) (err error) {
 	legacyFS := s.fsType != xfs && s.fsType != ext4
-
-	s.RLock()
-	legacy := s.formatLegacy
-	s.RUnlock()
 
 	// Verify if volume is valid and it exists.
 	volumeDir, err := s.getVolDir(opts.Bucket)
@@ -137,8 +133,8 @@ func (s *xlStorage) WalkDir(ctx context.Context, opts WalkDirOptions, wr io.Writ
 				return err
 			}
 		} else {
-			st, sterr := Lstat(pathJoin(volumeDir, opts.BaseDir, xlStorageFormatFile))
-			if sterr == nil && st.Mode().IsRegular() {
+			st, stderr := Lstat(pathJoin(volumeDir, opts.BaseDir, xlStorageFormatFile))
+			if stderr == nil && st.Mode().IsRegular() {
 				return errFileNotFound
 			}
 		}
@@ -219,9 +215,9 @@ func (s *xlStorage) WalkDir(ctx context.Context, opts WalkDirOptions, wr io.Writ
 				continue
 			}
 			if hasSuffixByte(entry, SlashSeparatorChar) {
-				if strings.HasSuffix(entry, globalDirSuffixWithSlash) {
+				if before, ok := strings.CutSuffix(entry, globalDirSuffixWithSlash); ok {
 					// Add without extension so it is sorted correctly.
-					entry = strings.TrimSuffix(entry, globalDirSuffixWithSlash) + slashSeparator
+					entry = before + slashSeparator
 					dirObjects[entry] = struct{}{}
 					entries[i] = entry
 					continue
@@ -260,23 +256,6 @@ func (s *xlStorage) WalkDir(ctx context.Context, opts WalkDirOptions, wr io.Writ
 				meta.name = strings.TrimSuffix(meta.name, SlashSeparator)
 				meta.name = pathJoinBuf(sb, current, meta.name)
 				meta.name = decodeDirObject(meta.name)
-
-				return send(meta)
-			}
-			// Check legacy.
-			if HasSuffix(entry, xlStorageFormatFileV1) && legacy {
-				var meta metaCacheEntry
-				meta.metadata, err = xioutil.ReadFile(pathJoinBuf(sb, volumeDir, current, entry))
-				diskHealthCheckOK(ctx, err)
-				if err != nil {
-					if !IsErrIgnored(err, io.EOF, io.ErrUnexpectedEOF) {
-						internalLogIf(ctx, err)
-					}
-					continue
-				}
-				meta.name = strings.TrimSuffix(entry, xlStorageFormatFileV1)
-				meta.name = strings.TrimSuffix(meta.name, SlashSeparator)
-				meta.name = pathJoinBuf(sb, current, meta.name)
 
 				return send(meta)
 			}
@@ -355,18 +334,6 @@ func (s *xlStorage) WalkDir(ctx context.Context, opts WalkDirOptions, wr io.Writ
 					return err
 				}
 			case osIsNotExist(err), isSysErrIsDir(err):
-				if legacy {
-					meta.metadata, err = xioutil.ReadFile(pathJoinBuf(sb, volumeDir, meta.name, xlStorageFormatFileV1))
-					diskHealthCheckOK(ctx, err)
-					if err == nil {
-						// It was an object
-						if err := send(meta); err != nil {
-							return err
-						}
-						continue
-					}
-				}
-
 				// NOT an object, append to stack (with slash)
 				// If dirObject, but no metadata (which is unexpected) we skip it.
 				if !isDirObj {

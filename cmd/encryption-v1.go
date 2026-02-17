@@ -35,14 +35,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/kypello-io/kypello/internal/crypto"
+	"github.com/kypello-io/kypello/internal/etag"
+	"github.com/kypello-io/kypello/internal/hash"
+	"github.com/kypello-io/kypello/internal/hash/sha256"
+	xhttp "github.com/kypello-io/kypello/internal/http"
+	"github.com/kypello-io/kypello/internal/kms"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/kms-go/kes"
-	"github.com/minio/minio/internal/crypto"
-	"github.com/minio/minio/internal/etag"
-	"github.com/minio/minio/internal/hash"
-	"github.com/minio/minio/internal/hash/sha256"
-	xhttp "github.com/minio/minio/internal/http"
-	"github.com/minio/minio/internal/kms"
-	"github.com/minio/minio/internal/logger"
 	"github.com/minio/sio"
 )
 
@@ -1008,7 +1008,7 @@ func DecryptObjectInfo(info *ObjectInfo, r *http.Request) (encrypted bool, err e
 	if encrypted {
 		if crypto.SSEC.IsEncrypted(info.UserDefined) {
 			if !crypto.SSEC.IsRequested(headers) && !crypto.SSECopy.IsRequested(headers) {
-				if r.Header.Get(xhttp.MinIOSourceReplicationRequest) != "true" {
+				if r.Header.Get(xhttp.KypelloSourceReplicationRequest) != "true" {
 					return encrypted, errEncryptedObject
 				}
 			}

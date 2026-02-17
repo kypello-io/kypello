@@ -28,8 +28,8 @@ import (
 	"testing"
 
 	"github.com/dustin/go-humanize"
-	"github.com/minio/minio/internal/hash"
-	"github.com/minio/minio/internal/ioutil"
+	"github.com/kypello-io/kypello/internal/hash"
+	"github.com/kypello-io/kypello/internal/ioutil"
 )
 
 func md5Header(data []byte) map[string]string {
@@ -351,7 +351,7 @@ func testObjectAPIPutObjectStaleFiles(obj ObjectLayer, instanceType string, disk
 	}
 
 	for _, disk := range disks {
-		tmpMetaDir := path.Join(disk, minioMetaTmpBucket)
+		tmpMetaDir := path.Join(disk, kypelloMetaTmpBucket)
 		files, err := os.ReadDir(tmpMetaDir)
 		if err != nil {
 			t.Fatal(err)
@@ -364,7 +364,7 @@ func testObjectAPIPutObjectStaleFiles(obj ObjectLayer, instanceType string, disk
 			found = true
 		}
 		if found {
-			t.Fatalf("%s: expected: empty, got: non-empty %#v", minioMetaTmpBucket, files)
+			t.Fatalf("%s: expected: empty, got: non-empty %#v", kypelloMetaTmpBucket, files)
 		}
 	}
 }
@@ -430,7 +430,7 @@ func testObjectAPIMultipartPutObjectStaleFiles(obj ObjectLayer, instanceType str
 	}
 
 	for _, disk := range disks {
-		tmpMetaDir := path.Join(disk, minioMetaTmpBucket)
+		tmpMetaDir := path.Join(disk, kypelloMetaTmpBucket)
 		files, err := os.ReadDir(tmpMetaDir)
 		if err != nil {
 			// It's OK to have non-existing tmpMetaDir.

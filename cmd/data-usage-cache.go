@@ -34,8 +34,8 @@ import (
 	"github.com/cespare/xxhash/v2"
 	"github.com/dustin/go-humanize"
 	"github.com/klauspost/compress/zstd"
+	"github.com/kypello-io/kypello/internal/bucket/lifecycle"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/bucket/lifecycle"
 	"github.com/tinylib/msgp/msgp"
 	"github.com/valyala/bytebufferpool"
 )
@@ -635,11 +635,12 @@ func (d *dataUsageCache) forceCompact(limit int) {
 // StringAll returns a detailed string representation of all entries in the cache.
 func (d *dataUsageCache) StringAll() string {
 	// Remove bloom filter from print.
-	s := fmt.Sprintf("info:%+v\n", d.Info)
+	var s strings.Builder
+	s.WriteString(fmt.Sprintf("info:%+v\n", d.Info))
 	for k, v := range d.Cache {
-		s += fmt.Sprintf("\t%v: %+v\n", k, v)
+		s.WriteString(fmt.Sprintf("\t%v: %+v\n", k, v))
 	}
-	return strings.TrimSpace(s)
+	return strings.TrimSpace(s.String())
 }
 
 // String returns a human readable representation of the string.
@@ -887,7 +888,7 @@ func (d *dataUsageCache) load(ctx context.Context, store objectIO, name string) 
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 
-		r, err := store.GetObjectNInfo(ctx, minioMetaBucket, pathJoin(bucketMetaPrefix, name), nil, http.Header{}, ObjectOptions{NoLock: true})
+		r, err := store.GetObjectNInfo(ctx, kypelloMetaBucket, pathJoin(bucketMetaPrefix, name), nil, http.Header{}, ObjectOptions{NoLock: true})
 		if err != nil {
 			switch err.(type) {
 			case ObjectNotFound, BucketNotFound:

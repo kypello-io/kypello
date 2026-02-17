@@ -18,15 +18,15 @@
 package cmd
 
 import (
-	"github.com/minio/minio/internal/auth"
-	"github.com/minio/minio/internal/config"
-	"github.com/minio/minio/internal/config/compress"
-	xldap "github.com/minio/minio/internal/config/identity/ldap"
-	"github.com/minio/minio/internal/config/identity/openid"
-	"github.com/minio/minio/internal/config/notify"
-	"github.com/minio/minio/internal/config/policy/opa"
-	"github.com/minio/minio/internal/config/storageclass"
-	"github.com/minio/minio/internal/logger"
+	"github.com/kypello-io/kypello/internal/auth"
+	"github.com/kypello-io/kypello/internal/config"
+	"github.com/kypello-io/kypello/internal/config/compress"
+	xldap "github.com/kypello-io/kypello/internal/config/identity/ldap"
+	"github.com/kypello-io/kypello/internal/config/identity/openid"
+	"github.com/kypello-io/kypello/internal/config/notify"
+	"github.com/kypello-io/kypello/internal/config/policy/opa"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
+	"github.com/kypello-io/kypello/internal/logger"
 	"github.com/minio/pkg/v3/quick"
 )
 

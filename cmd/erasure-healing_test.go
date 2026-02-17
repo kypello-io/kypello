@@ -32,8 +32,8 @@ import (
 
 	"github.com/dustin/go-humanize"
 	uuid2 "github.com/google/uuid"
+	"github.com/kypello-io/kypello/internal/config/storageclass"
 	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio/internal/config/storageclass"
 )
 
 // Tests isObjectDangling function
@@ -321,7 +321,7 @@ func TestHealing(t *testing.T) {
 
 	// initialize the server and obtain the credentials and root.
 	// credentials are necessary to sign the HTTP request.
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatalf("Unable to initialize server config. %s", err)
 	}
 
@@ -475,7 +475,7 @@ func TestHealingVersioned(t *testing.T) {
 
 	// initialize the server and obtain the credentials and root.
 	// credentials are necessary to sign the HTTP request.
-	if err = newTestConfig(globalMinioDefaultRegion, obj); err != nil {
+	if err = newTestConfig(globalKypelloDefaultRegion, obj); err != nil {
 		t.Fatalf("Unable to initialize server config. %s", err)
 	}
 
@@ -949,7 +949,7 @@ func TestHealCorrectQuorum(t *testing.T) {
 			t.Fatal("Expected all xl.meta healed, but partial heal detected")
 		}
 
-		fileInfos, errs = readAllFileInfo(ctx, erasureDisks, "", minioMetaBucket, cfgFile, "", false, true)
+		fileInfos, errs = readAllFileInfo(ctx, erasureDisks, "", kypelloMetaBucket, cfgFile, "", false, true)
 		nfi, err = getLatestFileInfo(ctx, fileInfos, er.defaultParityCount, errs)
 		if errors.Is(err, errFileNotFound) {
 			continue
@@ -959,19 +959,19 @@ func TestHealCorrectQuorum(t *testing.T) {
 		}
 
 		for i := 0; i < nfi.Erasure.ParityBlocks; i++ {
-			erasureDisks[i].Delete(t.Context(), minioMetaBucket, pathJoin(cfgFile, xlStorageFormatFile), DeleteOptions{
+			erasureDisks[i].Delete(t.Context(), kypelloMetaBucket, pathJoin(cfgFile, xlStorageFormatFile), DeleteOptions{
 				Recursive: false,
 				Immediate: false,
 			})
 		}
 
 		// Try healing now, it should heal the content properly.
-		_, err = objLayer.HealObject(ctx, minioMetaBucket, cfgFile, "", hopts)
+		_, err = objLayer.HealObject(ctx, kypelloMetaBucket, cfgFile, "", hopts)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		fileInfos, errs = readAllFileInfo(ctx, erasureDisks, "", minioMetaBucket, cfgFile, "", false, true)
+		fileInfos, errs = readAllFileInfo(ctx, erasureDisks, "", kypelloMetaBucket, cfgFile, "", false, true)
 		if countErrs(errs, nil) != len(fileInfos) {
 			t.Fatal("Expected all xl.meta healed, but partial heal detected")
 		}
